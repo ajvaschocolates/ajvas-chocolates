@@ -15,7 +15,7 @@ export function CuratedCollectionsSection({ products }: CuratedCollectionsSectio
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
               <span className="font-sans text-xs uppercase tracking-widest text-brand-gold font-bold">
-                Handcrafted Selections
+                Curated Selections
               </span>
               <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brand-espresso mt-1">
                 Gifts they&apos;ll remember
@@ -46,7 +46,7 @@ export function CuratedCollectionsSection({ products }: CuratedCollectionsSectio
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
             <span className="font-sans text-xs uppercase tracking-widest text-brand-gold font-bold">
-              Handcrafted Selections
+              Curated Selections
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brand-espresso mt-1">
               Gifts they&apos;ll remember

@@ -15,9 +15,8 @@ export function PincodeCheckerSection() {
       setMessage("Please enter a valid 6-digit Indian pincode.");
       return;
     }
-    // Dynamic pincode lookup service will be connected in the checkout / shipping phase
     setMessage(
-      "Courier availability and shipping rates are dynamically calculated during checkout."
+      "Courier partner availability and shipping rates are calculated during checkout based on destination pincode and combined package weight."
     );
   };
 
@@ -31,10 +30,10 @@ export function PincodeCheckerSection() {
             </div>
             <div>
               <h3 className="font-serif text-lg sm:text-xl font-bold text-brand-espresso">
-                Check Delivery Availability
+                Delivery Availability
               </h3>
               <p className="font-sans text-xs sm:text-sm text-brand-muted mt-0.5">
-                We deliver gift hampers and confections across India via trusted courier partners.
+                Pan-India courier delivery across supported destination pincodes.
               </p>
             </div>
           </div>
@@ -49,11 +48,11 @@ export function PincodeCheckerSection() {
                 setMessage(null);
               }}
               placeholder="6-digit Pincode"
-              className="px-4 py-2.5 bg-brand-surface border border-brand-border rounded text-sm text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus:border-brand-gold w-full sm:w-44 font-sans"
+              className="px-4 py-2.5 min-h-[44px] bg-brand-surface border border-brand-border rounded text-sm text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy focus:border-brand-gold w-full sm:w-44 font-sans"
               aria-label="Enter 6-digit destination pincode"
             />
-            <Button type="submit" variant="primary" size="md" className="whitespace-nowrap">
-              Verify
+            <Button type="submit" variant="primary" size="md" className="whitespace-nowrap min-h-[44px]">
+              Check
             </Button>
           </form>
         </div>

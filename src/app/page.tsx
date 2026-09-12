@@ -33,7 +33,7 @@ export default async function HomePage() {
         <ShopByOccasionSection />
 
         {/* 4. Flagship Product Spotlight */}
-        <SpotlightSection />
+        <SpotlightSection featuredProduct={products[0] || null} />
 
         {/* 5. Curated Products Grid */}
         <CuratedProductsGrid products={products} />

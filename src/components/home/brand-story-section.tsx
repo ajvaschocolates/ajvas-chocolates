@@ -16,21 +16,21 @@ export function BrandStorySection() {
             </h2>
 
             <p className="font-sans text-base text-brand-muted mb-4 leading-relaxed">
-              Ajvas was founded on a simple premise: a box of chocolates should feel like a celebration before it&apos;s even opened. We make honest, handcrafted confections assembled with custom woven ribbons and personalized notes.
+              Ajvas was founded on a simple premise: a box of chocolates should feel like a celebration before it&apos;s even opened. We make chocolate confections presented with woven ribbons and personalized notes.
             </p>
 
             <p className="font-sans text-base text-brand-muted mb-8 leading-relaxed">
-              Every box is carefully packed by our team with transit protection, signature ribbon tying, and your personalized greeting printed on heavy textured cardstock.
+              Each box is prepared with transit protection, ribbon tying, and your personalized greeting printed on heavy textured cardstock.
             </p>
 
             {/* 3 Pillars */}
             <div className="grid grid-cols-3 gap-4 pt-6 border-t border-brand-sand w-full">
               <div className="flex flex-col">
                 <span className="font-serif text-xl sm:text-2xl font-bold text-brand-burgundy">
-                  Small Batches
+                  Gifting
                 </span>
                 <span className="font-sans text-xs text-brand-muted mt-0.5">
-                  Handcrafted confections
+                  Keepsake packaging
                 </span>
               </div>
               <div className="flex flex-col">
@@ -38,15 +38,15 @@ export function BrandStorySection() {
                   Pan-India
                 </span>
                 <span className="font-sans text-xs text-brand-muted mt-0.5">
-                  Direct courier dispatch
+                  Courier dispatch
                 </span>
               </div>
               <div className="flex flex-col">
                 <span className="font-serif text-xl sm:text-2xl font-bold text-brand-burgundy">
-                  Guest-First
+                  Checkout
                 </span>
                 <span className="font-sans text-xs text-brand-muted mt-0.5">
-                  Frictionless checkout
+                  Guest checkout
                 </span>
               </div>
             </div>

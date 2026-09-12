@@ -24,7 +24,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="font-sans text-sm text-brand-muted max-w-sm leading-relaxed mt-1">
-              Handcrafted chocolate confections and curated gift hampers for celebrations and thoughtful gestures.
+              Chocolate confections and curated gift hampers for celebrations and thoughtful gestures.
             </p>
           </div>
 
@@ -109,7 +109,7 @@ export function Footer() {
               </li>
               <li>
                 <span className="text-brand-muted">
-                  Guest Checkout with Instant Order Tracking
+                  Guest Checkout &amp; Order Tracking
                 </span>
               </li>
             </ul>
@@ -122,7 +122,7 @@ export function Footer() {
           <div className="flex items-center gap-6">
             <span>Direct Delivery across India</span>
             <span>•</span>
-            <span>Carefully Packaged</span>
+            <span>Packaging for Transit</span>
           </div>
         </div>
       </Container>

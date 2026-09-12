@@ -46,7 +46,7 @@ export function HeroSection() {
             <div className="mt-10 pt-6 border-t border-brand-sand/70 w-full flex flex-wrap items-center gap-y-3 gap-x-6 text-brand-muted text-xs font-sans font-medium">
               <div className="flex items-center gap-2">
                 <Gift className="w-4 h-4 text-brand-gold shrink-0" />
-                <span>Gift greeting included</span>
+                <span>Gift message included</span>
               </div>
               <div className="flex items-center gap-2">
                 <Truck className="w-4 h-4 text-accent-cyan shrink-0" />
@@ -54,7 +54,7 @@ export function HeroSection() {
               </div>
               <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-accent-rose shrink-0" />
-                <span>Fast guest checkout</span>
+                <span>Guest checkout</span>
               </div>
             </div>
           </div>
@@ -64,24 +64,21 @@ export function HeroSection() {
             <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] rounded-2xl overflow-hidden bg-brand-surface shadow-elevated border border-brand-border/60">
               <img
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqgb9Q_fPTLG8u1oxJQ4NcTtSITwo3_7oh9hsOCEttnPmJ7Lga1rkVsxd8FUGexLaKo3nMcZ4CRsTPJuiBeWjzQsLMhtlWHnprvmMQBAV6fl9j29X8rdNYWhieYKkEqUVGnUAGa4PYEgb2wzZJy_OGydPb_5Q5eFFRMei5c6XdNMhy4O1rMmTCkDmnKsC1yumFgFdKIVZK0WmITEhuWQFL45fLq2UwTQ8ETlP9RGcmbXpEOsD06-uy"
-                alt="AJVAS Chocolates Grand Velvet Hamper presentation"
+                alt="AJVAS Chocolates keepsake gift hamper presentation"
                 className="w-full h-full object-cover"
                 loading="eager"
               />
 
-              {/* Floating Product Highlight Tag */}
+              {/* Floating Presentation Badge */}
               <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs bg-brand-cream/95 backdrop-blur-md p-4 rounded-xl border border-brand-sand/80 shadow-drawer">
                 <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-brand-gold">
-                  Curated Presentation
+                  Gift Presentation
                 </p>
                 <p className="font-serif text-base font-semibold text-brand-espresso mt-0.5">
-                  The Grand Velvet Hamper
+                  Keepsake Hamper Packaging
                 </p>
-                <p className="font-sans font-bold text-base text-brand-burgundy mt-1">
-                  ₹3,450{" "}
-                  <span className="text-xs font-normal text-brand-muted">
-                    • All inclusive
-                  </span>
+                <p className="font-sans text-xs text-brand-muted mt-1">
+                  Woven ribbon closure &amp; gift card
                 </p>
               </div>
             </div>

@@ -6,23 +6,23 @@ export function GiftingExperienceSection() {
     {
       icon: Gift,
       iconColor: "text-brand-burgundy",
-      title: "Complimentary Gift Cards",
+      title: "Gift Cards Included",
       description:
-        "Add your personalized message during checkout. Every greeting is included on our heavy textured keepsake card.",
+        "Add your personalized message during checkout. Greetings are printed on textured keepsake cardstock.",
     },
     {
       icon: Clock,
       iconColor: "text-brand-gold",
-      title: "Timely Delivery Tracking",
+      title: "Order Tracking",
       description:
-        "Transparent courier tracking updates for all domestic shipments, securely packaged for safe transit.",
+        "Courier tracking details provided for domestic shipments, securely packaged for transit.",
     },
     {
       icon: ShieldCheck,
       iconColor: "text-accent-cyan",
-      title: "Frictionless Guest Checkout",
+      title: "Guest Checkout",
       description:
-        "No forced account creation or tedious signups. Complete your gifting orders in clear, straightforward steps.",
+        "No mandatory account creation. Complete your gifting orders directly with straightforward checkout steps.",
     },
   ];
 

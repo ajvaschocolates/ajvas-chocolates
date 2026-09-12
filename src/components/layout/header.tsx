@@ -33,7 +33,7 @@ export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
           aria-expanded={mobileMenuOpen}
-          className="lg:hidden p-2 -ml-2 text-brand-espresso hover:text-brand-burgundy transition-colors focus-visible:outline-none"
+          className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center p-2.5 -ml-2 text-brand-espresso hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded"
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -44,7 +44,7 @@ export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
             <a
               key={link.label}
               href={link.href}
-              className="font-sans text-xs uppercase tracking-widest font-semibold text-brand-muted hover:text-brand-espresso transition-colors duration-200"
+              className="font-sans text-xs uppercase tracking-widest font-semibold text-brand-muted hover:text-brand-espresso transition-colors duration-200 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded-sm"
             >
               {link.label}
             </a>
@@ -54,7 +54,7 @@ export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
         {/* Brand Logo & Wordmark */}
         <Link
           href="/"
-          className="flex items-center gap-3 text-center lg:text-left group"
+          className="flex items-center gap-3 text-center lg:text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded"
           aria-label="AJVAS Chocolates Home"
         >
           <img
@@ -73,10 +73,10 @@ export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
         </Link>
 
         {/* Right Actions: Contact & Bag */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 sm:gap-6">
           <a
             href="#contact"
-            className="hidden md:inline-block font-sans text-xs uppercase tracking-widest font-semibold text-brand-muted hover:text-brand-espresso transition-colors duration-200"
+            className="hidden md:inline-block font-sans text-xs uppercase tracking-widest font-semibold text-brand-muted hover:text-brand-espresso transition-colors duration-200 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded-sm"
           >
             Contact
           </a>
@@ -85,7 +85,7 @@ export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
             type="button"
             onClick={onOpenCart}
             aria-label={`Shopping bag, ${cartCount} items`}
-            className="flex items-center gap-2 p-2 font-sans text-xs uppercase tracking-wider font-semibold text-brand-espresso hover:text-brand-burgundy transition-colors focus-visible:outline-none"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 p-2 font-sans text-xs uppercase tracking-wider font-semibold text-brand-espresso hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded"
           >
             <ShoppingBag className="w-5 h-5 text-brand-espresso" />
             <span className="hidden sm:inline">Bag</span>
@@ -98,15 +98,15 @@ export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-[113px] bg-brand-cream border-b border-brand-sand shadow-elevated z-40 animate-in slide-in-from-top-2 duration-200">
-          <div className="px-6 py-8 flex flex-col gap-6">
-            <nav className="flex flex-col gap-4" aria-label="Mobile Navigation">
+        <div className="lg:hidden fixed inset-0 top-[114px] z-40 bg-brand-espresso/50 backdrop-blur-sm">
+          <div className="bg-brand-cream border-b border-brand-sand/80 shadow-drawer p-6 animate-in slide-in-from-top duration-300">
+            <nav className="flex flex-col space-y-4" aria-label="Mobile Navigation">
               {navLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="font-serif text-xl text-brand-espresso hover:text-brand-burgundy flex items-center justify-between py-2 border-b border-brand-sand/50"
+                  className="font-serif text-lg font-medium text-brand-espresso hover:text-brand-burgundy transition-colors py-2 flex items-center justify-between border-b border-brand-sand/40 min-h-[44px]"
                 >
                   <span>{link.label}</span>
                   <ArrowRight className="w-4 h-4 text-brand-gold" />
@@ -115,7 +115,7 @@ export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
             </nav>
             <div className="pt-2 text-xs text-brand-muted">
               <p className="font-sans">Pan-India Courier Delivery</p>
-              <p className="font-sans text-[11px] mt-1 text-brand-muted/80">Guest Checkout • Safe Packaging</p>
+              <p className="font-sans text-[11px] mt-1 text-brand-muted/80">Guest Checkout • Packaging for Transit</p>
             </div>
           </div>
         </div>
