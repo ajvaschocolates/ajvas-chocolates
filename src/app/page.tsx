@@ -1,18 +1,58 @@
-export default function Home() {
+import { getActiveProducts } from "@/lib/supabase/catalog";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
+import { HeroSection } from "@/components/home/hero-section";
+import { CuratedCollectionsSection } from "@/components/home/curated-collections-section";
+import { ShopByOccasionSection } from "@/components/home/shop-by-occasion-section";
+import { SpotlightSection } from "@/components/home/spotlight-section";
+import { CuratedProductsGrid } from "@/components/home/curated-products-grid";
+import { BrandStorySection } from "@/components/home/brand-story-section";
+import { GiftingExperienceSection } from "@/components/home/gifting-experience-section";
+import { PincodeCheckerSection } from "@/components/home/pincode-checker-section";
+import { GiftingCtaSection } from "@/components/home/gifting-cta-section";
+
+export const revalidate = 60; // ISR revalidation every 60 seconds
+
+export default async function HomePage() {
+  const products = await getActiveProducts(12);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-neutral-950 text-neutral-100">
-      <div className="max-w-md w-full p-8 rounded-xl border border-neutral-800 bg-neutral-900/60 backdrop-blur text-center space-y-4 shadow-xl">
-        <h1 className="text-3xl font-bold tracking-wider text-amber-400">
-          AJVAS CHOCOLATES
-        </h1>
-        <div className="h-px bg-neutral-800 w-full" />
-        <p className="text-sm text-neutral-400">
-          Application foundation initialized successfully.
-        </p>
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
-          Ready for Development
-        </span>
-      </div>
-    </main>
+    <div className="flex flex-col min-h-screen bg-brand-cream selection:bg-brand-gold selection:text-brand-espresso">
+      {/* Fixed/Sticky Navigation Header */}
+      <Header />
+
+      {/* Main Content Sections in Approved Top-to-Bottom Order */}
+      <main className="flex-1 w-full">
+        {/* 1. Hero Section */}
+        <HeroSection />
+
+        {/* 2. Curated Collections / Featured Selections */}
+        <CuratedCollectionsSection products={products} />
+
+        {/* 3. Shop by Occasion */}
+        <ShopByOccasionSection />
+
+        {/* 4. Flagship Product Spotlight */}
+        <SpotlightSection />
+
+        {/* 5. Curated Products Grid */}
+        <CuratedProductsGrid products={products} />
+
+        {/* 6. Brand & Gifting Philosophy */}
+        <BrandStorySection />
+
+        {/* 7. Gifting Experience & Values */}
+        <GiftingExperienceSection />
+
+        {/* 8. Delivery Pincode Availability Checker */}
+        <PincodeCheckerSection />
+
+        {/* 9. Final Gifting CTA */}
+        <GiftingCtaSection />
+      </main>
+
+      {/* 10. Footer */}
+      <Footer />
+    </div>
   );
 }
