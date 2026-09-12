@@ -1,10 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
+import { getSupabaseEnv } from "./env";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
-
-export const supabase = createClient(supabaseUrl, supabasePublishableKey);
-
-export function createBrowserClient() {
-  return createClient(supabaseUrl, supabasePublishableKey);
+/**
+ * Creates a browser-side Supabase client for Client Components.
+ * Uses cookies managed by @supabase/ssr.
+ */
+export function createClient() {
+  const { supabaseUrl, supabasePublishableKey } = getSupabaseEnv();
+  return createBrowserClient(supabaseUrl, supabasePublishableKey);
 }
