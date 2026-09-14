@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
@@ -60,44 +60,66 @@ export function CheckoutView() {
   const [shippingAmount, setShippingAmount] = useState<number | null>(null);
   const [shippingState, setShippingState] = useState<ShippingCalculationState>("awaiting_pincode");
 
-  const handleFieldChange = (field: keyof GuestCustomerFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
+  const handleFieldChange = useCallback((field: keyof GuestCustomerFormData, value: string) => {
+    setFormData((prev) => {
+      if (prev[field] === value) return prev;
+      return { ...prev, [field]: value };
+    });
+    setFormErrors((prev) => {
+      if (!prev[field]) return prev;
+      return { ...prev, [field]: undefined };
+    });
+  }, []);
 
-  const handlePincodeChange = (pin: string) => {
-    handleFieldChange("pincode", pin);
+  const handlePincodeChange = useCallback((pin: string) => {
+    setFormData((prev) => {
+      if (prev.pincode === pin) return prev;
+      return { ...prev, pincode: pin };
+    });
+    setFormErrors((prev) => {
+      if (!prev.pincode) return prev;
+      return { ...prev, pincode: undefined };
+    });
     setSelectedCourierId(null);
     setShippingAmount(null);
     setShippingState("awaiting_pincode");
-  };
+  }, []);
 
-  const handleResolutionChange = (res: PincodeResolution | null) => {
-    setPincodeResolution(res);
+  const handleResolutionChange = useCallback((res: PincodeResolution | null) => {
+    setPincodeResolution((prev) => {
+      if (
+        prev?.pincodeId === res?.pincodeId &&
+        prev?.recognized === res?.recognized &&
+        prev?.pincode === res?.pincode &&
+        prev?.district === res?.district &&
+        prev?.state === res?.state &&
+        prev?.error === res?.error
+      ) {
+        return prev;
+      }
+      return res;
+    });
+
     if (res && res.recognized) {
-      setFormData((prev) => ({
-        ...prev,
-        district: res.district,
-        state: res.state,
-      }));
+      setFormData((prev) => {
+        if (prev.district === res.district && prev.state === res.state) return prev;
+        return { ...prev, district: res.district, state: res.state };
+      });
       setShippingState("awaiting_courier");
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        district: "",
-        state: "",
-      }));
+      setFormData((prev) => {
+        if (prev.district === "" && prev.state === "") return prev;
+        return { ...prev, district: "", state: "" };
+      });
       setShippingState("awaiting_pincode");
       setSelectedCourierId(null);
       setShippingAmount(null);
     }
-  };
+  }, []);
 
-  const handleCourierSelect = (courierId: string) => {
-    setSelectedCourierId(courierId);
-  };
+  const handleCourierSelect = useCallback((courierId: string) => {
+    setSelectedCourierId((prev) => (prev === courierId ? prev : courierId));
+  }, []);
 
   // Recalculate shipping whenever destination pincode, courier, or total weight changes
   useEffect(() => {

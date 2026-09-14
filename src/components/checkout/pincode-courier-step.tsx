@@ -30,90 +30,135 @@ export function PincodeCourierStep({
   const [resolution, setResolution] = useState<PincodeResolution | null>(null);
   const [courierState, setCourierState] = useState<CourierState>("idle");
   const [couriers, setCouriers] = useState<AvailableCourier[]>([]);
+
   const lookupCache = useRef<Record<string, PincodeResolution>>({});
   const courierCache = useRef<Record<string, AvailableCourier[]>>({});
 
-  const loadCouriers = useCallback(
-    async (pincodeId: string) => {
-      if (courierCache.current[pincodeId]) {
-        const cachedCouriers = courierCache.current[pincodeId];
-        setCouriers(cachedCouriers);
-        setCourierState(cachedCouriers.length > 0 ? "available" : "none_available");
-        if (cachedCouriers.length === 1 && !selectedCourierId) {
-          onCourierSelect(cachedCouriers[0].id);
-        }
-        return;
-      }
+  // Keep latest callbacks/values in refs so effects and async handlers are decoupled from parent renders
+  const onResolutionChangeRef = useRef(onResolutionChange);
+  onResolutionChangeRef.current = onResolutionChange;
 
-      setCourierState("loading");
-      try {
-        const list = await getCouriersForPincodeAction(pincodeId);
-        courierCache.current[pincodeId] = list;
-        setCouriers(list);
-        setCourierState(list.length > 0 ? "available" : "none_available");
-        if (list.length === 1 && !selectedCourierId) {
-          onCourierSelect(list[0].id);
-        }
-      } catch {
-        setCouriers([]);
-        setCourierState("none_available");
-      }
-    },
-    [selectedCourierId, onCourierSelect]
-  );
+  const onCourierSelectRef = useRef(onCourierSelect);
+  onCourierSelectRef.current = onCourierSelect;
 
-  // Debounced pincode lookup
+  const selectedCourierIdRef = useRef(selectedCourierId);
+  selectedCourierIdRef.current = selectedCourierId;
+
+  const loadCouriers = useCallback(async (pincodeId: string) => {
+    if (courierCache.current[pincodeId]) {
+      const cachedCouriers = courierCache.current[pincodeId];
+      setCouriers(cachedCouriers);
+      setCourierState(cachedCouriers.length > 0 ? "available" : "none_available");
+      if (cachedCouriers.length === 1 && !selectedCourierIdRef.current) {
+        onCourierSelectRef.current(cachedCouriers[0].id);
+      }
+      return;
+    }
+
+    setCourierState("loading");
+    try {
+      const list = await getCouriersForPincodeAction(pincodeId);
+      courierCache.current[pincodeId] = list;
+      setCouriers(list);
+      setCourierState(list.length > 0 ? "available" : "none_available");
+      if (list.length === 1 && !selectedCourierIdRef.current) {
+        onCourierSelectRef.current(list[0].id);
+      }
+    } catch {
+      setCouriers([]);
+      setCourierState("none_available");
+    }
+  }, []);
+
+  // Debounced pincode lookup with guarded state updates
   useEffect(() => {
     const clean = pincode.trim().replace(/\D/g, "");
+
     if (clean.length === 0) {
-      setPincodeState("untouched");
-      setResolution(null);
-      onResolutionChange(null);
-      setCouriers([]);
-      setCourierState("idle");
+      setPincodeState((prev) => (prev !== "untouched" ? "untouched" : prev));
+      setResolution((prev) => {
+        if (prev !== null) {
+          onResolutionChangeRef.current(null);
+          return null;
+        }
+        return prev;
+      });
+      setCouriers((prev) => (prev.length > 0 ? [] : prev));
+      setCourierState((prev) => (prev !== "idle" ? "idle" : prev));
       return;
     }
 
     if (clean.length < 6) {
-      setPincodeState("typing");
-      setResolution(null);
-      onResolutionChange(null);
-      setCouriers([]);
-      setCourierState("idle");
+      setPincodeState((prev) => (prev !== "typing" ? "typing" : prev));
+      setResolution((prev) => {
+        if (prev !== null) {
+          onResolutionChangeRef.current(null);
+          return null;
+        }
+        return prev;
+      });
+      setCouriers((prev) => (prev.length > 0 ? [] : prev));
+      setCourierState((prev) => (prev !== "idle" ? "idle" : prev));
       return;
     }
 
-    // If cached
+    // If cached for this exact 6-digit pincode
     if (lookupCache.current[clean]) {
       const cached = lookupCache.current[clean];
       setResolution(cached);
-      onResolutionChange(cached);
+      onResolutionChangeRef.current(cached);
       setPincodeState(cached.recognized ? "valid" : "invalid");
       if (cached.recognized && cached.pincodeId) {
         loadCouriers(cached.pincodeId);
+      } else {
+        setCouriers([]);
+        setCourierState("idle");
       }
       return;
     }
 
-    // Trigger lookup
+    // Trigger debounced lookup
     setPincodeState("validating");
-    const timer = setTimeout(async () => {
-      const res = await resolvePincodeAction(clean);
-      lookupCache.current[clean] = res;
-      setResolution(res);
-      onResolutionChange(res);
-      setPincodeState(res.recognized ? "valid" : "invalid");
+    let isCancelled = false;
 
-      if (res.recognized && res.pincodeId) {
-        loadCouriers(res.pincodeId);
-      } else {
+    const timer = setTimeout(async () => {
+      try {
+        const res = await resolvePincodeAction(clean);
+        if (isCancelled) return;
+
+        lookupCache.current[clean] = res;
+        setResolution(res);
+        onResolutionChangeRef.current(res);
+        setPincodeState(res.recognized ? "valid" : "invalid");
+
+        if (res.recognized && res.pincodeId) {
+          loadCouriers(res.pincodeId);
+        } else {
+          setCouriers([]);
+          setCourierState("idle");
+        }
+      } catch {
+        if (isCancelled) return;
+        const fallbackRes: PincodeResolution = {
+          pincode: clean,
+          district: "",
+          state: "",
+          recognized: false,
+          error: "Unable to verify destination pincode.",
+        };
+        setResolution(fallbackRes);
+        onResolutionChangeRef.current(fallbackRes);
+        setPincodeState("invalid");
         setCouriers([]);
         setCourierState("idle");
       }
     }, 350);
 
-    return () => clearTimeout(timer);
-  }, [pincode, loadCouriers, onResolutionChange]);
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [pincode, loadCouriers]);
 
   return (
     <div className="bg-white rounded-2xl border border-brand-sand/80 p-6 sm:p-7 shadow-subtle flex flex-col gap-6">

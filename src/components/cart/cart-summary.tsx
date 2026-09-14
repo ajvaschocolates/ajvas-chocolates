@@ -44,19 +44,6 @@ export function CartSummary({ items }: CartSummaryProps) {
             Single consolidated package shipment computed from destination pincode and courier service.
           </p>
         </div>
-
-        {/* Order Subtotal */}
-        <div className="flex items-center justify-between text-brand-espresso pt-3 border-t border-brand-sand/40">
-          <div>
-            <span className="font-bold text-base block">Order Subtotal</span>
-            <span className="text-[11px] text-brand-muted font-normal block">
-              Final total established during checkout
-            </span>
-          </div>
-          <span className="font-bold text-xl text-brand-espresso">
-            ₹{subtotal.toLocaleString("en-IN")}
-          </span>
-        </div>
       </div>
 
       {/* Checkout CTA */}
@@ -89,7 +76,7 @@ export function CartSummary({ items }: CartSummaryProps) {
         </div>
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-3.5 h-3.5 text-brand-gold shrink-0" />
-          <span>Guest Checkout • Secure Processing</span>
+          <span>Guest Checkout</span>
         </div>
       </div>
     </div>

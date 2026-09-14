@@ -1,11 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
-import { getSupabaseEnv } from "./env";
+import { createServiceRoleClient } from "./service-role";
 import { AvailableCourier, PincodeResolution, ShippingCalculationResult } from "@/types/checkout";
-
-function getPublicCatalogClient() {
-  const { supabaseUrl, supabasePublishableKey } = getSupabaseEnv();
-  return createClient(supabaseUrl, supabasePublishableKey);
-}
 
 /**
  * Resolves a 6-digit Indian destination pincode against the database.
@@ -23,7 +17,7 @@ export async function resolvePincode(pincode: string): Promise<PincodeResolution
   }
 
   try {
-    const supabase = getPublicCatalogClient();
+    const supabase = createServiceRoleClient();
     const { data, error } = await supabase
       .from("pincodes")
       .select("id, pincode, state, district, status")
@@ -77,7 +71,7 @@ export async function getCouriersForPincode(pincodeId: string): Promise<Availabl
   if (!pincodeId) return [];
 
   try {
-    const supabase = getPublicCatalogClient();
+    const supabase = createServiceRoleClient();
     const { data, error } = await supabase
       .from("pincode_couriers")
       .select(`
@@ -146,7 +140,7 @@ export async function calculateShippingRateServer(
   }
 
   try {
-    const supabase = getPublicCatalogClient();
+    const supabase = createServiceRoleClient();
     const { data, error } = await supabase
       .from("shipping_rates")
       .select("shipping_amount, min_weight_grams, max_weight_grams, status")

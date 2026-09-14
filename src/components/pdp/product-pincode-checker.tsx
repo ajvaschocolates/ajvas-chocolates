@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { MapPin, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import { lookupPincode, PincodeLookupResult } from "@/lib/supabase/pincode";
+import { lookupPincodeAction } from "@/app/checkout/actions";
+import type { PincodeLookupResult } from "@/lib/supabase/pincode";
 import { Button } from "@/components/ui/button";
 
 export function ProductPincodeChecker() {
@@ -25,7 +26,7 @@ export function ProductPincodeChecker() {
     setResult(null);
 
     try {
-      const res = await lookupPincode(clean);
+      const res = await lookupPincodeAction(clean);
       setResult(res);
     } catch {
       setResult({
