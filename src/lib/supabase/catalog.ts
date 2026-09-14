@@ -114,3 +114,82 @@ export async function getActiveProductsResult(limit: number = 100): Promise<Cata
     return { data: [], error: err instanceof Error ? err.message : "Unknown error", success: false };
   }
 }
+
+/**
+ * Fetches a single active product by slug with category and sorted images.
+ */
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const res = await getProductBySlugResult(slug);
+  return res.data;
+}
+
+export async function getProductBySlugResult(slug: string): Promise<CatalogQueryResult<Product | null>> {
+  try {
+    const trimmedSlug = (slug || "").trim();
+    if (!trimmedSlug) {
+      return { data: null, error: "Slug is required", success: false };
+    }
+
+    const supabase = getPublicCatalogClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select(`
+        id,
+        category_id,
+        name,
+        slug,
+        description,
+        price,
+        discount_type,
+        discount_value,
+        status,
+        availability,
+        weight_grams,
+        length_cm,
+        width_cm,
+        height_cm,
+        created_at,
+        updated_at,
+        category:categories (
+          id,
+          name,
+          status,
+          created_at,
+          updated_at
+        ),
+        images:product_images (
+          id,
+          product_id,
+          cloudinary_public_id,
+          image_url,
+          alt_text,
+          sort_order,
+          created_at,
+          updated_at
+        )
+      `)
+      .eq("slug", trimmedSlug)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (error) {
+      console.warn("Supabase product by slug query warning:", error.message);
+      return { data: null, error: error.message, success: false };
+    }
+
+    if (!data) {
+      return { data: null, error: null, success: true };
+    }
+
+    const product = data as unknown as Product;
+    if (product.images && Array.isArray(product.images)) {
+      product.images.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    }
+
+    return { data: product, error: null, success: true };
+  } catch (err) {
+    console.warn("Error fetching product by slug:", err);
+    return { data: null, error: err instanceof Error ? err.message : "Unknown error", success: false };
+  }
+}
+

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
+import { CartProvider } from "@/context/cart-context";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -15,9 +16,9 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "AJVAS CHOCOLATES — Artisanal Confections & Thoughtful Gifting",
+  title: "AJVAS CHOCOLATES — Curated Confections & Thoughtful Gifting",
   description:
-    "Handcrafted chocolate confections and keepsake gift hampers for celebrations and thoughtful gestures. Pan-India courier delivery.",
+    "Explore chocolate gift hampers, keepsake boxes, and curated confections for celebrations and thoughtful gestures. Pan-India courier delivery.",
   icons: {
     icon: "/favicon.ico",
   },
@@ -26,6 +27,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
+
   children: React.ReactNode;
 }>) {
   return (
@@ -34,8 +36,11 @@ export default function RootLayout({
       className={`${playfair.variable} ${plusJakarta.variable}`}
     >
       <body className="min-h-screen bg-brand-cream text-brand-espresso font-sans antialiased selection:bg-brand-gold selection:text-brand-espresso">
-        {children}
+        <CartProvider>
+          {children}
+        </CartProvider>
       </body>
     </html>
   );
 }
+

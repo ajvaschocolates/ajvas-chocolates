@@ -6,14 +6,18 @@ import { ShoppingBag, Menu, X, ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { AnnouncementBar } from "./announcement-bar";
 import { BrandLogo } from "./brand-logo";
+import { useCart } from "@/context/cart-context";
 
 export interface HeaderProps {
   cartCount?: number;
   onOpenCart?: () => void;
 }
 
-export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
+export function Header({ cartCount, onOpenCart }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const cart = useCart();
+  const displayCartCount = cartCount !== undefined ? cartCount : cart.totalItemsCount;
+
 
   const navLinks = [
     { label: "Shop", href: "/shop" },
@@ -73,15 +77,16 @@ export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
           <button
             type="button"
             onClick={onOpenCart}
-            aria-label={`Shopping bag, ${cartCount} items`}
+            aria-label={`Shopping bag, ${displayCartCount} items`}
             className="min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 p-2 font-sans text-xs uppercase tracking-wider font-semibold text-brand-espresso hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded"
           >
             <ShoppingBag className="w-5 h-5 text-brand-espresso" />
             <span className="hidden sm:inline">Bag</span>
             <span className="inline-flex items-center justify-center w-5 h-5 text-[11px] font-bold text-brand-cream bg-brand-cocoa rounded-full">
-              {cartCount}
+              {displayCartCount}
             </span>
           </button>
+
         </div>
       </Container>
 
