@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ShoppingBag, Menu, X, ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { AnnouncementBar } from "./announcement-bar";
+import { BrandLogo } from "./brand-logo";
 
 export interface HeaderProps {
   cartCount?: number;
@@ -15,11 +16,11 @@ export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { label: "Shop", href: "#gifts" },
-    { label: "Collections", href: "#collections" },
-    { label: "Occasions", href: "#occasions" },
-    { label: "Our Story", href: "#story" },
-    { label: "Contact", href: "#contact" },
+    { label: "Shop", href: "/shop" },
+    { label: "Collections", href: "/shop" },
+    { label: "Occasions", href: "/#occasions" },
+    { label: "Our Story", href: "/#story" },
+    { label: "Contact", href: "/#contact" },
   ];
 
   return (
@@ -54,22 +55,10 @@ export function Header({ cartCount = 0, onOpenCart }: HeaderProps) {
         {/* Brand Logo & Wordmark */}
         <Link
           href="/"
-          className="flex items-center gap-3 text-center lg:text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded"
+          className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded"
           aria-label="AJVAS Chocolates Home"
         >
-          <img
-            src="https://lh3.googleusercontent.com/aida/AEtjO1V5QclwgV3AsP6gnpCfo8Asi-7cjnIy1vviI_KaGkOnzp_Akf-JTQPIDTVG5aOLypZVYL6uC5EW9L33oXDpiXCrnd0j1eWl6h8aP_-aggoEyrUcHeFIE-g0I6mDRLJ9VxFGU6jvuBssX_AuHSGpjQNn6BFD2NCtaMNts5ODqzG8cp0l5X6rn6mpPKbTESqatZdyZaxyeZIj87u_sRKv1ZSkBk9H_6MRyqk1-VjIJlFzPtb9H7pYX14UFLY"
-            alt="AJVAS Chocolates crest logo"
-            className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-          />
-          <div className="flex flex-col items-start">
-            <span className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-brand-espresso leading-none">
-              AJVAS
-            </span>
-            <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-brand-gold mt-1 leading-none">
-              Chocolates
-            </span>
-          </div>
+          <BrandLogo size="md" />
         </Link>
 
         {/* Right Actions: Contact & Bag */}

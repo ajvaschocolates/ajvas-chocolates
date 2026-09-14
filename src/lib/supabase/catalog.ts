@@ -7,11 +7,22 @@ function getPublicCatalogClient() {
   return createClient(supabaseUrl, supabasePublishableKey);
 }
 
+export interface CatalogQueryResult<T> {
+  data: T;
+  error: string | null;
+  success: boolean;
+}
+
 /**
  * Fetches all active categories from Supabase.
  * Respects RLS policies (public can read active records).
  */
 export async function getActiveCategories(): Promise<Category[]> {
+  const res = await getActiveCategoriesResult();
+  return res.data;
+}
+
+export async function getActiveCategoriesResult(): Promise<CatalogQueryResult<Category[]>> {
   try {
     const supabase = getPublicCatalogClient();
     const { data, error } = await supabase
@@ -22,20 +33,25 @@ export async function getActiveCategories(): Promise<Category[]> {
 
     if (error) {
       console.warn("Supabase categories query warning:", error.message);
-      return [];
+      return { data: [], error: error.message, success: false };
     }
 
-    return (data as Category[]) || [];
+    return { data: (data as Category[]) || [], error: null, success: true };
   } catch (err) {
     console.warn("Error fetching categories:", err);
-    return [];
+    return { data: [], error: err instanceof Error ? err.message : "Unknown error", success: false };
   }
 }
 
 /**
  * Fetches active products with their images and category relation.
  */
-export async function getActiveProducts(limit: number = 12): Promise<Product[]> {
+export async function getActiveProducts(limit: number = 100): Promise<Product[]> {
+  const res = await getActiveProductsResult(limit);
+  return res.data;
+}
+
+export async function getActiveProductsResult(limit: number = 100): Promise<CatalogQueryResult<Product[]>> {
   try {
     const supabase = getPublicCatalogClient();
     const { data, error } = await supabase
@@ -81,7 +97,7 @@ export async function getActiveProducts(limit: number = 12): Promise<Product[]> 
 
     if (error) {
       console.warn("Supabase products query warning:", error.message);
-      return [];
+      return { data: [], error: error.message, success: false };
     }
 
     // Sort nested images by sort_order
@@ -92,9 +108,9 @@ export async function getActiveProducts(limit: number = 12): Promise<Product[]> 
       }
     });
 
-    return products;
+    return { data: products, error: null, success: true };
   } catch (err) {
     console.warn("Error fetching products:", err);
-    return [];
+    return { data: [], error: err instanceof Error ? err.message : "Unknown error", success: false };
   }
 }

@@ -7,11 +7,13 @@ import { Button } from "./button";
 export interface ProductCardProps {
   product: Product;
   onAddToBag?: (product: Product) => void;
+  onQuickView?: (product: Product) => void;
 }
 
 export function ProductCard({
   product,
   onAddToBag,
+  onQuickView,
 }: ProductCardProps) {
   const primaryImage = product.images?.[0]?.image_url || "/images/placeholder-confection.jpg";
   const imageAlt = product.images?.[0]?.alt_text || product.name;
@@ -29,7 +31,7 @@ export function ProductCard({
   return (
     <div className="group flex flex-col justify-between bg-white border border-brand-border/60 rounded-xl overflow-hidden shadow-subtle hover:shadow-elevated transition-all duration-300">
       {/* Product Image Area */}
-      <div className="relative w-full aspect-square bg-brand-surface overflow-hidden">
+      <div className="relative w-full aspect-[4/5] bg-brand-surface overflow-hidden">
         {primaryImage && (
           <img
             src={primaryImage}
@@ -39,8 +41,23 @@ export function ProductCard({
           />
         )}
 
+        {/* Quick View Button Overlay */}
+        {onQuickView && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onQuickView(product);
+            }}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 bg-brand-cream/95 backdrop-blur-md px-4 py-2 rounded-lg font-sans text-xs font-semibold uppercase tracking-wider text-brand-espresso shadow-md hover:bg-white hover:text-brand-burgundy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy z-20 min-h-[36px]"
+          >
+            Quick View
+          </button>
+        )}
+
         {/* Status / Discount Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
           {product.discount_type !== "none" && product.discount_value > 0 && (
             <Badge variant="rose">
               {product.discount_type === "percentage"

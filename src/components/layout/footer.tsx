@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
+import { BrandLogo } from "./brand-logo";
 
 export function Footer() {
   return (
@@ -8,20 +9,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-brand-sand">
           {/* Brand Column */}
           <div className="lg:col-span-4 flex flex-col items-start gap-4">
-            <Link href="/" className="flex items-center gap-3">
-              <img
-                src="https://lh3.googleusercontent.com/aida/AEtjO1V5QclwgV3AsP6gnpCfo8Asi-7cjnIy1vviI_KaGkOnzp_Akf-JTQPIDTVG5aOLypZVYL6uC5EW9L33oXDpiXCrnd0j1eWl6h8aP_-aggoEyrUcHeFIE-g0I6mDRLJ9VxFGU6jvuBssX_AuHSGpjQNn6BFD2NCtaMNts5ODqzG8cp0l5X6rn6mpPKbTESqatZdyZaxyeZIj87u_sRKv1ZSkBk9H_6MRyqk1-VjIJlFzPtb9H7pYX14UFLY"
-                alt="AJVAS Chocolates logo"
-                className="h-10 w-auto object-contain"
-              />
-              <div className="flex flex-col">
-                <span className="font-serif text-xl font-bold tracking-tight text-brand-espresso leading-none">
-                  AJVAS
-                </span>
-                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-brand-gold mt-1 leading-none">
-                  Chocolates
-                </span>
-              </div>
+            <Link href="/" className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded">
+              <BrandLogo size="md" />
             </Link>
             <p className="font-sans text-sm text-brand-muted max-w-sm leading-relaxed mt-1">
               Chocolate confections and curated gift hampers for celebrations and thoughtful gestures.
