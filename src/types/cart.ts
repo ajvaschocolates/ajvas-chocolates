@@ -16,6 +16,7 @@ export interface CartItem {
 export interface CartContextValue {
   items: CartItem[];
   totalItemsCount: number;
+  isHydrated: boolean;
   addItem: (product: {
     id: string;
     slug: string;

@@ -74,18 +74,33 @@ export function Header({ cartCount, onOpenCart }: HeaderProps) {
             Contact
           </a>
 
-          <button
-            type="button"
-            onClick={onOpenCart}
-            aria-label={`Shopping bag, ${displayCartCount} items`}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 p-2 font-sans text-xs uppercase tracking-wider font-semibold text-brand-espresso hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded"
-          >
-            <ShoppingBag className="w-5 h-5 text-brand-espresso" />
-            <span className="hidden sm:inline">Bag</span>
-            <span className="inline-flex items-center justify-center w-5 h-5 text-[11px] font-bold text-brand-cream bg-brand-cocoa rounded-full">
-              {displayCartCount}
-            </span>
-          </button>
+          {onOpenCart ? (
+            <button
+              type="button"
+              onClick={onOpenCart}
+              aria-label={`Shopping bag, ${displayCartCount} items`}
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 p-2 font-sans text-xs uppercase tracking-wider font-semibold text-brand-espresso hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded"
+            >
+              <ShoppingBag className="w-5 h-5 text-brand-espresso" />
+              <span className="hidden sm:inline">Bag</span>
+              <span className="inline-flex items-center justify-center w-5 h-5 text-[11px] font-bold text-brand-cream bg-brand-cocoa rounded-full">
+                {displayCartCount}
+              </span>
+            </button>
+          ) : (
+            <Link
+              href="/cart"
+              aria-label={`Shopping bag, ${displayCartCount} items`}
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 p-2 font-sans text-xs uppercase tracking-wider font-semibold text-brand-espresso hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded"
+            >
+              <ShoppingBag className="w-5 h-5 text-brand-espresso" />
+              <span className="hidden sm:inline">Bag</span>
+              <span className="inline-flex items-center justify-center w-5 h-5 text-[11px] font-bold text-brand-cream bg-brand-cocoa rounded-full">
+                {displayCartCount}
+              </span>
+            </Link>
+          )}
+
 
         </div>
       </Container>

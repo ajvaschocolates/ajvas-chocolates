@@ -204,6 +204,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     () => ({
       items,
       totalItemsCount,
+      isHydrated,
       addItem,
       removeItem,
       updateQuantity,
@@ -212,8 +213,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       lastAddedItem,
       clearLastAddedItem,
     }),
-    [items, totalItemsCount, addItem, removeItem, updateQuantity, setBuyNowItem, buyNowItem, lastAddedItem, clearLastAddedItem]
+    [items, totalItemsCount, isHydrated, addItem, removeItem, updateQuantity, setBuyNowItem, buyNowItem, lastAddedItem, clearLastAddedItem]
   );
+
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
