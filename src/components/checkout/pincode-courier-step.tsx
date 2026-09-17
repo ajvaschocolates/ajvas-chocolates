@@ -33,6 +33,7 @@ export function PincodeCourierStep({
 
   const lookupCache = useRef<Record<string, PincodeResolution>>({});
   const courierCache = useRef<Record<string, AvailableCourier[]>>({});
+  const lastResolvedPinRef = useRef<string | null>(null);
 
   // Keep latest callbacks/values in refs so effects and async handlers are decoupled from parent renders
   const onResolutionChangeRef = useRef(onResolutionChange);
@@ -70,41 +71,43 @@ export function PincodeCourierStep({
     }
   }, []);
 
-  // Debounced pincode lookup with guarded state updates
+  // Debounced pincode lookup with strictly decoupled side-effects
   useEffect(() => {
     const clean = pincode.trim().replace(/\D/g, "");
 
     if (clean.length === 0) {
-      setPincodeState((prev) => (prev !== "untouched" ? "untouched" : prev));
-      setResolution((prev) => {
-        if (prev !== null) {
-          onResolutionChangeRef.current(null);
-          return null;
-        }
-        return prev;
-      });
-      setCouriers((prev) => (prev.length > 0 ? [] : prev));
-      setCourierState((prev) => (prev !== "idle" ? "idle" : prev));
+      if (lastResolvedPinRef.current !== null) {
+        lastResolvedPinRef.current = null;
+        setResolution(null);
+        onResolutionChangeRef.current(null);
+      }
+      setPincodeState("untouched");
+      setCouriers([]);
+      setCourierState("idle");
       return;
     }
 
     if (clean.length < 6) {
-      setPincodeState((prev) => (prev !== "typing" ? "typing" : prev));
-      setResolution((prev) => {
-        if (prev !== null) {
-          onResolutionChangeRef.current(null);
-          return null;
-        }
-        return prev;
-      });
-      setCouriers((prev) => (prev.length > 0 ? [] : prev));
-      setCourierState((prev) => (prev !== "idle" ? "idle" : prev));
+      if (lastResolvedPinRef.current !== null) {
+        lastResolvedPinRef.current = null;
+        setResolution(null);
+        onResolutionChangeRef.current(null);
+      }
+      setPincodeState("typing");
+      setCouriers([]);
+      setCourierState("idle");
       return;
     }
 
-    // If cached for this exact 6-digit pincode
+    // If this exact 6-digit pincode was already resolved in current state, do nothing
+    if (lastResolvedPinRef.current === clean) {
+      return;
+    }
+
+    // Check memory cache
     if (lookupCache.current[clean]) {
       const cached = lookupCache.current[clean];
+      lastResolvedPinRef.current = clean;
       setResolution(cached);
       onResolutionChangeRef.current(cached);
       setPincodeState(cached.recognized ? "valid" : "invalid");
@@ -117,7 +120,7 @@ export function PincodeCourierStep({
       return;
     }
 
-    // Trigger debounced lookup
+    // Trigger debounced network lookup
     setPincodeState("validating");
     let isCancelled = false;
 
@@ -127,6 +130,7 @@ export function PincodeCourierStep({
         if (isCancelled) return;
 
         lookupCache.current[clean] = res;
+        lastResolvedPinRef.current = clean;
         setResolution(res);
         onResolutionChangeRef.current(res);
         setPincodeState(res.recognized ? "valid" : "invalid");
@@ -146,13 +150,14 @@ export function PincodeCourierStep({
           recognized: false,
           error: "Unable to verify destination pincode.",
         };
+        lastResolvedPinRef.current = clean;
         setResolution(fallbackRes);
         onResolutionChangeRef.current(fallbackRes);
         setPincodeState("invalid");
         setCouriers([]);
         setCourierState("idle");
       }
-    }, 350);
+    }, 300);
 
     return () => {
       isCancelled = true;
@@ -189,6 +194,7 @@ export function PincodeCourierStep({
           <input
             id="pincode-input"
             type="text"
+            inputMode="numeric"
             maxLength={6}
             value={pincode}
             onChange={(e) => onPincodeChange(e.target.value.replace(/\D/g, ""))}

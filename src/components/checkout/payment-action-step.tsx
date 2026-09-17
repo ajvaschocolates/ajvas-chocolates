@@ -8,17 +8,25 @@ import { Button } from "@/components/ui/button";
 interface PaymentActionStepProps {
   canProceed: boolean;
   totalAmount: number | null;
-  onInitiatePayment?: () => void;
+  onInitiatePayment?: () => boolean | void;
 }
 
 export function PaymentActionStep({
   canProceed,
   totalAmount,
+  onInitiatePayment,
 }: PaymentActionStepProps) {
   const [paymentState, setPaymentState] = useState<PaymentState>("ready");
   const [notice, setNotice] = useState<string | null>(null);
 
   const handlePayClick = () => {
+    if (onInitiatePayment) {
+      const isValid = onInitiatePayment();
+      if (isValid === false) {
+        return;
+      }
+    }
+
     if (!canProceed || totalAmount === null) return;
 
     // Real production payment boundary: Razorpay live gateway credentials check

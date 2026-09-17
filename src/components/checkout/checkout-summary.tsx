@@ -102,9 +102,17 @@ export function CheckoutSummary({
               <span className="text-xs font-medium text-brand-gold animate-pulse">
                 Calculating rate...
               </span>
+            ) : shippingState === "calculation_failed" ? (
+              <span className="text-xs font-medium text-amber-700">
+                Unavailable for destination
+              </span>
+            ) : shippingState === "awaiting_courier" ? (
+              <span className="text-xs font-medium text-brand-muted">
+                Select courier service
+              </span>
             ) : (
-              <span className="text-xs font-semibold text-brand-burgundy uppercase tracking-wider">
-                Awaiting calculation
+              <span className="text-xs font-medium text-brand-muted">
+                Calculated in Step 1
               </span>
             )}
           </div>
@@ -117,7 +125,7 @@ export function CheckoutSummary({
         <div className="flex items-center justify-between text-brand-espresso pt-3 border-t border-brand-sand/40">
           <div>
             <span className="font-bold text-base block">
-              {finalTotal !== null ? "Final Total" : "Order Subtotal"}
+              {finalTotal !== null ? "Total Payable" : "Order Subtotal"}
             </span>
             <span className="text-[11px] text-brand-muted font-normal block">
               {finalTotal !== null
@@ -125,9 +133,16 @@ export function CheckoutSummary({
                 : "Final total calculated after delivery selection"}
             </span>
           </div>
-          <span className="font-bold text-xl text-brand-espresso">
-            ₹{(finalTotal ?? subtotal).toLocaleString("en-IN")}
-          </span>
+          <div className="text-right">
+            <span className="font-bold text-xl text-brand-espresso">
+              ₹{(finalTotal ?? subtotal).toLocaleString("en-IN")}
+            </span>
+            {finalTotal === null && (
+              <span className="block text-[10px] uppercase font-sans tracking-wider text-brand-muted font-semibold">
+                (Excl. Delivery)
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

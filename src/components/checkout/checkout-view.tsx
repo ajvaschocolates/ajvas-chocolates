@@ -86,26 +86,14 @@ export function CheckoutView() {
   }, []);
 
   const handleResolutionChange = useCallback((res: PincodeResolution | null) => {
-    setPincodeResolution((prev) => {
-      if (
-        prev?.pincodeId === res?.pincodeId &&
-        prev?.recognized === res?.recognized &&
-        prev?.pincode === res?.pincode &&
-        prev?.district === res?.district &&
-        prev?.state === res?.state &&
-        prev?.error === res?.error
-      ) {
-        return prev;
-      }
-      return res;
-    });
+    setPincodeResolution(res);
 
     if (res && res.recognized) {
       setFormData((prev) => {
         if (prev.district === res.district && prev.state === res.state) return prev;
         return { ...prev, district: res.district, state: res.state };
       });
-      setShippingState("awaiting_courier");
+      setShippingState((prev) => (prev === "awaiting_courier" ? prev : "awaiting_courier"));
     } else {
       setFormData((prev) => {
         if (prev.district === "" && prev.state === "") return prev;
@@ -118,7 +106,9 @@ export function CheckoutView() {
   }, []);
 
   const handleCourierSelect = useCallback((courierId: string) => {
-    setSelectedCourierId((prev) => (prev === courierId ? prev : courierId));
+    setSelectedCourierId(courierId);
+    setShippingAmount(null);
+    setShippingState("calculating");
   }, []);
 
   // Recalculate shipping whenever destination pincode, courier, or total weight changes
@@ -157,19 +147,31 @@ export function CheckoutView() {
   }, [pincodeResolution?.pincodeId, selectedCourierId, totalWeightGrams]);
 
   // Form Validation
-  const validateForm = () => {
+  const validateForm = useCallback((): boolean => {
     const errors: Partial<Record<keyof GuestCustomerFormData, string>> = {};
-    if (!formData.fullName.trim()) errors.fullName = "Please enter your full name.";
-    if (!/^\d{10}$/.test(formData.phone.trim())) errors.phone = "Please enter a valid 10-digit mobile number.";
-    if (!formData.addressLine1.trim()) errors.addressLine1 = "Please enter your street address.";
-    if (!pincodeResolution?.recognized) errors.pincode = "Please enter a validated 6-digit destination pincode.";
+    if (!formData.fullName.trim()) {
+      errors.fullName = "Please enter your full name.";
+    }
+    if (!/^\d{10}$/.test(formData.phone.trim())) {
+      errors.phone = "Please enter a valid 10-digit mobile number.";
+    }
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errors.email = "Please enter a valid email address.";
+    }
+    if (!formData.addressLine1.trim()) {
+      errors.addressLine1 = "Please enter your street address.";
+    }
+    if (!pincodeResolution?.recognized) {
+      errors.pincode = "Please enter a validated 6-digit destination pincode.";
+    }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  };
+  }, [formData, pincodeResolution]);
 
   const isFormValid =
     formData.fullName.trim().length > 0 &&
     /^\d{10}$/.test(formData.phone.trim()) &&
+    (!formData.email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) &&
     formData.addressLine1.trim().length > 0 &&
     pincodeResolution?.recognized === true;
 

@@ -83,8 +83,12 @@ export function CustomerAddressStep({
             value={formData.email}
             onChange={(e) => onChange("email", e.target.value)}
             placeholder="For order receipt"
-            className="w-full px-4 py-3 min-h-[44px] bg-brand-surface border border-brand-sand/80 rounded-xl text-sm font-sans text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy"
+            aria-invalid={!!errors.email}
+            className={`w-full px-4 py-3 min-h-[44px] bg-brand-surface border rounded-xl text-sm font-sans text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy ${
+              errors.email ? "border-accent-rose ring-1 ring-accent-rose" : "border-brand-sand/80"
+            }`}
           />
+          {errors.email && <p className="text-accent-rose text-[11px]">{errors.email}</p>}
         </div>
 
         {/* Address Line 1 */}
