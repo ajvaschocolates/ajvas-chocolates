@@ -160,3 +160,40 @@ export async function getAllAdminCategories(): Promise<Category[]> {
     return [];
   }
 }
+
+export interface CategoryWithCount extends Category {
+  product_count: number;
+}
+
+/**
+ * Fetches all categories with associated product count for admin Category Management.
+ */
+export async function getAdminCategoriesWithCounts(): Promise<CategoryWithCount[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("categories")
+      .select("id, name, status, created_at, updated_at, products:products(id)")
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.warn("Supabase admin categories count query warning:", error.message);
+      return [];
+    }
+
+    if (!data) return [];
+
+    return data.map((cat: any) => ({
+      id: cat.id,
+      name: cat.name,
+      status: cat.status,
+      created_at: cat.created_at,
+      updated_at: cat.updated_at,
+      product_count: Array.isArray(cat.products) ? cat.products.length : 0,
+    }));
+  } catch (err) {
+    console.error("Error fetching admin categories with counts:", err);
+    return [];
+  }
+}
+

@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Product, Category } from "@/types/catalog";
+import { Product, Category, ProductImage } from "@/types/catalog";
+import ProductImagesManager from "./ProductImagesManager";
 import {
   createProductAction,
   updateProductAction,
@@ -74,13 +75,22 @@ export default function ProductFormClient({
       : ""
   );
 
-  // Image URL state
+  // Image URL & Gallery State
+  const initialImagesList: ProductImage[] =
+    product?.images && Array.isArray(product.images)
+      ? [...product.images].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+      : [];
+  const [imagesList, setImagesList] = useState<ProductImage[]>(initialImagesList);
+
+  const primaryImageFromList = imagesList.length > 0 ? imagesList[0].image_url : "";
   const existingImageUrl =
-    product?.images && product.images.length > 0
-      ? product.images[0].image_url
-      : "";
+    primaryImageFromList ||
+    (product?.images && product.images.length > 0 ? product.images[0].image_url : "");
+
   const [imageUrl, setImageUrl] = useState(existingImageUrl);
   const [imageError, setImageError] = useState(false);
+
+  const activePreviewUrl = primaryImageFromList || imageUrl;
 
   // Status & Error Banner
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -630,39 +640,53 @@ export default function ProductFormClient({
           )}
         </div>
 
-        {/* RIGHT COLUMN: Image URL & Storefront Card Preview (5 Cols) */}
+        {/* RIGHT COLUMN: Product Image Gallery & Storefront Card Preview (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Card 5: Product Image URL */}
-          <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-4">
-            <div className="border-b border-parchment-border pb-3">
-              <h2 className="font-serif text-lg font-bold text-cocoa-950">
-                Product Image URL
-              </h2>
-              <p className="text-xs text-cocoa-600 mt-0.5">
-                Provide an image link to display on the customer storefront.
-              </p>
-            </div>
-
-            <div>
-              <label
-                htmlFor="imageUrl"
-                className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1.5"
-              >
-                Image URL
-              </label>
-              <input
-                id="imageUrl"
-                type="url"
-                value={imageUrl}
-                onChange={(e) => {
-                  setImageUrl(e.target.value);
+          {mode === "edit" && product ? (
+            <ProductImagesManager
+              productId={product.id}
+              initialImages={product.images || []}
+              onImagesChange={(updatedList) => {
+                setImagesList(updatedList);
+                if (updatedList.length > 0) {
+                  setImageUrl(updatedList[0].image_url);
                   setImageError(false);
-                }}
-                placeholder="https://images.unsplash.com/... or Cloudinary URL"
-                className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm text-cocoa-950 placeholder-cocoa-600/50 focus:outline-none focus:border-cocoa-700"
-              />
-            </div>
-          </section>
+                }
+              }}
+            />
+          ) : (
+            /* Card 5: Initial Product Image URL (Create Mode) */
+            <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-4">
+              <div className="border-b border-parchment-border pb-3">
+                <h2 className="font-serif text-lg font-bold text-cocoa-950">
+                  Initial Product Image URL
+                </h2>
+                <p className="text-xs text-cocoa-600 mt-0.5">
+                  Provide a primary image link to display on the customer storefront.
+                </p>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="imageUrl"
+                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1.5"
+                >
+                  Image URL
+                </label>
+                <input
+                  id="imageUrl"
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => {
+                    setImageUrl(e.target.value);
+                    setImageError(false);
+                  }}
+                  placeholder="https://images.unsplash.com/... or Cloudinary URL"
+                  className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm text-cocoa-950 placeholder-cocoa-600/50 focus:outline-none focus:border-cocoa-700"
+                />
+              </div>
+            </section>
+          )}
 
           {/* Card 6: Storefront Card Preview */}
           <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-4">
@@ -677,9 +701,9 @@ export default function ProductFormClient({
 
             <div className="max-w-[280px] mx-auto bg-white border border-parchment-border rounded-lg overflow-hidden shadow-sm transition-all duration-300">
               <div className="aspect-[4/3] bg-parchment-muted overflow-hidden relative flex items-center justify-center">
-                {imageUrl && !imageError ? (
+                {activePreviewUrl && !imageError ? (
                   <img
-                    src={imageUrl}
+                    src={activePreviewUrl}
                     alt={name || "Product Preview"}
                     onError={() => setImageError(true)}
                     className="w-full h-full object-cover"
