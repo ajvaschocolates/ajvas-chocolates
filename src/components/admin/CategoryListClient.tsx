@@ -498,7 +498,7 @@ export default function CategoryListClient({
                     </span>
 
                     <span className="font-mono text-[10px] text-cocoa-400">
-                      Updated: {new Date(cat.updated_at).toLocaleDateString()}
+                      Updated: {new Date(cat.updated_at).toLocaleDateString("en-US")}
                     </span>
                   </div>
 
