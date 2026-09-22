@@ -8,6 +8,8 @@ import { ProductImage } from "@/types/catalog";
 import {
   generateSignedUploadParams,
   destroyCloudinaryAsset,
+  verifyCloudinaryAssetProductOwnership,
+  isValidProductCloudinaryPublicId,
   SignedUploadParams,
 } from "@/lib/cloudinary/server";
 
@@ -427,12 +429,62 @@ export async function addProductImageAction(
       return { success: false, error: "Target product does not exist." };
     }
 
-    // Determine public ID
+    // Determine public ID and verify Cloudinary asset server-side
     let finalPublicId = (cloudinaryPublicId || "").trim();
-    if (!finalPublicId) {
-      finalPublicId = validation.url.includes("cloudinary.com")
-        ? `img_${productId}_${crypto.randomUUID().replace(/-/g, "")}`
-        : `external_url_${crypto.randomUUID()}`;
+    let isVerifiedCloudinaryAsset = false;
+
+    const isCloudinaryUrl =
+      validation.url.includes("cloudinary.com") ||
+      validation.url.includes("res.cloudinary.com");
+
+    // Reject ambiguous or invalid pairings
+    if (finalPublicId.startsWith("external_url_") && isCloudinaryUrl) {
+      return {
+        success: false,
+        error: "Invalid request: external URL marker cannot be paired with a Cloudinary image URL.",
+      };
+    }
+
+    if (finalPublicId && !finalPublicId.startsWith("external_url_")) {
+      if (!isCloudinaryUrl) {
+        return {
+          success: false,
+          error: "Cloudinary public ID provided, but submitted URL is not a valid Cloudinary image URL.",
+        };
+      }
+
+      // Server-side API verification of Cloudinary asset metadata and URL correspondence
+      const verifyRes = await verifyCloudinaryAssetProductOwnership(
+        finalPublicId,
+        productId,
+        validation.url
+      );
+
+      if (!verifyRes.valid) {
+        return {
+          success: false,
+          error: `Cloudinary asset verification failed: ${verifyRes.error || "Ownership or URL mismatch."}`,
+        };
+      }
+      finalPublicId = verifyRes.resource?.publicId || finalPublicId;
+      isVerifiedCloudinaryAsset = true;
+    } else if (finalPublicId.startsWith("external_url_")) {
+      // Valid explicit external URL marker with non-Cloudinary web URL
+      if (isCloudinaryUrl) {
+        return {
+          success: false,
+          error: "External URL marker cannot be used for Cloudinary assets.",
+        };
+      }
+    } else if (!finalPublicId) {
+      if (isCloudinaryUrl) {
+        return {
+          success: false,
+          error: "Cloudinary direct asset upload requires a valid signed asset public ID.",
+        };
+      }
+      // Independent external web image URL flow
+      finalPublicId = `external_url_${crypto.randomUUID()}`;
     }
 
     // Determine current max sort order for this product
@@ -462,8 +514,8 @@ export async function addProductImageAction(
       .single();
 
     if (insertErr || !newImage) {
-      // Immediate Orphan Cleanup if Cloudinary asset was created but Supabase INSERT failed
-      if (finalPublicId.startsWith("ajvas_chocolates/")) {
+      // Immediate Orphan Cleanup if Cloudinary asset was verified but Supabase INSERT failed
+      if (isVerifiedCloudinaryAsset) {
         await destroyCloudinaryAsset(finalPublicId);
       }
       return {
@@ -585,7 +637,7 @@ export async function deleteProductImageAction(
     // Verify image belongs to specified product and retrieve public_id
     const { data: targetImg } = await supabase
       .from("product_images")
-      .select("id, cloudinary_public_id")
+      .select("id, cloudinary_public_id, image_url")
       .eq("id", imageId)
       .eq("product_id", productId)
       .maybeSingle();
@@ -615,6 +667,8 @@ export async function deleteProductImageAction(
       .eq("product_id", productId)
       .order("sort_order", { ascending: true });
 
+    let warningMessage: string | undefined = undefined;
+
     if (remaining && remaining.length > 0) {
       for (let i = 0; i < remaining.length; i++) {
         if (remaining[i].sort_order !== i) {
@@ -625,26 +679,35 @@ export async function deleteProductImageAction(
             .eq("product_id", productId);
 
           if (reindexErr) {
-            return {
-              success: false,
-              error: `Failed to re-index image order: ${reindexErr.message}`,
-            };
+            warningMessage = `Image deleted from product gallery, but re-indexing remaining image order encountered an issue: ${reindexErr.message}`;
+            break;
           }
         }
       }
     }
 
     // Step 2: Attempt Cloudinary Asset Destruction
-    let warningMessage: string | undefined = undefined;
     if (
       targetImg.cloudinary_public_id &&
       !targetImg.cloudinary_public_id.startsWith("external_url_")
     ) {
-      const destroyRes = await destroyCloudinaryAsset(targetImg.cloudinary_public_id);
-      if (!destroyRes.success) {
-        warningMessage = `Image removed from catalog, but Cloudinary asset cleanup encountered an issue: ${
-          destroyRes.error || "Cloudinary API timeout"
-        }. Public ID: ${targetImg.cloudinary_public_id}`;
+      // Server-side API verification before asset destruction
+      const verifyRes = await verifyCloudinaryAssetProductOwnership(
+        targetImg.cloudinary_public_id,
+        productId,
+        targetImg.image_url
+      );
+
+      if (verifyRes.valid) {
+        const destroyRes = await destroyCloudinaryAsset(targetImg.cloudinary_public_id);
+        if (!destroyRes.success) {
+          warningMessage = `Database record deleted, but Cloudinary asset cleanup failed: ${
+            destroyRes.error || "Cloudinary API timeout"
+          }. Public ID: ${targetImg.cloudinary_public_id}`;
+        }
+      } else {
+        // Cloudinary asset verification failed (e.g. legacy record without signed tags, or missing asset)
+        warningMessage = `Database record deleted, but Cloudinary asset destruction was skipped because asset metadata could not be verified: ${verifyRes.error}. Public ID: ${targetImg.cloudinary_public_id}`;
       }
     }
 
@@ -670,6 +733,7 @@ export async function deleteProductImageAction(
 
 /**
  * Server Action to manually trigger cleanup of an orphaned Cloudinary asset.
+ * Validates admin authorization, product existence, and asset ownership before destruction.
  */
 export async function cleanupOrphanedAssetAction(
   publicId: string,
@@ -685,6 +749,28 @@ export async function cleanupOrphanedAssetAction(
   }
 
   try {
+    const supabase = await createClient();
+
+    // Verify product exists in catalog
+    const { data: product, error: prodErr } = await supabase
+      .from("products")
+      .select("id")
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (prodErr || !product) {
+      return { success: false, error: "Target product does not exist." };
+    }
+
+    // Validate asset ownership & product scoping via Cloudinary API
+    const verifyRes = await verifyCloudinaryAssetProductOwnership(publicId, productId);
+    if (!verifyRes.valid) {
+      return {
+        success: false,
+        error: `Orphan asset cleanup refused: ${verifyRes.error}`,
+      };
+    }
+
     const destroyRes = await destroyCloudinaryAsset(publicId);
     if (destroyRes.success) {
       return { success: true };

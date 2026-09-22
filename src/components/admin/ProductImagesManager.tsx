@@ -9,6 +9,7 @@ import {
   deleteProductImageAction,
   reorderProductImagesAction,
   setPrimaryProductImageAction,
+  cleanupOrphanedAssetAction,
 } from "@/app/admin/products/actions";
 import {
   isValidImageUrl,
@@ -309,6 +310,30 @@ export default function ProductImagesManager({
     });
   }
 
+  // Retry Cloudinary Cleanup for orphaned/failed asset destruction
+  function handleRetryCloudinaryCleanup() {
+    if (!warningMessage || isPending) return;
+    const match = warningMessage.match(/Public ID:\s*([^\s]+)/);
+    if (!match || !match[1]) return;
+    const targetPublicId = match[1];
+
+    startTransition(async () => {
+      const res = await cleanupOrphanedAssetAction(targetPublicId, productId);
+      if (res.success) {
+        setWarningMessage(null);
+        setStatusMessage({
+          type: "success",
+          text: `Cloudinary asset (${targetPublicId}) destroyed successfully.`,
+        });
+      } else {
+        setStatusMessage({
+          type: "error",
+          text: `Cleanup retry failed: ${res.error || "Unknown error"}`,
+        });
+      }
+    });
+  }
+
   return (
     <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-6">
       {/* Header */}
@@ -358,7 +383,20 @@ export default function ProductImagesManager({
         >
           <div className="flex items-start gap-2">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
-            <div>{warningMessage}</div>
+            <div className="space-y-1.5">
+              <div>{warningMessage}</div>
+              {warningMessage.includes("Public ID:") && (
+                <button
+                  type="button"
+                  onClick={handleRetryCloudinaryCleanup}
+                  disabled={isPending}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded bg-amber-200 text-amber-950 hover:bg-amber-300 transition-colors disabled:opacity-50"
+                >
+                  {isPending && <Loader2 className="h-3 w-3 animate-spin" />}
+                  Retry Cloudinary Cleanup
+                </button>
+              )}
+            </div>
           </div>
           <button
             type="button"
