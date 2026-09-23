@@ -86,7 +86,7 @@ export default function CourierListClient({ initialCouriers }: CourierListClient
             <span>/</span>
             <span className="text-cocoa-950 font-medium">Couriers</span>
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
             Courier Partners
           </h1>
           <p className="text-sm text-cocoa-600 mt-0.5">
@@ -106,7 +106,7 @@ export default function CourierListClient({ initialCouriers }: CourierListClient
       {couriers.length === 0 ? (
         <div className="p-12 text-center bg-parchment-surface rounded border border-dashed border-parchment-border space-y-3">
           <Truck className="w-10 h-10 text-cocoa-400 mx-auto" />
-          <h3 className="font-serif text-lg font-bold text-cocoa-950">No couriers configured</h3>
+          <h3 className="font-sans text-lg font-bold text-cocoa-950">No couriers configured</h3>
           <p className="text-sm text-cocoa-600 max-w-sm mx-auto">
             Click Add Courier Partner to configure your first shipping carrier.
           </p>
@@ -175,7 +175,7 @@ export default function CourierListClient({ initialCouriers }: CourierListClient
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-cocoa-200 bg-parchment-card p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-cocoa-100">
-              <h3 className="font-serif text-lg font-bold text-cocoa-950">Add Courier Partner</h3>
+              <h3 className="font-sans text-lg font-bold text-cocoa-950">Add Courier Partner</h3>
               <button onClick={() => setIsModalOpen(false)} className="p-1 text-cocoa-400 hover:text-cocoa-700">
                 <X className="w-5 h-5" />
               </button>

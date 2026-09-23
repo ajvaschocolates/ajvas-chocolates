@@ -108,7 +108,7 @@ export default function ProductListClient({
             <span>/</span>
             <span className="text-cocoa-950 font-medium">Products</span>
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
             Products
           </h1>
           <p className="text-sm text-cocoa-600 mt-0.5">
@@ -236,7 +236,7 @@ export default function ProductListClient({
           <div className="w-12 h-12 rounded-full bg-parchment-muted mx-auto flex items-center justify-center text-cocoa-600">
             <Package className="w-6 h-6" />
           </div>
-          <h3 className="font-serif text-lg font-bold text-cocoa-950">
+          <h3 className="font-sans text-lg font-bold text-cocoa-950">
             No products found
           </h3>
           <p className="text-sm text-cocoa-600 max-w-sm mx-auto">
@@ -299,7 +299,7 @@ export default function ProductListClient({
                         {/* Name & Image */}
                         <td className="py-3.5 pl-4 pr-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded border border-parchment-border bg-parchment-muted overflow-hidden shrink-0 flex items-center justify-center font-serif text-xs font-bold text-cocoa-800">
+                            <div className="w-10 h-10 rounded border border-parchment-border bg-parchment-muted overflow-hidden shrink-0 flex items-center justify-center font-sans text-xs font-bold text-cocoa-800">
                               {primaryImage ? (
                                 <img
                                   src={primaryImage}
@@ -446,7 +446,7 @@ export default function ProductListClient({
                   className="p-4 bg-parchment-surface border border-parchment-border rounded shadow-2xs flex flex-col gap-3"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded border border-parchment-border bg-parchment-muted overflow-hidden shrink-0 flex items-center justify-center font-serif text-sm font-bold text-cocoa-800">
+                    <div className="w-12 h-12 rounded border border-parchment-border bg-parchment-muted overflow-hidden shrink-0 flex items-center justify-center font-sans text-sm font-bold text-cocoa-800">
                       {primaryImage ? (
                         <img
                           src={primaryImage}

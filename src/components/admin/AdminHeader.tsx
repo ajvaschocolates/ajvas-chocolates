@@ -66,7 +66,7 @@ export default function AdminHeader({ onOpenMobileMenu }: AdminHeaderProps) {
           <Menu className="w-6 h-6" />
         </button>
         <div>
-          <h1 className="text-xl sm:text-2xl font-serif font-extrabold text-brand-navy leading-tight">
+          <h1 className="text-xl sm:text-2xl font-sans font-extrabold text-brand-navy leading-tight">
             {currentMeta.title}
           </h1>
           <p className="text-xs text-brand-muted flex items-center gap-2 mt-0.5 font-medium">
