@@ -244,13 +244,13 @@ export function PincodeCourierStep({
       {/* Available Courier Partner Selection */}
       {resolution?.recognized && (
         <div className="space-y-3 pt-3 border-t border-brand-sand/60">
-          <label className="block font-sans text-xs font-semibold uppercase tracking-wider text-brand-espresso">
-            Available Courier Services <span className="text-brand-burgundy">*</span>
+          <label className="block font-sans text-xs font-bold uppercase tracking-wider text-brand-navy">
+            Available Courier Services <span className="text-brand-pink">*</span>
           </label>
 
           {courierState === "loading" && (
-            <div className="p-4 bg-brand-surface rounded-xl border border-brand-sand/60 flex items-center gap-2.5 text-xs text-brand-muted font-sans">
-              <Loader2 className="w-4 h-4 animate-spin text-brand-gold shrink-0" />
+            <div className="p-4 bg-white rounded-xl border border-brand-sand/60 flex items-center gap-2.5 text-xs text-brand-muted font-sans font-medium">
+              <Loader2 className="w-4 h-4 animate-spin text-brand-pink shrink-0" />
               <span>Checking available delivery partners for {resolution.district}...</span>
             </div>
           )}
@@ -266,30 +266,30 @@ export function PincodeCourierStep({
                     role="radio"
                     aria-checked={isSelected}
                     onClick={() => onCourierSelect(courier.id)}
-                    className={`p-4 rounded-xl border text-left transition-all flex items-center justify-between gap-3 min-h-[52px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy ${
+                    className={`p-4 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 min-h-[52px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink ${
                       isSelected
-                        ? "border-brand-burgundy bg-brand-surface ring-2 ring-brand-burgundy/20 shadow-subtle"
-                        : "border-brand-sand/80 bg-white hover:border-brand-muted"
+                        ? "border-brand-pink bg-brand-pink-light/40 ring-2 ring-brand-pink/20 shadow-subtle"
+                        : "border-brand-sand/80 bg-white hover:border-brand-pink/50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                          isSelected ? "border-brand-burgundy bg-brand-burgundy" : "border-brand-muted"
+                          isSelected ? "border-brand-pink bg-brand-pink" : "border-brand-muted"
                         }`}
                       >
                         {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                       </div>
                       <div>
-                        <span className="font-sans text-sm font-bold text-brand-espresso block">
+                        <span className="font-sans text-sm font-bold text-brand-navy block">
                           {courier.courierPartner}
                         </span>
-                        <span className="font-sans text-xs text-brand-muted">
+                        <span className="font-sans text-xs text-brand-muted font-medium">
                           {courier.serviceName}
                         </span>
                       </div>
                     </div>
-                    <Truck className={`w-4 h-4 shrink-0 ${isSelected ? "text-brand-burgundy" : "text-brand-sand"}`} />
+                    <Truck className={`w-4 h-4 shrink-0 ${isSelected ? "text-brand-pink" : "text-brand-muted"}`} />
                   </button>
                 );
               })}

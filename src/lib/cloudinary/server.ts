@@ -388,7 +388,6 @@ export async function verifyCloudinaryAssetProductOwnership(
     const expectedFolderPrefix = `ajvas_chocolates/products/${productId}`;
 
     const hasMatchingTag = Array.isArray(resource.tags) && resource.tags.includes(expectedTag);
-    const folderVal = typeof resource.folder === "string" ? resource.folder : (typeof resource.asset_folder === "string" ? resource.asset_folder : "");
     const hasMatchingFolder =
       (typeof resource.folder === "string" && (resource.folder === expectedFolderPrefix || resource.folder.startsWith(`${expectedFolderPrefix}/`))) ||
       (typeof resource.asset_folder === "string" && (resource.asset_folder === expectedFolderPrefix || resource.asset_folder.startsWith(`${expectedFolderPrefix}/`))) ||
@@ -424,8 +423,9 @@ export async function verifyCloudinaryAssetProductOwnership(
         tags: resource.tags,
       },
     };
-  } catch (err: any) {
-    if (err?.http_code === 404 || err?.error?.http_code === 404) {
+  } catch (err: unknown) {
+    const errorObj = err as { http_code?: number; error?: { http_code?: number } };
+    if (errorObj?.http_code === 404 || errorObj?.error?.http_code === 404) {
       return { valid: false, error: `Cloudinary asset non-existent or not found (404): ${publicId}` };
     }
     return {

@@ -9,7 +9,6 @@ import {
   generateSignedUploadParams,
   destroyCloudinaryAsset,
   verifyCloudinaryAssetProductOwnership,
-  isValidProductCloudinaryPublicId,
   SignedUploadParams,
 } from "@/lib/cloudinary/server";
 
@@ -44,11 +43,13 @@ function slugify(text: string): string {
     .replace(/\-\-+/g, "-");
 }
 
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
+
 /**
  * Helper to fetch authoritative sorted product images list.
  */
 async function fetchAuthoritativeProductImages(
-  supabase: any,
+  supabase: SupabaseServerClient,
   productId: string
 ): Promise<ProductImage[]> {
   const { data } = await supabase

@@ -80,12 +80,12 @@ export function Header({ cartCount, onOpenCart }: HeaderProps) {
           </button>
 
           {/* Contact Link (Desktop) */}
-          <a
+          <Link
             href="/#contact"
             className="hidden md:inline-block font-sans text-xs uppercase tracking-widest font-bold text-brand-navy/80 hover:text-brand-pink transition-colors duration-200 py-2 px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink rounded-sm"
           >
             Contact
-          </a>
+          </Link>
 
           {/* Shopping Bag Button / Link */}
           {onOpenCart ? (
