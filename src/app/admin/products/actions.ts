@@ -80,15 +80,18 @@ export async function getCloudinaryUploadSignatureAction(
   try {
     const supabase = await createClient();
 
-    // Verify product exists
-    const { data: product, error: prodErr } = await supabase
-      .from("products")
-      .select("id")
-      .eq("id", productId)
-      .maybeSingle();
+    // Verify product exists unless creating a new product draft (e.g. productId starts with 'new' or 'temp')
+    const isNewDraft = productId === "new" || productId.startsWith("new_") || productId.startsWith("temp_") || productId === "create";
+    if (!isNewDraft) {
+      const { data: product, error: prodErr } = await supabase
+        .from("products")
+        .select("id")
+        .eq("id", productId)
+        .maybeSingle();
 
-    if (prodErr || !product) {
-      return { success: false, error: "Target product does not exist." };
+      if (prodErr || !product) {
+        return { success: false, error: "Target product does not exist." };
+      }
     }
 
     const params = generateSignedUploadParams(productId);
@@ -123,6 +126,7 @@ export async function createProductAction(
   const widthCm = parseFloat(formData.get("width_cm") as string || "0") || null;
   const heightCm = parseFloat(formData.get("height_cm") as string || "0") || null;
   const imageUrl = (formData.get("image_url") as string || "").trim() || null;
+  const cloudinaryPublicIdFromForm = (formData.get("cloudinary_public_id") as string || "").trim() || null;
 
   if (!name) {
     return { success: false, error: "Product name is required." };
@@ -179,9 +183,9 @@ export async function createProductAction(
     if (imageUrl) {
       const imageValidation = validateImageInput(imageUrl, name);
       if (imageValidation.valid && imageValidation.url) {
-        const publicId = imageValidation.url.includes("cloudinary.com")
+        const publicId = cloudinaryPublicIdFromForm || (imageValidation.url.includes("cloudinary.com")
           ? `product_${newProduct.id}_1`
-          : `external_url_${crypto.randomUUID()}`;
+          : `external_url_${crypto.randomUUID()}`);
 
         await supabase.from("product_images").insert({
           product_id: newProduct.id,
