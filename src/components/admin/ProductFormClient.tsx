@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Product, Category, ProductImage } from "@/types/catalog";
 import ProductImagesManager from "./ProductImagesManager";
+import ProductSingleImageUploader from "./ProductSingleImageUploader";
 import {
   createProductAction,
   updateProductAction,
@@ -88,6 +89,7 @@ export default function ProductFormClient({
     (product?.images && product.images.length > 0 ? product.images[0].image_url : "");
 
   const [imageUrl, setImageUrl] = useState(existingImageUrl);
+  const [cloudinaryPublicId, setCloudinaryPublicId] = useState("");
   const [imageError, setImageError] = useState(false);
 
   const activePreviewUrl = primaryImageFromList || imageUrl;
@@ -130,6 +132,7 @@ export default function ProductFormClient({
     formData.append("width_cm", widthCm);
     formData.append("height_cm", heightCm);
     formData.append("image_url", imageUrl);
+    formData.append("cloudinary_public_id", cloudinaryPublicId);
 
     startTransition(async () => {
       let res;
@@ -655,37 +658,16 @@ export default function ProductFormClient({
               }}
             />
           ) : (
-            /* Card 5: Initial Product Image URL (Create Mode) */
-            <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-4">
-              <div className="border-b border-parchment-border pb-3">
-                <h2 className="font-serif text-lg font-bold text-cocoa-950">
-                  Initial Product Image URL
-                </h2>
-                <p className="text-xs text-cocoa-600 mt-0.5">
-                  Provide a primary image link to display on the customer storefront.
-                </p>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="imageUrl"
-                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1.5"
-                >
-                  Image URL
-                </label>
-                <input
-                  id="imageUrl"
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => {
-                    setImageUrl(e.target.value);
-                    setImageError(false);
-                  }}
-                  placeholder="https://images.unsplash.com/... or Cloudinary URL"
-                  className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm text-cocoa-950 placeholder-cocoa-600/50 focus:outline-none focus:border-cocoa-700"
-                />
-              </div>
-            </section>
+            <ProductSingleImageUploader
+              currentImageUrl={imageUrl}
+              currentPublicId={cloudinaryPublicId}
+              onImageChange={(url, publicId) => {
+                setImageUrl(url);
+                setCloudinaryPublicId(publicId || "");
+                setImageError(false);
+              }}
+              productId="new"
+            />
           )}
 
           {/* Card 6: Storefront Card Preview */}

@@ -265,10 +265,10 @@ export default function CloudinaryImageUploader({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center cursor-pointer transition-colors ${
+        className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center cursor-pointer transition-colors ${
           isDragging
-            ? "border-gold-500 bg-gold-50/30"
-            : "border-cocoa-200 bg-parchment-card hover:border-cocoa-400 hover:bg-parchment-hover/40"
+            ? "border-brand-pink bg-brand-pink-light/40"
+            : "border-brand-sand/80 bg-brand-cream/30 hover:border-brand-pink hover:bg-brand-pink-light/20"
         }`}
       >
         <input
@@ -283,23 +283,25 @@ export default function CloudinaryImageUploader({
           className="hidden"
         />
 
-        <UploadCloud className="h-10 w-10 text-cocoa-400 mb-2" />
-        <p className="font-serif text-sm font-bold text-cocoa-950">
+        <div className="w-10 h-10 rounded-full bg-brand-pink-light/60 border border-brand-pink/20 flex items-center justify-center text-brand-pink mb-2">
+          <UploadCloud className="h-5 w-5 text-brand-pink" />
+        </div>
+        <p className="font-serif text-sm font-bold text-brand-navy">
           Click or Drag &amp; Drop product photo here
         </p>
-        <p className="text-xs text-cocoa-600 mt-1">
+        <p className="font-sans text-xs text-brand-muted mt-1 font-medium">
           Supports JPG, PNG, WebP, GIF (Max 10 MB per image)
         </p>
       </div>
 
       {/* Selected File Details & Upload Action */}
       {selectedFile && (
-        <div className="rounded-xl border border-cocoa-200 bg-parchment-card p-4 space-y-3">
+        <div className="rounded-xl border border-brand-sand/80 bg-white p-4 space-y-3 shadow-2xs">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-semibold text-cocoa-950 truncate">
-              <FileImage className="h-4 w-4 text-gold-600 shrink-0" />
+            <div className="flex items-center gap-2 text-xs font-bold text-brand-navy truncate">
+              <FileImage className="h-4 w-4 text-brand-pink shrink-0" />
               <span className="truncate">{selectedFile.name}</span>
-              <span className="font-mono text-[10px] text-cocoa-500">
+              <span className="font-mono text-[10px] text-brand-muted font-normal">
                 ({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
               </span>
             </div>
@@ -307,7 +309,7 @@ export default function CloudinaryImageUploader({
               <button
                 type="button"
                 onClick={() => setSelectedFile(null)}
-                className="text-cocoa-400 hover:text-rose-600 p-1"
+                className="text-brand-muted hover:text-rose-600 p-1"
                 title="Remove file"
               >
                 <X className="h-4 w-4" />
@@ -318,7 +320,7 @@ export default function CloudinaryImageUploader({
           <div>
             <label
               htmlFor="upload_alt_text"
-              className="block text-[11px] font-mono uppercase text-cocoa-700 mb-1"
+              className="block text-[11px] font-extrabold uppercase text-brand-navy mb-1"
             >
               Alt Text (Descriptive Caption)
             </label>
@@ -329,20 +331,20 @@ export default function CloudinaryImageUploader({
               disabled={isUploading}
               onChange={(e) => setAltText(e.target.value)}
               placeholder="e.g. Artisan Dark Chocolate Gift Box"
-              className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-1.5 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
+              className="w-full rounded-lg border border-brand-sand/80 bg-brand-cream/30 px-3 py-1.5 text-xs text-brand-navy focus:border-brand-pink focus:outline-none"
             />
           </div>
 
           {/* Progress Bar */}
           {isUploading && (
             <div className="space-y-1 pt-1">
-              <div className="flex items-center justify-between text-[11px] font-mono text-cocoa-700">
-                <span>Uploading to Cloudinary...</span>
-                <span>{uploadProgress}%</span>
+              <div className="flex items-center justify-between text-xs font-mono text-brand-navy">
+                <span className="font-bold">Uploading to Cloudinary...</span>
+                <span className="font-bold text-brand-pink">{uploadProgress}%</span>
               </div>
-              <div className="h-2 w-full rounded-full bg-parchment-muted overflow-hidden">
+              <div className="h-2 w-full rounded-full bg-brand-sand/40 overflow-hidden">
                 <div
-                  className="h-full bg-gold-600 transition-all duration-150"
+                  className="h-full bg-brand-pink transition-all duration-150"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
@@ -355,7 +357,7 @@ export default function CloudinaryImageUploader({
               <button
                 type="button"
                 onClick={handleCancelUpload}
-                className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 font-mono text-xs font-medium text-rose-800 hover:bg-rose-100"
+                className="rounded-full border border-rose-300 bg-rose-50 px-4 py-2 font-sans text-xs font-extrabold text-rose-800 hover:bg-rose-100 transition"
               >
                 Cancel Upload
               </button>
@@ -364,9 +366,9 @@ export default function CloudinaryImageUploader({
                 type="button"
                 onClick={handleStartUpload}
                 disabled={isUploading}
-                className="inline-flex items-center gap-2 rounded-lg bg-gold-600 px-4 py-2 text-xs font-semibold text-cocoa-950 shadow-sm hover:bg-gold-500 focus:ring-2 focus:ring-gold-500 focus:outline-none"
+                className="inline-flex items-center gap-2 rounded-full bg-brand-pink px-5 py-2.5 text-xs font-extrabold text-white shadow-sm hover:bg-brand-pink-hover transition focus:outline-none"
               >
-                <UploadCloud className="h-4 w-4" />
+                <UploadCloud className="h-4 w-4 text-white" />
                 Upload File to Cloudinary
               </button>
             )}
