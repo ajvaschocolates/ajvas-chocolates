@@ -9,21 +9,21 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", children, disabled, ...props }, ref) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-sans uppercase tracking-wider font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none rounded select-none";
+      "inline-flex items-center justify-center font-sans uppercase tracking-wider font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none rounded-full";
 
     const variantStyles = {
       primary:
-        "bg-brand-cocoa text-brand-cream hover:bg-brand-espresso active:bg-black shadow-sm",
+        "bg-brand-pink text-white hover:bg-brand-pink-hover active:scale-[0.98] shadow-sm",
       secondary:
-        "bg-brand-burgundy text-brand-cream hover:bg-brand-wine active:bg-brand-espresso shadow-sm",
+        "bg-brand-navy text-white hover:bg-brand-navy/90 active:scale-[0.98] shadow-sm",
       outline:
-        "border border-brand-border text-brand-espresso bg-transparent hover:bg-brand-surface active:bg-brand-sand",
+        "border border-brand-navy/30 text-brand-navy bg-transparent hover:bg-brand-pink-light hover:border-brand-pink active:bg-brand-pink-light/80",
       ghost:
-        "text-brand-espresso bg-transparent hover:bg-brand-surface active:bg-brand-sand",
+        "text-brand-navy bg-transparent hover:bg-brand-pink-light",
       gold:
-        "bg-brand-gold text-brand-espresso hover:bg-brand-gold-light active:bg-brand-gold shadow-sm",
+        "bg-brand-pink text-white hover:bg-brand-pink-hover active:scale-[0.98] shadow-sm",
       link:
-        "text-brand-burgundy hover:text-brand-espresso underline-offset-4 hover:underline normal-case tracking-normal font-medium p-0 h-auto",
+        "text-brand-pink hover:text-brand-navy underline-offset-4 hover:underline normal-case tracking-normal font-medium p-0 h-auto",
     };
 
     const sizeStyles = {

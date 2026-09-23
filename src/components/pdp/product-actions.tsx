@@ -52,18 +52,18 @@ export function ProductActions({ product }: ProductActionsProps) {
       {/* Quantity & CTA Row */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         {/* Quantity Stepper */}
-        <div className="flex items-center justify-between sm:justify-start border border-brand-sand/80 bg-white rounded-xl p-1 shrink-0">
+        <div className="flex items-center justify-between sm:justify-start border border-brand-sand bg-white rounded-full p-1 shrink-0">
           <button
             type="button"
             onClick={handleDecrement}
             disabled={isOutOfStock || quantity <= 1}
             aria-label="Decrease quantity"
-            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-brand-espresso hover:text-brand-burgundy disabled:opacity-30 disabled:hover:text-brand-espresso transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-brand-navy hover:text-brand-pink disabled:opacity-30 transition-colors rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink"
           >
             <Minus className="w-4 h-4" />
           </button>
           <span
-            className="w-12 text-center font-sans font-bold text-brand-espresso text-base"
+            className="w-10 text-center font-sans font-extrabold text-brand-navy text-base"
             aria-live="polite"
             aria-label={`Selected quantity: ${quantity}`}
           >
@@ -74,7 +74,7 @@ export function ProductActions({ product }: ProductActionsProps) {
             onClick={handleIncrement}
             disabled={isOutOfStock}
             aria-label="Increase quantity"
-            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-brand-espresso hover:text-brand-burgundy disabled:opacity-30 disabled:hover:text-brand-espresso transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-brand-navy hover:text-brand-pink disabled:opacity-30 transition-colors rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -87,7 +87,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           size="lg"
           disabled={isOutOfStock}
           onClick={handleAddToBag}
-          className="flex-1 min-h-[48px] py-3 text-xs font-semibold uppercase tracking-wider shadow-sm flex items-center justify-center gap-2"
+          className="flex-1 min-h-[48px] py-3 text-xs font-bold uppercase tracking-wider shadow-md bg-brand-pink text-white hover:bg-brand-pink-hover rounded-full flex items-center justify-center gap-2"
         >
           <ShoppingBag className="w-4 h-4" />
           <span>{isOutOfStock ? "Sold Out" : "Add to Bag"}</span>
@@ -100,9 +100,9 @@ export function ProductActions({ product }: ProductActionsProps) {
           size="lg"
           disabled={isOutOfStock}
           onClick={handleBuyNow}
-          className="flex-1 min-h-[48px] py-3 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2"
+          className="flex-1 min-h-[48px] py-3 text-xs font-bold uppercase tracking-wider bg-brand-navy text-white hover:bg-brand-navy/90 rounded-full flex items-center justify-center gap-2"
         >
-          <Zap className="w-4 h-4 text-brand-gold" />
+          <Zap className="w-4 h-4 text-brand-pink" />
           <span>{isOutOfStock ? "Unavailable" : "Buy Now"}</span>
         </Button>
       </div>
@@ -112,9 +112,9 @@ export function ProductActions({ product }: ProductActionsProps) {
         <div
           role="status"
           aria-live="polite"
-          className="p-3 rounded-lg bg-brand-surface border border-brand-sand text-brand-espresso text-xs font-sans flex items-center gap-2 shadow-subtle animate-in fade-in duration-200"
+          className="p-3 rounded-2xl bg-brand-pink-light border border-brand-pink/30 text-brand-navy text-xs font-sans font-bold flex items-center gap-2.5 shadow-subtle animate-in fade-in duration-200"
         >
-          <div className="w-5 h-5 rounded-full bg-brand-burgundy text-white flex items-center justify-center shrink-0">
+          <div className="w-5 h-5 rounded-full bg-brand-pink text-white flex items-center justify-center shrink-0">
             <Check className="w-3 h-3" />
           </div>
           <p className="flex-1">{feedback.text}</p>

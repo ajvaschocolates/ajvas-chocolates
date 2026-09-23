@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Lock, Mail, AlertCircle, Loader2, ShieldCheck } from "lucide-react";
 
+import { BrandLogo } from "@/components/layout/brand-logo";
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -67,27 +69,22 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-neutral-950 text-neutral-100">
-      <div className="w-full max-w-md p-8 rounded-2xl border border-neutral-800 bg-neutral-900/80 backdrop-blur-md shadow-2xl space-y-6">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-[#fdf8f5] text-brand-navy">
+      <div className="w-full max-w-md p-8 rounded-3xl border border-brand-sand/80 bg-white shadow-elevated space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 mb-2 border border-amber-500/20">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-wider text-amber-400 font-serif">
-            AJVAS CHOCOLATES
-          </h1>
-          <p className="text-xs uppercase tracking-widest text-neutral-400">
+        <div className="text-center space-y-3 flex flex-col items-center">
+          <BrandLogo size="lg" />
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-pink bg-brand-pink-light px-3 py-1 rounded-full border border-brand-pink/20">
             Admin Portal Access
           </p>
         </div>
 
-        <div className="h-px bg-neutral-800/80 w-full" />
+        <div className="h-px bg-brand-sand/60 w-full" />
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="flex items-start gap-3 p-3.5 rounded-lg bg-red-950/60 border border-red-800/50 text-red-200 text-sm">
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <p className="leading-snug">{errorMessage}</p>
           </div>
         )}
@@ -97,12 +94,12 @@ export default function AdminLoginPage() {
           <div>
             <label
               htmlFor="email"
-              className="block text-xs font-medium text-neutral-300 uppercase tracking-wider mb-1.5"
+              className="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1.5"
             >
               Email Address
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-muted">
                 <Mail className="w-4 h-4" />
               </div>
               <input
@@ -113,7 +110,7 @@ export default function AdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@ajvaschocolates.com"
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm disabled:opacity-50 transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-brand-sand/80 rounded-full text-brand-navy placeholder-brand-muted/50 focus:outline-none focus:border-brand-pink focus:ring-1 focus:ring-brand-pink text-sm font-medium disabled:opacity-50 transition"
               />
             </div>
           </div>
@@ -121,12 +118,12 @@ export default function AdminLoginPage() {
           <div>
             <label
               htmlFor="password"
-              className="block text-xs font-medium text-neutral-300 uppercase tracking-wider mb-1.5"
+              className="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1.5"
             >
               Password
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-muted">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -137,7 +134,7 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-2.5 bg-neutral-950 border border-neutral-800 rounded-lg text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm disabled:opacity-50 transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-brand-sand/80 rounded-full text-brand-navy placeholder-brand-muted/50 focus:outline-none focus:border-brand-pink focus:ring-1 focus:ring-brand-pink text-sm font-medium disabled:opacity-50 transition"
               />
             </div>
           </div>
@@ -145,7 +142,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-semibold rounded-lg shadow-lg hover:shadow-amber-500/10 transition duration-200 flex items-center justify-center gap-2 text-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            className="w-full py-3 px-4 bg-brand-pink hover:bg-brand-pink-hover text-white font-extrabold rounded-full shadow-md transition duration-200 flex items-center justify-center gap-2 text-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -159,7 +156,7 @@ export default function AdminLoginPage() {
         </form>
 
         {/* Footer Note */}
-        <p className="text-center text-xs text-neutral-500 pt-2">
+        <p className="text-center text-xs text-brand-muted pt-2 font-medium">
           Protected area. Authorized admin users only.
         </p>
       </div>

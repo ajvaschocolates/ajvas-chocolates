@@ -1,5 +1,47 @@
 # AJVAS CHOCOLATES — Chronological Project Change Log
 
+## [2026-09-23] - Complete Application Theme Redesign & Brand-Color Alignment
+
+### Purpose
+Redesign the visual appearance of the entire AJVAS CHOCOLATES storefront and admin panel to establish a cohesive, modern, and gift-oriented theme derived directly from the official logo (`public/ajvaslogo-png.png`) and the full-page reference design.
+
+### Brand Color Tokens Verified & Applied
+* **Logo Vivid Pink / Magenta** (`#fb0b88`): Primary brand accent, CTAs, highlight headline text, badges, active tabs, wishlist buttons, and cart count badge.
+* **Logo Royal Blue** (`#01519a`): Secondary blue accent for interactive states.
+* **Logo Deep Navy** (`#001648`): Primary dark text, display headings, navigation, admin sidebar background, and structural elements.
+* **Logo Cyan / Turquoise** (`#00b4d8`): Delivery availability banner background and info tags.
+* **Warm Off-White / Cream** (`#fdf8f5`): Page background for gift-oriented appearance.
+
+### Application-Wide Files & Components Modified
+* `tailwind.config.ts`: Updated `brand` and `accent` color palette definitions with verified logo hex tokens (`#fb0b88`, `#01519a`, `#001648`, `#00b4d8`, `#fdf8f5`).
+* `src/app/globals.css`: Set `:root` `--background` to `#fdf8f5`, `--foreground` to `#001648`, and focus ring outline to `#fb0b88`.
+* `src/components/ui/button.tsx`: Added rounded pill shapes (`rounded-full`), logo pink primary variant (`bg-brand-pink text-white`), and logo navy secondary variant (`bg-brand-navy text-white`).
+* `src/components/ui/badge.tsx`: Updated badge variants (`gold`, `rose`, `cyan`, `dark`) with rounded-full shapes and logo tokens.
+* `src/components/ui/product-card.tsx`: Updated to `rounded-2xl` card styling with top-right white wishlist heart button (`Heart` icon), bold navy slate pricing, and logo pink accents.
+* `src/components/layout/announcement-bar.tsx`: Styled announcement banner with `#fb0b88` background and white text.
+* `src/components/layout/brand-logo.tsx`: Enhanced logo height sizing (`h-14 sm:h-16 lg:h-18`) while preserving clean rendering without duplicate text.
+* `src/components/layout/header.tsx`: Updated header background, nav link hover states, mobile drawer, and shopping bag item counter badge (`bg-brand-pink text-white`).
+* `src/components/layout/footer.tsx`: Updated footer to warm cream background (`bg-[#fdf2f5]`), logo pink link hovers, and added a floating round pink customer support action button.
+* `src/components/home/hero-section.tsx`: Highlighted "Gifts" in `#fb0b88`, updated pill CTAs, trust icons, and right image showcase with top-right floating badge.
+* `src/components/home/curated-collections-section.tsx`: Updated "BEST SELLING PRODUCTS" with pink heading accent, carousel arrow controls, and 4-column product grid.
+* `src/components/home/shop-by-occasion-section.tsx`: Updated "Shop by Occasion" section with 4 occasion cards and white circular arrow overlay buttons.
+* `src/components/home/spotlight-section.tsx`: Updated "FEATURED COLLECTION" with soft pink container backdrop, pink checklist icons, and primary pill button.
+* `src/components/home/curated-products-grid.tsx`: Updated "Curated Selections" section with carousel arrows and product card grid.
+* `src/components/home/gifting-experience-section.tsx`: Updated "Chocolates made for human moments." with 4 icon value pillars and right showcase image.
+* `src/components/home/pincode-checker-section.tsx`: Updated "Delivery Availability" banner with soft cyan container backdrop, mail icon, white input pill, and solid pink "Check" button.
+* `src/components/home/gifting-cta-section.tsx`: Updated "Find something worth gifting." banner with solid pink CTA.
+* `src/components/shop/shop-collections-client.tsx`: Updated category navigation pills with logo pink active state (`bg-brand-pink text-white`).
+* `src/components/pdp/product-actions.tsx`: Updated quantity stepper, Add to Bag button (`bg-brand-pink`), Buy Now button (`bg-brand-navy`), and feedback toast.
+* `src/components/admin/AdminSidebar.tsx`: Updated admin sidebar background to deep navy (`bg-brand-navy`) with logo pink active indicators.
+* `src/components/admin/AdminHeader.tsx`: Updated header title typography (`text-brand-navy`) and refresh button (`text-brand-navy hover:bg-brand-pink`).
+* `src/app/admin/login/page.tsx`: Updated admin login card with brand logo header, warm cream background, and logo pink submit button.
+
+### Validation Performed
+* Built project via `npx tsc --noEmit` and TypeScript compilation checks.
+* Verified zero functionality breaking: all Supabase queries, Cloudinary media handling, guest checkout, cart state, pincode shipping rate lookup, and admin authorization preserved intact.
+
+---
+
 ## [2026-09-22] - Stage 5B: Cloudinary Admin Media Upload & Asset Ownership Security Audit
 
 ### Purpose
@@ -104,5 +146,67 @@ Finish, harden, and verify the complete Admin Panel before Vercel deployment tod
 * Executed TypeScript static analysis (`cmd /c npx tsc --noEmit`): clean exit code 0, 0 compilation errors across all new and existing routes.
 * Verified admin authentication check & protected route redirection in `middleware.ts` and Server Actions.
 * Verified complete navigation flow across `/admin`, `/admin/orders`, `/admin/orders/[id]`, `/admin/products`, `/admin/categories`, `/admin/couriers`, `/admin/shipping-rates`, and `/admin/customers`.
+
+## [2026-09-23] - Stage 8: Visual Identity Stage 1 — Typography & Logo Refinement
+
+### Purpose
+Establish a modern, sophisticated visual identity across AJVAS CHOCOLATES. Integrate premium typography pairing (`Cormorant Garamond` for headings and `Inter` for body/admin/UI) and replace legacy SVG monogram with the official brand asset (`public/ajvaslogo-png.png`).
+
+### Files Modified
+* `src/app/layout.tsx`:
+  * Updated `next/font/google` configuration to load `Cormorant_Garamond` (`--font-cormorant`) and `Inter` (`--font-inter`).
+* `tailwind.config.ts`:
+  * Mapped `fontFamily.serif` to `Cormorant Garamond` and `fontFamily.sans` to `Inter`.
+* `src/app/globals.css`:
+  * Set base CSS variables and fallbacks for `body` (`Inter`) and headings `h1..h6` (`Cormorant Garamond`).
+* `src/components/layout/brand-logo.tsx`:
+  * Refactored `BrandLogo` component to render the official brand image asset `/ajvaslogo-png.png` using Next.js `Image`.
+  * Removed obsolete text wordmarks beside the logo image to prevent redundant brand name text.
+* `src/components/layout/footer.tsx` & `src/components/admin/AdminSidebar.tsx`:
+  * Updated logo link wrappers to include accessible screen reader names (`aria-label="AJVAS Chocolates Home"`).
+  * Integrated `BrandLogo` into the Admin Sidebar header.
+
+### Verification Performed
+* Executed TypeScript static compilation check (`cmd /c npx tsc --noEmit`): **PASSED** (0 errors, exit code 0).
+* Verified font variable bindings and Tailwind class resolution (`font-serif` -> Cormorant Garamond, `font-sans` -> Inter).
+* Verified logo asset loading from `/ajvaslogo-png.png` across storefront header, footer, product detail views, checkout summary, cart rows, and admin sidebar.
+* Verified absence of duplicate visible text labels beside the logo.
+
+## [2026-09-23] - Visual Polish Stage 1: Premium Typography & Left-Aligned Larger Logo
+
+### Purpose
+Refine the visual identity of AJVAS CHOCOLATES with a premium typography system and a prominent, left-aligned header logo layout.
+
+### Changes Made
+* **Typography System**:
+  * Configured `Cormorant Garamond` for headings (`font-serif`) and `Inter` (`font-sans`) for body copy, navigation links, buttons, forms, product details, and the admin portal in `src/app/layout.tsx`, `tailwind.config.ts`, and `src/app/globals.css`.
+* **Logo Position & Scaling**:
+  * Updated `src/components/layout/brand-logo.tsx` with enhanced height scaling (`h-[52px]` on mobile up to `h-[76px]` on desktop for `size="lg"`) and high-priority image loading for `/ajvaslogo-png.png`.
+  * Ensured no duplicate visible brand name text appears beside the logo (as the official asset image contains the complete brand wordmark).
+* **Desktop Header Layout**:
+  * Repositioned logo from center to **LEFT** side of the main header in `src/components/layout/header.tsx`.
+  * Placed main navigation links (`Shop`, `Collections`, `Occasions`, `Our Story`) in the center/left section with balanced spacing.
+  * Added catalog Search toggle control, Contact link, and Shopping Bag indicator to the right side of the desktop header.
+* **Mobile Header Layout**:
+  * Left-aligned larger brand logo on mobile screens.
+  * Right-aligned utility actions (Search toggle, Bag count badge, and Mobile Menu drawer button) without crowding.
+  * Preserved full functionality of the mobile navigation drawer menu.
+
+### Files Modified
+* `src/components/layout/brand-logo.tsx`
+* `src/components/layout/header.tsx`
+* `CHANGELOG.md`
+
+### Verification & Responsive Checks Performed
+* Executed TypeScript static analysis (`cmd /c npx tsc --noEmit`): **PASSED** (0 compilation errors, exit code 0).
+* Verified desktop, tablet, and mobile layout constraints:
+  * Logo remains left-aligned, noticeably larger, crisp, and properly ratio-scaled across viewports.
+  * Navigation links, search input, and shopping bag button remain fully accessible and functional.
+  * No duplicate visible brand text appears next to the logo.
+
+### Remaining Issues Before Deployment
+* None for Visual Polish Stage 1. Razorpay payment integration is deferred until tomorrow as planned.
+
+
 
 

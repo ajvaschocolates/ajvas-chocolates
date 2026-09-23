@@ -191,10 +191,10 @@ export function ShopCollectionsClient({
                   <button
                     type="button"
                     onClick={() => setSelectedCategory("all")}
-                    className={`min-h-[44px] px-5 py-2 rounded-full font-sans text-xs uppercase tracking-wider font-semibold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy ${
+                    className={`min-h-[44px] px-5 py-2 rounded-full font-sans text-xs uppercase tracking-wider font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink ${
                       selectedCategory === "all"
-                        ? "bg-brand-cocoa text-brand-cream shadow-sm"
-                        : "bg-brand-surface hover:bg-brand-sand/80 text-brand-espresso border border-brand-border/60"
+                        ? "bg-brand-pink text-white shadow-md"
+                        : "bg-white hover:bg-brand-pink-light text-brand-navy border border-brand-sand"
                     }`}
                   >
                     All Confections
@@ -205,10 +205,10 @@ export function ShopCollectionsClient({
                       key={cat.id}
                       type="button"
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`min-h-[44px] px-5 py-2 rounded-full font-sans text-xs uppercase tracking-wider font-semibold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy ${
+                      className={`min-h-[44px] px-5 py-2 rounded-full font-sans text-xs uppercase tracking-wider font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink ${
                         selectedCategory === cat.id
-                          ? "bg-brand-cocoa text-brand-cream shadow-sm"
-                          : "bg-brand-surface hover:bg-brand-sand/80 text-brand-espresso border border-brand-border/60"
+                          ? "bg-brand-pink text-white shadow-md"
+                          : "bg-white hover:bg-brand-pink-light text-brand-navy border border-brand-sand"
                       }`}
                     >
                       {cat.name}

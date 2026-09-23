@@ -8,21 +8,31 @@ export interface CuratedProductsGridProps {
 
 export function CuratedProductsGrid({ products }: CuratedProductsGridProps) {
   return (
-    <section className="w-full bg-brand-cream py-16 lg:py-24 border-b border-brand-sand/60" id="gifts">
+    <section className="w-full bg-[#fdf8f5] py-14 lg:py-20 border-b border-brand-sand/60" id="gifts">
       <Container>
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
           <div>
-            <span className="font-sans text-xs uppercase tracking-widest text-brand-gold font-bold">
-              Confections &amp; Boxes
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brand-espresso mt-1">
+            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-brand-navy">
               Curated Selections
             </h2>
+            <p className="font-sans text-sm text-brand-muted mt-1 font-medium">
+              Handpicked favorites for every chocolate lover
+            </p>
           </div>
-          <p className="font-sans text-sm text-brand-muted">
-            Ready to ship nationwide in careful gift packaging.
-          </p>
+          <div className="flex items-center gap-3 self-end">
+            <a href="/shop" className="font-sans text-xs uppercase tracking-widest font-bold text-brand-navy hover:text-brand-pink transition-colors">
+              View All →
+            </a>
+            <div className="flex items-center gap-1.5 ml-2">
+              <button aria-label="Previous product" className="w-8 h-8 rounded-full border border-brand-sand flex items-center justify-center text-brand-navy hover:border-brand-pink hover:text-brand-pink transition-colors text-xs font-bold bg-white">
+                ‹
+              </button>
+              <button aria-label="Next product" className="w-8 h-8 rounded-full border border-brand-sand flex items-center justify-center text-brand-navy hover:border-brand-pink hover:text-brand-pink transition-colors text-xs font-bold bg-white">
+                ›
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Product Grid or Explicit Empty State */}

@@ -1,63 +1,71 @@
-import { Gift, Clock, ShieldCheck } from "lucide-react";
+import { Heart, Sparkles, Diamond, Smile } from "lucide-react";
 import { Container } from "@/components/ui/container";
 
 export function GiftingExperienceSection() {
-  const experiences = [
+  const pillars = [
     {
-      icon: Gift,
-      iconColor: "text-brand-burgundy",
-      title: "Gift Cards Included",
-      description:
-        "Add your personalized message during checkout. Greetings are printed on textured keepsake cardstock.",
+      icon: Heart,
+      title: "Gifting",
+      sub: "Made Meaningful",
     },
     {
-      icon: Clock,
-      iconColor: "text-brand-gold",
-      title: "Order Tracking",
-      description:
-        "Courier tracking details provided for domestic shipments, securely packaged for transit.",
+      icon: Sparkles,
+      title: "Pan-India",
+      sub: "Delivery",
     },
     {
-      icon: ShieldCheck,
-      iconColor: "text-accent-cyan",
-      title: "Guest Checkout",
-      description:
-        "No mandatory account creation. Complete your gifting orders directly with straightforward checkout steps.",
+      icon: Diamond,
+      title: "Premium",
+      sub: "Ingredients",
+    },
+    {
+      icon: Smile,
+      title: "For Every",
+      sub: "Special Moment",
     },
   ];
 
   return (
-    <section className="w-full bg-brand-cream py-16 lg:py-24 border-b border-brand-sand/60">
+    <section className="w-full bg-white py-14 lg:py-20 border-b border-brand-sand/60">
       <Container>
-        <div className="text-center max-w-xl mx-auto mb-12">
-          <span className="font-sans text-xs uppercase tracking-widest text-brand-gold font-bold">
-            Clear &amp; Dependable
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brand-espresso mt-1">
-            The Gifting Experience
-          </h2>
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          {/* Left Text & Pillars */}
+          <div className="lg:col-span-7">
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-navy leading-tight mb-3">
+              Chocolates made for human moments.
+            </h2>
+            <p className="font-sans text-sm sm:text-base text-brand-muted leading-relaxed max-w-xl mb-8">
+              More than chocolates, we create moments of joy. Crafted with care, premium ingredients, and a belief in the power of thoughtful gifting.
+            </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {experiences.map((item) => {
-            const IconComponent = item.icon;
-            return (
-              <div
-                key={item.title}
-                className="bg-brand-surface p-8 rounded-2xl border border-brand-border/60 shadow-subtle flex flex-col items-start"
-              >
-                <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center mb-6 shadow-subtle border border-brand-border/40">
-                  <IconComponent className={`w-6 h-6 ${item.iconColor}`} />
-                </div>
-                <h3 className="font-serif text-xl font-bold text-brand-espresso mb-2">
-                  {item.title}
-                </h3>
-                <p className="font-sans text-sm text-brand-muted leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            );
-          })}
+            {/* 4 Icon Pillars */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+              {pillars.map((p) => {
+                const IconComp = p.icon;
+                return (
+                  <div key={p.title} className="flex flex-col items-center text-center p-3">
+                    <div className="w-10 h-10 rounded-full bg-brand-pink-light flex items-center justify-center text-brand-pink mb-2">
+                      <IconComp className="w-5 h-5" />
+                    </div>
+                    <span className="font-sans text-xs font-extrabold text-brand-navy">{p.title}</span>
+                    <span className="font-sans text-[11px] text-brand-muted mt-0.5">{p.sub}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Box Image */}
+          <div className="lg:col-span-5">
+            <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-elevated border border-brand-sand/80">
+              <img
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqgb9Q_fPTLG8u1oxJQ4NcTtSITwo3_7oh9hsOCEttnPmJ7Lga1rkVsxd8FUGexLaKo3nMcZ4CRsTPJuiBeWjzQsLMhtlWHnprvmMQBAV6fl9j29X8rdNYWhieYKkEqUVGnUAGa4PYEgb2wzZJy_OGydPb_5Q5eFFRMei5c6XdNMhy4O1rMmTCkDmnKsC1yumFgFdKIVZK0WmITEhuWQFL45fLq2UwTQ8ETlP9RGcmbXpEOsD06-uy"
+                alt="AJVAS Chocolates presentation box"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
         </div>
       </Container>
     </section>

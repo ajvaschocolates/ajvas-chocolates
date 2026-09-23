@@ -14,6 +14,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import SignOutButton from "./SignOutButton";
+import { BrandLogo } from "@/components/layout/brand-logo";
 
 interface AdminSidebarProps {
   userEmail?: string | null;
@@ -88,28 +89,23 @@ export default function AdminSidebar({
 
       {/* Persistent Admin Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-cocoa-900 text-parchment-surface flex flex-col border-r border-cocoa-800 transition-transform duration-200 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-brand-navy text-white flex flex-col border-r border-brand-navy/30 transition-transform duration-200 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 md:static md:h-screen md:shrink-0`}
       >
         {/* Brand Identity Header */}
-        <div className="h-20 px-6 flex items-center justify-between border-b border-cocoa-800 shrink-0">
+        <div className="h-20 px-6 flex items-center justify-between border-b border-white/10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-cocoa-800 border border-cocoa-700 flex items-center justify-center text-amber-100 font-serif font-bold text-sm tracking-wider shadow-inner">
-              A
-            </div>
-            <div>
-              <span className="font-serif font-bold text-base tracking-wide text-white block leading-tight">
-                AJVAS
-              </span>
-              <span className="text-[10px] uppercase font-mono tracking-widest text-amber-200/70">
-                Store Operations
-              </span>
-            </div>
+            <Link href="/admin" aria-label="AJVAS Admin Dashboard" className="shrink-0">
+              <BrandLogo size="sm" />
+            </Link>
+            <span className="text-[10px] uppercase font-mono tracking-widest text-brand-pink border-l border-white/20 pl-3 py-1 font-bold">
+              Operations
+            </span>
           </div>
           <button
             onClick={onClose}
-            className="md:hidden touch-target text-cocoa-100 hover:text-white p-1 rounded"
+            className="md:hidden touch-target text-white/80 hover:text-white p-1 rounded"
             aria-label="Close Navigation"
           >
             <X className="w-5 h-5" />
@@ -129,23 +125,23 @@ export default function AdminSidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded text-sm font-medium transition-colors ${
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                   isActive
-                    ? "bg-cocoa-800 text-white border-l-4 border-amber-200 shadow-sm"
-                    : "text-cocoa-100/80 hover:text-white hover:bg-cocoa-800/60"
+                    ? "bg-brand-pink/20 text-white border-l-4 border-brand-pink shadow-xs"
+                    : "text-white/80 hover:text-white hover:bg-white/10"
                 }`}
                 aria-current={isActive ? "page" : undefined}
               >
                 <div className="flex items-center gap-3">
                   <Icon
                     className={`w-4 h-4 ${
-                      isActive ? "text-amber-200" : "text-cocoa-100/70"
+                      isActive ? "text-brand-pink" : "text-white/70"
                     }`}
                   />
                   <span>{item.name}</span>
                 </div>
                 {item.badge && (
-                  <span className="px-2 py-0.5 text-[11px] font-mono bg-amber-200/20 text-amber-200 rounded font-semibold">
+                  <span className="px-2 py-0.5 text-[11px] font-mono bg-brand-pink/20 text-brand-pink rounded-full font-semibold">
                     {item.badge}
                   </span>
                 )}
@@ -155,15 +151,15 @@ export default function AdminSidebar({
         </nav>
 
         {/* Footer Admin Identity & Logout */}
-        <div className="p-4 border-t border-cocoa-800 bg-cocoa-950/40 space-y-3 shrink-0">
+        <div className="p-4 border-t border-white/10 bg-black/20 space-y-3 shrink-0">
           {userEmail && (
             <div className="flex items-center gap-2.5 px-2 text-xs">
-              <UserCheck className="w-4 h-4 text-amber-400 shrink-0" />
+              <UserCheck className="w-4 h-4 text-brand-pink shrink-0" />
               <div className="truncate">
-                <span className="block text-[10px] uppercase font-mono text-cocoa-100/60">
+                <span className="block text-[10px] uppercase font-mono text-white/60">
                   Signed in as
                 </span>
-                <span className="font-medium text-cocoa-100 truncate block">
+                <span className="font-medium text-white truncate block">
                   {userEmail}
                 </span>
               </div>
