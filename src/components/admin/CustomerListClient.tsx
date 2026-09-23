@@ -32,7 +32,7 @@ export default function CustomerListClient({ initialCustomers }: CustomerListCli
             <span>/</span>
             <span className="text-cocoa-950 font-medium">Customers</span>
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
             Guest Customers
           </h1>
           <p className="text-sm text-cocoa-600 mt-0.5">
@@ -58,7 +58,7 @@ export default function CustomerListClient({ initialCustomers }: CustomerListCli
       {filteredCustomers.length === 0 ? (
         <div className="p-12 text-center bg-parchment-surface rounded border border-dashed border-parchment-border space-y-3">
           <Users className="w-10 h-10 text-cocoa-400 mx-auto" />
-          <h3 className="font-serif text-lg font-bold text-cocoa-950">No customers found</h3>
+          <h3 className="font-sans text-lg font-bold text-cocoa-950">No customers found</h3>
           <p className="text-sm text-cocoa-600 max-w-sm mx-auto">
             {customers.length === 0
               ? "Guest customer profiles will automatically populate here upon placing orders."

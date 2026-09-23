@@ -225,7 +225,7 @@ export default function ProductFormClient({
       <header className="pb-6 border-b border-parchment-border flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
+            <h1 className="font-sans text-2xl sm:text-3xl font-extrabold text-brand-navy tracking-tight">
               {mode === "create" ? "Add Product" : "Edit Product"}
             </h1>
             {product && (
@@ -268,7 +268,7 @@ export default function ProductFormClient({
         <div className="lg:col-span-7 space-y-6">
           {/* Card 1: Basic Information */}
           <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-5">
-            <h2 className="font-serif text-lg font-bold text-cocoa-950 border-b border-parchment-border pb-3">
+            <h2 className="font-sans text-lg font-bold text-cocoa-950 border-b border-parchment-border pb-3">
               Basic Information
             </h2>
 
@@ -354,7 +354,7 @@ export default function ProductFormClient({
           {/* Card 2: Pricing & Offer Rules */}
           <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-5">
             <div className="flex items-center justify-between border-b border-parchment-border pb-3">
-              <h2 className="font-serif text-lg font-bold text-cocoa-950">
+              <h2 className="font-sans text-lg font-bold text-cocoa-950">
                 Pricing &amp; Discounts
               </h2>
               <span className="text-xs text-cocoa-600">Currency: INR (₹)</span>
@@ -439,7 +439,7 @@ export default function ProductFormClient({
 
           {/* Card 3: Availability & Storefront Status */}
           <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-5">
-            <h2 className="font-serif text-lg font-bold text-cocoa-950 border-b border-parchment-border pb-3">
+            <h2 className="font-sans text-lg font-bold text-cocoa-950 border-b border-parchment-border pb-3">
               Availability &amp; Visibility
             </h2>
 
@@ -524,7 +524,7 @@ export default function ProductFormClient({
           <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-4">
             <div className="border-b border-parchment-border pb-3">
               <div className="flex items-center gap-2">
-                <h2 className="font-serif text-lg font-bold text-cocoa-950">
+                <h2 className="font-sans text-lg font-bold text-cocoa-950">
                   Package Details
                 </h2>
                 <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-parchment-muted text-cocoa-950 uppercase tracking-wider">
@@ -673,7 +673,7 @@ export default function ProductFormClient({
           {/* Card 6: Storefront Card Preview */}
           <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-4">
             <div className="flex items-center justify-between border-b border-parchment-border pb-3">
-              <h2 className="font-serif text-lg font-bold text-cocoa-950">
+              <h2 className="font-sans text-lg font-bold text-cocoa-950">
                 Storefront Card Preview
               </h2>
               <span className="text-[11px] font-medium text-cocoa-600 uppercase tracking-wider">

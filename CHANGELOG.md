@@ -1,5 +1,18 @@
 # AJVAS CHOCOLATES — Chronological Project Change Log
 
+## [2026-09-23] - App-Wide Typography Standardization & Hierarchy Audit
+
+### Typography Improvements
+* Removed global `h1, h2, h3, h4, h5, h6` font override in `src/app/globals.css`, ensuring all standard UI elements, admin modules, navigation, buttons, forms, tables, modals, checkout steps, and cart controls default to **Inter** (`font-sans`).
+* Preserved **Cormorant Garamond** (`font-serif`) for editorial display headings, hero sections, collection titles, product detail headings, and brand storytelling components.
+* Standardized all Admin Panel client components (`AdminHeader`, `ProductFormClient`, `ProductSingleImageUploader`, `ProductImagesManager`, `ProductListClient`, `OrderListClient`, `OrderDetailClient`, `CourierListClient`, `ShippingRateListClient`, `CustomerListClient`, `CategoryListClient`) to use **Inter** (`font-sans font-bold`) for titles, table headers, modal dialogs, and metrics.
+* Fixed syntax directives (`"use client";`) in `ProductSingleImageUploader.tsx` and `ProductImagesManager.tsx`.
+
+### Verification
+* Executed `npm run build`: **PASSED 100%** (17/17 routes compiled and generated cleanly).
+
+---
+
 ## [2026-09-23] - Admin Cloudinary Image Upload Experience Implementation
 
 ### Feature & UX Improvements

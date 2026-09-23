@@ -65,7 +65,7 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
             <span>/</span>
             <span className="text-cocoa-950 font-medium">Orders</span>
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
             Store Orders
           </h1>
           <p className="text-sm text-cocoa-600 mt-0.5">
@@ -154,7 +154,7 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
       {filteredOrders.length === 0 ? (
         <div className="py-16 px-4 text-center bg-parchment-surface rounded border border-dashed border-parchment-border space-y-3">
           <ShoppingBag className="w-10 h-10 text-cocoa-400 mx-auto" />
-          <h3 className="font-serif text-lg font-bold text-cocoa-950">No orders found</h3>
+          <h3 className="font-sans text-lg font-bold text-cocoa-950">No orders found</h3>
           <p className="text-sm text-cocoa-600 max-w-sm mx-auto">
             {orders.length === 0
               ? "No store orders have been recorded in the database yet."

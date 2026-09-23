@@ -342,7 +342,7 @@ export default function ProductImagesManager({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-parchment-border pb-4 gap-2">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="font-serif text-lg font-bold text-cocoa-950">
+            <h2 className="font-sans text-lg font-bold text-cocoa-950">
               Product Images &amp; Media Gallery
             </h2>
             <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-gold-100 text-gold-900 border border-gold-300 uppercase tracking-wider">
@@ -455,7 +455,7 @@ export default function ProductImagesManager({
             onSubmit={handleAddImageUrl}
             className="rounded-xl border border-cocoa-200/80 bg-parchment-card p-4 space-y-4"
           >
-            <h3 className="font-serif text-sm font-bold text-cocoa-950 flex items-center gap-1.5">
+            <h3 className="font-sans text-sm font-bold text-cocoa-950 flex items-center gap-1.5">
               <Link2 className="h-4 w-4 text-gold-600" />
               Add External Image URL
             </h3>
@@ -572,7 +572,7 @@ export default function ProductImagesManager({
       {images.length === 0 ? (
         <div className="p-8 text-center rounded-xl border border-dashed border-cocoa-200 bg-parchment-card">
           <ImageIcon className="mx-auto h-10 w-10 text-cocoa-400" />
-          <h4 className="mt-2 font-serif text-base font-semibold text-cocoa-900">
+          <h4 className="mt-2 font-sans text-base font-semibold text-cocoa-900">
             No product images in gallery
           </h4>
           <p className="mt-1 text-xs text-cocoa-600">
@@ -825,7 +825,7 @@ export default function ProductImagesManager({
                 <div className="rounded-full bg-rose-100 p-2 text-rose-600">
                   <AlertTriangle className="h-5 w-5" />
                 </div>
-                <h3 id="delete_modal_title" className="font-serif text-lg font-bold text-cocoa-950">
+                <h3 id="delete_modal_title" className="font-sans text-lg font-bold text-cocoa-950">
                   Remove Product Image
                 </h3>
               </div>
