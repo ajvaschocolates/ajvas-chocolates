@@ -21,14 +21,14 @@ export function CustomerAddressStep({
     <div className="bg-white rounded-2xl border border-brand-sand/80 p-6 sm:p-7 shadow-subtle flex flex-col gap-6">
       {/* Step Heading */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-brand-cocoa text-brand-cream font-sans text-xs font-bold flex items-center justify-center shrink-0">
+        <div className="w-8 h-8 rounded-full bg-brand-pink text-white font-sans text-xs font-extrabold flex items-center justify-center shrink-0 shadow-xs">
           2
         </div>
         <div>
-          <h2 className="font-serif text-lg sm:text-xl font-bold text-brand-espresso">
+          <h2 className="font-serif text-lg sm:text-xl font-extrabold text-brand-navy">
             Contact & Delivery Address
           </h2>
-          <p className="font-sans text-xs text-brand-muted mt-0.5">
+          <p className="font-sans text-xs text-brand-muted mt-0.5 font-medium">
             Guest checkout. We will use these details to coordinate dispatch and delivery.
           </p>
         </div>
@@ -37,8 +37,8 @@ export function CustomerAddressStep({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-sans text-xs">
         {/* Full Name */}
         <div className="sm:col-span-2 space-y-1.5">
-          <label htmlFor="full-name" className="font-semibold uppercase tracking-wider text-brand-espresso block">
-            Full Name <span className="text-brand-burgundy">*</span>
+          <label htmlFor="full-name" className="font-bold uppercase tracking-wider text-brand-navy block">
+            Full Name <span className="text-brand-pink">*</span>
           </label>
           <input
             id="full-name"
@@ -46,8 +46,8 @@ export function CustomerAddressStep({
             value={formData.fullName}
             onChange={(e) => onChange("fullName", e.target.value)}
             placeholder="e.g. Ananya Sharma"
-            className={`w-full px-4 py-3 min-h-[44px] bg-brand-surface border rounded-xl text-sm font-sans text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy ${
-              errors.fullName ? "border-accent-rose ring-1 ring-accent-rose" : "border-brand-sand/80"
+            className={`w-full px-4 py-3 min-h-[44px] bg-white border rounded-xl text-sm font-sans text-brand-navy placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink ${
+              errors.fullName ? "border-brand-pink ring-1 ring-brand-pink" : "border-brand-sand/80"
             }`}
           />
           {errors.fullName && <p className="text-accent-rose text-[11px]">{errors.fullName}</p>}
