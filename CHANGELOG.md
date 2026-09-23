@@ -1,5 +1,20 @@
 # AJVAS CHOCOLATES — Chronological Project Change Log
 
+## [2026-09-23] - Admin Cloudinary Image Upload Experience Implementation
+
+### Feature & UX Improvements
+* Created `ProductSingleImageUploader.tsx` component providing a dual-mode image input experience (Direct Cloudinary File Drag & Drop / Upload + Manual Image URL Paste Option).
+* Replaced plain text URL `<input>` on `/admin/products/new` with the full `ProductSingleImageUploader` component.
+* Updated `getCloudinaryUploadSignatureAction` in `actions.ts` to support draft upload signatures for new product creation (`productId === 'new'`) without throwing non-existent database record errors.
+* Updated `createProductAction` to accept and persist `cloudinary_public_id` from the form into `product_images.cloudinary_public_id` upon saving.
+* Styled `CloudinaryImageUploader.tsx` and `ProductSingleImageUploader.tsx` with brand design tokens (`#fb0b88`, `#001648`, `#fdf8f5`, rounded pill buttons).
+* Verified 100% Free-Tier Compatibility for Cloudinary, Supabase, and Vercel (direct browser-to-CDN signed upload bypassing Vercel 4.5MB payload limits, 10MB file cap, zero paid add-ons, and lightweight URL metadata storage in Postgres).
+
+### Build Verification
+* Executed `npm run build`: **PASSED 100%** (17/17 routes compiled and generated cleanly).
+
+---
+
 ## [2026-09-23] - Vercel Deployment Preparation & Remote Image Security Configuration
 
 ### Configuration & Security Updates
