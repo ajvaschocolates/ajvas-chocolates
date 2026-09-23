@@ -43,20 +43,20 @@ export function CartView() {
             </div>
 
             <div className="space-y-2">
-              <span className="font-sans text-xs uppercase tracking-widest font-semibold text-brand-burgundy">
+              <span className="font-sans text-xs uppercase tracking-widest font-bold text-brand-pink">
                 YOUR BAG
               </span>
-              <h1 className="font-serif text-3xl sm:text-4xl font-bold text-brand-espresso tracking-tight">
+              <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-brand-navy tracking-tight">
                 Your bag is empty.
               </h1>
-              <p className="font-sans text-sm text-brand-muted leading-relaxed max-w-sm mx-auto">
+              <p className="font-sans text-sm text-brand-muted leading-relaxed max-w-sm mx-auto font-medium">
                 Explore our chocolate gifts and curated collections to find something worth gifting.
               </p>
             </div>
 
             <Link
               href="/shop"
-              className="mt-3 inline-flex items-center justify-center gap-2 font-sans text-xs uppercase tracking-widest font-semibold min-h-[50px] px-8 rounded-lg bg-brand-cocoa text-brand-cream hover:bg-brand-espresso active:bg-black transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy"
+              className="mt-3 inline-flex items-center justify-center gap-2 font-sans text-xs uppercase tracking-widest font-bold min-h-[50px] px-8 rounded-full bg-brand-pink text-white hover:bg-brand-pink-hover transition-all shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink"
             >
               <span>Shop Chocolates</span>
               <ArrowRight className="w-4 h-4" />
@@ -75,17 +75,17 @@ export function CartView() {
           {/* Header Title Bar */}
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-brand-sand/70 pb-5">
             <div className="flex items-baseline gap-3">
-              <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-brand-espresso tracking-tight">
+              <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-brand-navy tracking-tight">
                 Shopping Bag
               </h1>
-              <span className="font-sans text-sm text-brand-muted">
+              <span className="font-sans text-sm text-brand-muted font-semibold">
                 ({totalItemsCount} {totalItemsCount === 1 ? "item" : "items"})
               </span>
             </div>
 
             <Link
               href="/shop"
-              className="inline-flex items-center gap-1.5 font-sans text-xs text-brand-muted hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded-sm"
+              className="inline-flex items-center gap-1.5 font-sans text-xs font-bold text-brand-navy hover:text-brand-pink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink rounded-sm"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Shop</span>
