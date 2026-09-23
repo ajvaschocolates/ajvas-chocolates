@@ -245,7 +245,7 @@ export default function ProductSingleImageUploader({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-brand-sand/60 pb-3">
         <div>
-          <h2 className="font-serif text-lg font-extrabold text-brand-navy">
+          <h2 className="font-sans text-lg font-extrabold text-brand-navy">
             Product Image
           </h2>
           <p className="font-sans text-xs text-brand-muted mt-0.5">
@@ -414,7 +414,7 @@ export default function ProductSingleImageUploader({
                   <UploadCloud className="w-6 h-6 text-brand-pink" />
                 </div>
 
-                <p className="font-serif text-base font-bold text-brand-navy">
+                <p className="font-sans text-base font-bold text-brand-navy">
                   Click or Drag &amp; Drop product photo
                 </p>
                 <p className="font-sans text-xs text-brand-muted mt-1 font-medium">

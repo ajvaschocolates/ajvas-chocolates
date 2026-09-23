@@ -20,10 +20,6 @@
     overflow-x: hidden;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
-  }
-
   /* Custom focus outline */
   :focus-visible {
     outline: 2px solid #fb0b88;

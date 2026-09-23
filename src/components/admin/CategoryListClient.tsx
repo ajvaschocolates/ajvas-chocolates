@@ -217,7 +217,7 @@ export default function CategoryListClient({
             </span>
             <FolderTree className="h-4 w-4 text-cocoa-500" />
           </div>
-          <div className="mt-2 font-serif text-2xl font-bold text-cocoa-950">
+          <div className="mt-2 font-sans text-2xl font-bold text-cocoa-950">
             {totalCategories}
           </div>
         </div>
@@ -229,7 +229,7 @@ export default function CategoryListClient({
             </span>
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
           </div>
-          <div className="mt-2 font-serif text-2xl font-bold text-emerald-950">
+          <div className="mt-2 font-sans text-2xl font-bold text-emerald-950">
             {activeCategories}
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function CategoryListClient({
             </span>
             <XCircle className="h-4 w-4 text-amber-600" />
           </div>
-          <div className="mt-2 font-serif text-2xl font-bold text-amber-950">
+          <div className="mt-2 font-sans text-2xl font-bold text-amber-950">
             {inactiveCategories}
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function CategoryListClient({
             </span>
             <Package className="h-4 w-4 text-cocoa-500" />
           </div>
-          <div className="mt-2 font-serif text-2xl font-bold text-cocoa-950">
+          <div className="mt-2 font-sans text-2xl font-bold text-cocoa-950">
             {totalCategorizedProducts}
           </div>
         </div>
@@ -320,7 +320,7 @@ export default function CategoryListClient({
         {filteredCategories.length === 0 ? (
           <div className="p-12 text-center">
             <FolderTree className="mx-auto h-10 w-10 text-cocoa-400" />
-            <h3 className="mt-3 font-serif text-lg font-semibold text-cocoa-900">
+            <h3 className="mt-3 font-sans text-lg font-semibold text-cocoa-900">
               {categories.length === 0 ? "No categories created yet" : "No matching categories"}
             </h3>
             <p className="mt-1 text-xs text-cocoa-600">
@@ -552,7 +552,7 @@ export default function CategoryListClient({
           <div className="w-full max-w-md rounded-2xl border border-cocoa-200 bg-parchment-card p-6 shadow-xl">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-4 border-b border-cocoa-100">
-              <h3 className="font-serif text-lg font-bold text-cocoa-950">
+              <h3 className="font-sans text-lg font-bold text-cocoa-950">
                 {editingCategory ? "Edit Category" : "Add New Category"}
               </h3>
               <button
@@ -643,7 +643,7 @@ export default function CategoryListClient({
               <div className="rounded-full bg-rose-100 p-2 text-rose-600">
                 <AlertTriangle className="h-5 w-5" />
               </div>
-              <h3 className="font-serif text-lg font-bold text-cocoa-950">
+              <h3 className="font-sans text-lg font-bold text-cocoa-950">
                 Delete Category
               </h3>
             </div>

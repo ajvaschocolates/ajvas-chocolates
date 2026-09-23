@@ -104,7 +104,7 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Orders
           </Link>
           <div className="flex items-center gap-3">
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
+            <h1 className="font-sans text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
               Order {order.order_number}
             </h1>
             <span
@@ -277,7 +277,7 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
 
           {/* Courier & Tracking Assignment */}
           <div className="bg-parchment-surface border border-parchment-border rounded-xl p-5 shadow-2xs space-y-4">
-            <h2 className="text-sm font-serif font-bold text-cocoa-950 flex items-center gap-2">
+            <h2 className="text-sm font-sans font-bold text-cocoa-950 flex items-center gap-2">
               <Truck className="w-4 h-4 text-cocoa-600" /> Shipping &amp; AWB Tracking
             </h2>
 
@@ -346,7 +346,7 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
           {/* Timeline & Audit History */}
           {order.status_history && order.status_history.length > 0 && (
             <div className="bg-parchment-surface border border-parchment-border rounded-xl p-5 shadow-2xs space-y-3">
-              <h2 className="text-sm font-serif font-bold text-cocoa-950">Status Timeline</h2>
+              <h2 className="text-sm font-sans font-bold text-cocoa-950">Status Timeline</h2>
               <div className="space-y-2 text-xs">
                 {order.status_history.map((hist) => (
                   <div key={hist.id} className="p-2.5 rounded bg-parchment-muted/60 border border-parchment-line">

@@ -286,7 +286,7 @@ export default function CloudinaryImageUploader({
         <div className="w-10 h-10 rounded-full bg-brand-pink-light/60 border border-brand-pink/20 flex items-center justify-center text-brand-pink mb-2">
           <UploadCloud className="h-5 w-5 text-brand-pink" />
         </div>
-        <p className="font-serif text-sm font-bold text-brand-navy">
+        <p className="font-sans text-sm font-bold text-brand-navy">
           Click or Drag &amp; Drop product photo here
         </p>
         <p className="font-sans text-xs text-brand-muted mt-1 font-medium">
