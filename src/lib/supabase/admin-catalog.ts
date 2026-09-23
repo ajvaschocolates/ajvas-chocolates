@@ -183,7 +183,14 @@ export async function getAdminCategoriesWithCounts(): Promise<CategoryWithCount[
 
     if (!data) return [];
 
-    return data.map((cat: any) => ({
+    return (data as Array<{
+      id: string;
+      name: string;
+      status: "active" | "inactive";
+      created_at: string;
+      updated_at: string;
+      products: Array<{ id: string }> | null;
+    }>).map((cat) => ({
       id: cat.id,
       name: cat.name,
       status: cat.status,

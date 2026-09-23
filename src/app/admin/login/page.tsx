@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Lock, Mail, AlertCircle, Loader2, ShieldCheck } from "lucide-react";
+import { Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
 
 import { BrandLogo } from "@/components/layout/brand-logo";
 

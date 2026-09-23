@@ -1,6 +1,5 @@
 import { CheckCircle2, Gift } from "lucide-react";
 import { Product } from "@/types/catalog";
-import { formatINR } from "@/lib/utils";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 

@@ -83,7 +83,15 @@ export async function getAllAdminCustomers(): Promise<Customer[]> {
 
     if (!data) return [];
 
-    return data.map((c: any) => ({
+    return (data as Array<{
+      id: string;
+      full_name: string;
+      phone: string;
+      email: string;
+      created_at: string;
+      updated_at: string;
+      orders: Array<{ id: string }> | null;
+    }>).map((c) => ({
       id: c.id,
       full_name: c.full_name,
       phone: c.phone,
