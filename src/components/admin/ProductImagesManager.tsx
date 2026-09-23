@@ -89,6 +89,7 @@ export default function ProductImagesManager({
   } | null>(null);
 
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
+  const [cleanupPublicId, setCleanupPublicId] = useState<string | null>(null);
 
   // Accessibility keyboard handler for Escape key on Delete Dialog
   useEffect(() => {
@@ -288,6 +289,7 @@ export default function ProductImagesManager({
     if (!deletingImage || isPending) return;
     setStatusMessage(null);
     setWarningMessage(null);
+    setCleanupPublicId(null);
 
     startTransition(async () => {
       const res = await deleteProductImageAction(deletingImage.id, productId);
@@ -298,6 +300,7 @@ export default function ProductImagesManager({
 
         if (res.warning) {
           setWarningMessage(res.warning);
+          setCleanupPublicId(res.cleanupPublicId || null);
         } else {
           setStatusMessage({ type: "success", text: "Image removed from product gallery." });
         }
@@ -312,15 +315,14 @@ export default function ProductImagesManager({
 
   // Retry Cloudinary Cleanup for orphaned/failed asset destruction
   function handleRetryCloudinaryCleanup() {
-    if (!warningMessage || isPending) return;
-    const match = warningMessage.match(/Public ID:\s*([^\s]+)/);
-    if (!match || !match[1]) return;
-    const targetPublicId = match[1];
+    if (!cleanupPublicId || isPending) return;
+    const targetPublicId = cleanupPublicId;
 
     startTransition(async () => {
       const res = await cleanupOrphanedAssetAction(targetPublicId, productId);
       if (res.success) {
         setWarningMessage(null);
+        setCleanupPublicId(null);
         setStatusMessage({
           type: "success",
           text: `Cloudinary asset (${targetPublicId}) destroyed successfully.`,
@@ -385,7 +387,7 @@ export default function ProductImagesManager({
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
             <div className="space-y-1.5">
               <div>{warningMessage}</div>
-              {warningMessage.includes("Public ID:") && (
+              {cleanupPublicId && (
                 <button
                   type="button"
                   onClick={handleRetryCloudinaryCleanup}

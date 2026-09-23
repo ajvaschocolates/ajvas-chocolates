@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Minus, ShoppingBag, Zap, Check } from "lucide-react";
 import { Product } from "@/types/catalog";
 import { useCart } from "@/context/cart-context";
@@ -11,6 +12,7 @@ interface ProductActionsProps {
 }
 
 export function ProductActions({ product }: ProductActionsProps) {
+  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [feedback, setFeedback] = useState<{ type: "bag" | "buy"; text: string } | null>(null);
   const { addItem, setBuyNowItem } = useCart();
@@ -42,13 +44,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   const handleBuyNow = () => {
     if (isOutOfStock) return;
     setBuyNowItem(product, quantity);
-    setFeedback({
-      type: "buy",
-      text: `Selected ${quantity} ${quantity === 1 ? "item" : "items"} for direct checkout. (Checkout will be available in the upcoming release)`,
-    });
-    setTimeout(() => {
-      setFeedback(null);
-    }, 5000);
+    router.push("/checkout?mode=buy-now");
   };
 
   return (

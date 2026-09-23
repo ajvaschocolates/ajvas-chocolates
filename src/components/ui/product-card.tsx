@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Product } from "@/types/catalog";
+import { useCart } from "@/context/cart-context";
 import { formatINR } from "@/lib/utils";
 import { Badge } from "./badge";
 import { Button } from "./button";
@@ -17,6 +19,9 @@ export function ProductCard({
   onAddToBag,
   onQuickView,
 }: ProductCardProps) {
+  const cart = useCart();
+  const [isAdded, setIsAdded] = useState(false);
+
   const primaryImage = product.images?.[0]?.image_url || "/images/placeholder-confection.jpg";
   const imageAlt = product.images?.[0]?.alt_text || product.name;
 
@@ -29,6 +34,19 @@ export function ProductCard({
   }
 
   const isOutOfStock = product.availability === "out_of_stock";
+
+  const handleAddClick = () => {
+    if (isOutOfStock) return;
+    if (onAddToBag) {
+      onAddToBag(product);
+    } else {
+      cart.addItem(product);
+    }
+    setIsAdded(true);
+    setTimeout(() => {
+      setIsAdded(false);
+    }, 2000);
+  };
 
   return (
     <div className="group flex flex-col justify-between bg-white border border-brand-border/60 rounded-xl overflow-hidden shadow-subtle hover:shadow-elevated transition-all duration-300">
@@ -116,10 +134,14 @@ export function ProductCard({
             variant="outline"
             size="sm"
             disabled={isOutOfStock}
-            onClick={() => onAddToBag?.(product)}
-            className="text-[11px] px-3 py-1.5 border-brand-border hover:bg-brand-cocoa hover:text-brand-cream hover:border-brand-cocoa transition-colors"
+            onClick={handleAddClick}
+            className={`text-[11px] px-3 py-1.5 border-brand-border transition-colors ${
+              isAdded
+                ? "bg-emerald-700 text-white border-emerald-700"
+                : "hover:bg-brand-cocoa hover:text-brand-cream hover:border-brand-cocoa"
+            }`}
           >
-            {isOutOfStock ? "Out of Stock" : "Add to Bag"}
+            {isOutOfStock ? "Out of Stock" : isAdded ? "Added!" : "Add to Bag"}
           </Button>
         </div>
       </div>

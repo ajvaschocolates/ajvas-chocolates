@@ -28,7 +28,15 @@ export default function AdminSidebar({
 }: AdminSidebarProps) {
   const pathname = usePathname();
 
-  const navItems = [
+  interface NavItem {
+    name: string;
+    href: string;
+    icon: typeof LayoutGrid;
+    exact?: boolean;
+    badge?: string;
+  }
+
+  const navItems: NavItem[] = [
     {
       name: "Dashboard",
       href: "/admin",
@@ -39,7 +47,6 @@ export default function AdminSidebar({
       name: "Orders",
       href: "/admin/orders",
       icon: ShoppingBag,
-      badge: "12",
     },
     {
       name: "Products",

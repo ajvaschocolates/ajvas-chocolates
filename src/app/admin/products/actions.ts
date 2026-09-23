@@ -23,6 +23,7 @@ export interface ProductImageActionResult {
   success: boolean;
   error?: string;
   warning?: string;
+  cleanupPublicId?: string;
   image?: ProductImage;
   images?: ProductImage[];
 }
@@ -718,9 +719,12 @@ export async function deleteProductImageAction(
     revalidatePath("/shop");
     revalidatePath("/");
 
+    const failedPublicId = warningMessage ? targetImg.cloudinary_public_id : undefined;
+
     return {
       success: true,
       warning: warningMessage,
+      cleanupPublicId: failedPublicId,
       images: authoritativeImages,
     };
   } catch (err) {

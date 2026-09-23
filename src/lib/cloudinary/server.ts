@@ -210,9 +210,9 @@ export function validateCloudinaryUrlCorrespondence(
       };
     }
 
-    // 3. Domain and Cloud Name validation
+    // 3. Domain and Cloud Name validation (allow ONLY res.cloudinary.com or custom cloud domain)
     const hostname = parsed.hostname.toLowerCase();
-    const isSharedDomain = hostname === "res.cloudinary.com" || hostname === "cloudinary.com";
+    const isSharedDomain = hostname === "res.cloudinary.com";
     const isCustomCloudDomain = hostname === `${expectedCloudName}.cloudinary.com`;
 
     if (!isSharedDomain && !isCustomCloudDomain) {
@@ -253,20 +253,38 @@ export function validateCloudinaryUrlCorrespondence(
       };
     }
 
-    // 5. Precise public ID path extraction
-    let urlPublicIdPathWithExt = "";
+    // 5. Precise public ID path extraction with structural version boundary verification
+    const rawSegments = afterUploadPath.split("/").filter(Boolean);
+    const canonicalPublicIdWithoutExt = canonicalPublicId.replace(/\.[^/.]+$/, "");
 
-    // Check if path contains explicit version segment /v<digits>/
-    const versionMatch = afterUploadPath.match(/^(.*?\/)?v\d+\/(.+)$/);
-    if (versionMatch) {
-      // Everything after /v<digits>/ is guaranteed to be the public ID path!
-      urlPublicIdPathWithExt = versionMatch[2];
+    // Find authentic version boundary:
+    // Segment i matches /^v\d+$/, all preceding segments are transformations,
+    // AND the remaining path after i matches the canonical public ID!
+    let versionIndex = -1;
+    for (let i = 0; i < rawSegments.length; i++) {
+      if (/^v\d+$/.test(rawSegments[i])) {
+        const preceding = rawSegments.slice(0, i);
+        if (preceding.every((s) => isCloudinaryTransformationSegment(s))) {
+          const trailingSegments = rawSegments.slice(i + 1);
+          if (trailingSegments.length > 0) {
+            const trailingPath = decodeURIComponent(trailingSegments.join("/")).replace(/\.[^/.]+$/, "");
+            if (trailingPath === canonicalPublicId || trailingPath === canonicalPublicIdWithoutExt) {
+              versionIndex = i;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    let publicIdSegments: string[];
+    if (versionIndex !== -1) {
+      // Everything AFTER the verified version segment is the public ID path
+      publicIdSegments = rawSegments.slice(versionIndex + 1);
     } else {
-      // Filter out leading transformation segments if no version segment is present
-      const rawSegments = afterUploadPath.split("/").filter(Boolean);
-      const publicIdSegments: string[] = [];
+      // Strip leading transformation segments until first non-transformation segment
       let pastTransformations = false;
-
+      publicIdSegments = [];
       for (const seg of rawSegments) {
         if (!pastTransformations && isCloudinaryTransformationSegment(seg)) {
           continue;
@@ -274,8 +292,16 @@ export function validateCloudinaryUrlCorrespondence(
         pastTransformations = true;
         publicIdSegments.push(seg);
       }
-      urlPublicIdPathWithExt = publicIdSegments.join("/");
     }
+
+    if (publicIdSegments.length === 0) {
+      return {
+        valid: false,
+        error: "Could not extract a valid public ID path from URL.",
+      };
+    }
+
+    const urlPublicIdPathWithExt = publicIdSegments.join("/");
 
     if (!urlPublicIdPathWithExt) {
       return {
@@ -285,8 +311,7 @@ export function validateCloudinaryUrlCorrespondence(
     }
 
     // Strip file extension (.jpg, .png, .webp, etc.)
-    const urlPublicIdPath = urlPublicIdPathWithExt.replace(/\.[^/.]+$/, "");
-    const canonicalPublicIdWithoutExt = canonicalPublicId.replace(/\.[^/.]+$/, "");
+    const urlPublicIdPath = decodeURIComponent(urlPublicIdPathWithExt).replace(/\.[^/.]+$/, "");
 
     // 6. EXACT normalized public_id match ONLY
     const matchesExact =
@@ -363,9 +388,11 @@ export async function verifyCloudinaryAssetProductOwnership(
     const expectedFolderPrefix = `ajvas_chocolates/products/${productId}`;
 
     const hasMatchingTag = Array.isArray(resource.tags) && resource.tags.includes(expectedTag);
+    const folderVal = typeof resource.folder === "string" ? resource.folder : (typeof resource.asset_folder === "string" ? resource.asset_folder : "");
     const hasMatchingFolder =
-      typeof resource.folder === "string" &&
-      (resource.folder === expectedFolderPrefix || resource.folder.startsWith(`${expectedFolderPrefix}/`));
+      (typeof resource.folder === "string" && (resource.folder === expectedFolderPrefix || resource.folder.startsWith(`${expectedFolderPrefix}/`))) ||
+      (typeof resource.asset_folder === "string" && (resource.asset_folder === expectedFolderPrefix || resource.asset_folder.startsWith(`${expectedFolderPrefix}/`))) ||
+      resource.public_id.startsWith(`${expectedFolderPrefix}/`);
 
     if (!hasMatchingTag || !hasMatchingFolder) {
       return {
@@ -487,5 +514,34 @@ export async function destroyCloudinaryAsset(
       success: false,
       error: err instanceof Error ? err.message : "Cloudinary API call failed.",
     };
+  }
+}
+
+/**
+ * Synchronous helper to test whether a URL is a valid, authorized Cloudinary delivery URL
+ * for the configured cloud_name. Replaces raw substring checks.
+ */
+export function isCloudinaryDeliveryUrl(
+  url: string,
+  expectedCloudName: string
+): boolean {
+  if (!url || typeof url !== "string" || !expectedCloudName) return false;
+  try {
+    const parsed = new URL(url.trim());
+    if (parsed.protocol !== "https:") return false;
+    if (parsed.username || parsed.password) return false;
+
+    const hostname = parsed.hostname.toLowerCase();
+    const cloud = expectedCloudName.toLowerCase();
+    const isShared = hostname === "res.cloudinary.com";
+    const isCustom = hostname === `${cloud}.cloudinary.com`;
+
+    if (!isShared && !isCustom) return false;
+    if (isShared) {
+      return parsed.pathname.startsWith(`/${cloud}/image/upload/`);
+    }
+    return parsed.pathname.startsWith(`/image/upload/`);
+  } catch {
+    return false;
   }
 }

@@ -99,6 +99,12 @@ export function validateImageInput(
         error: "Only http:// and https:// image URLs are supported.",
       };
     }
+    if (parsed.username || parsed.password) {
+      return {
+        valid: false,
+        error: "URLs containing embedded credentials are not allowed.",
+      };
+    }
   } catch {
     return {
       valid: false,

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/supabase/auth";
+import { getAdminDashboardMetrics } from "@/lib/supabase/admin-orders";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -9,6 +10,9 @@ import {
   Package,
   Truck,
   TrendingUp,
+  ShoppingBag,
+  Users,
+  ShieldCheck,
 } from "lucide-react";
 
 export default async function AdminDashboardPage() {
@@ -21,6 +25,14 @@ export default async function AdminDashboardPage() {
   if (!isAdmin) {
     redirect("/");
   }
+
+  const metrics = await getAdminDashboardMetrics();
+  const actionItemsCount =
+    metrics.ordersToProcessCount +
+    metrics.paymentIssuesCount +
+    metrics.shippingHoldsCount +
+    metrics.missingTrackingCount +
+    metrics.lowStockCount;
 
   return (
     <main className="p-4 sm:p-8 max-w-7xl w-full mx-auto space-y-8 flex-1">
@@ -35,202 +47,116 @@ export default async function AdminDashboardPage() {
               Triage &amp; Operational Action Items
             </h2>
             <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-burgundy/10 text-burgundy">
-              20 Requires Action
+              {actionItemsCount} {actionItemsCount === 1 ? "Item" : "Items"} Requiring Attention
             </span>
           </div>
-          <span className="text-xs text-cocoa-600 font-mono">
-            Live Stream
+          <span className="text-xs text-cocoa-600 font-mono flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
+            Live Database Sync
           </span>
         </div>
 
         {/* Action Cards Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {/* Card 1: Orders to Process */}
-          <div className="bg-parchment-surface border border-parchment-border rounded p-4 shadow-2xs hover:border-cocoa-600/40 transition-colors">
-            <div className="text-[11px] font-medium text-cocoa-600 leading-tight">
+          <Link
+            href="/admin/orders"
+            className="bg-parchment-surface border border-parchment-border rounded p-4 shadow-2xs hover:border-cocoa-600/40 transition-colors block group"
+          >
+            <div className="text-[11px] font-medium text-cocoa-600 leading-tight group-hover:text-cocoa-950">
               Orders to Process
             </div>
             <div className="text-2xl sm:text-3xl font-bold font-mono text-cocoa-950 mt-2 mb-1">
-              12
+              {metrics.ordersToProcessCount}
             </div>
             <div className="text-[11px] text-amber-800 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Paid
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Paid / Pending
             </div>
-          </div>
+          </Link>
 
           {/* Card 2: Awaiting Dispatch */}
-          <div className="bg-parchment-surface border border-parchment-border rounded p-4 shadow-2xs hover:border-cocoa-600/40 transition-colors">
-            <div className="text-[11px] font-medium text-cocoa-600 leading-tight">
+          <Link
+            href="/admin/orders"
+            className="bg-parchment-surface border border-parchment-border rounded p-4 shadow-2xs hover:border-cocoa-600/40 transition-colors block group"
+          >
+            <div className="text-[11px] font-medium text-cocoa-600 leading-tight group-hover:text-cocoa-950">
               Awaiting Dispatch
             </div>
             <div className="text-2xl sm:text-3xl font-bold font-mono text-cocoa-950 mt-2 mb-1">
-              5
+              {metrics.awaitingDispatchCount}
             </div>
             <div className="text-[11px] text-blue-800 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Ready
-              for courier
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Processing
             </div>
-          </div>
+          </Link>
 
           {/* Card 3: Payment Issues */}
-          <div className="bg-parchment-surface border border-status-redBorder bg-status-redBg/30 rounded p-4 shadow-2xs hover:border-status-redBorder transition-colors">
+          <Link
+            href="/admin/orders"
+            className="bg-parchment-surface border border-status-redBorder bg-status-redBg/30 rounded p-4 shadow-2xs hover:border-status-redBorder transition-colors block group"
+          >
             <div className="text-[11px] font-medium text-status-redText leading-tight">
               Payment Issues
             </div>
             <div className="text-2xl sm:text-3xl font-bold font-mono text-status-redText mt-2 mb-1">
-              2
+              {metrics.paymentIssuesCount}
             </div>
             <div className="text-[11px] text-status-redText/90 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span> Failed
-              callbacks
+              <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span> Failed payments
             </div>
-          </div>
+          </Link>
 
-          {/* Card 4: Shipping Issues */}
-          <div className="bg-parchment-surface border border-amber-300 bg-amber-50/40 rounded p-4 shadow-2xs hover:border-amber-400 transition-colors">
+          {/* Card 4: Shipping Holds */}
+          <Link
+            href="/admin/orders"
+            className="bg-parchment-surface border border-amber-300 bg-amber-50/40 rounded p-4 shadow-2xs hover:border-amber-400 transition-colors block group"
+          >
             <div className="text-[11px] font-medium text-amber-900 leading-tight">
-              Shipping Issues
+              Shipping Holds
             </div>
             <div className="text-2xl sm:text-3xl font-bold font-mono text-amber-900 mt-2 mb-1">
-              1
+              {metrics.shippingHoldsCount}
             </div>
             <div className="text-[11px] text-amber-800 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Rate
-              recalc retry
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Unassigned courier
             </div>
-          </div>
+          </Link>
 
-          {/* Card 5: Tracking Pending */}
-          <div className="bg-parchment-surface border border-parchment-border rounded p-4 shadow-2xs hover:border-cocoa-600/40 transition-colors">
-            <div className="text-[11px] font-medium text-cocoa-600 leading-tight">
+          {/* Card 5: Missing AWB / Tracking */}
+          <Link
+            href="/admin/orders"
+            className="bg-parchment-surface border border-parchment-border rounded p-4 shadow-2xs hover:border-cocoa-600/40 transition-colors block group"
+          >
+            <div className="text-[11px] font-medium text-cocoa-600 leading-tight group-hover:text-cocoa-950">
               Missing AWB / Track
             </div>
             <div className="text-2xl sm:text-3xl font-bold font-mono text-cocoa-950 mt-2 mb-1">
-              3
+              {metrics.missingTrackingCount}
             </div>
             <div className="text-[11px] text-cocoa-600 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-cocoa-600"></span>{" "}
-              Manifest needed
+              <span className="w-1.5 h-1.5 rounded-full bg-cocoa-600"></span> Manifest needed
             </div>
-          </div>
+          </Link>
 
-          {/* Card 6: Products Attention */}
-          <div className="bg-parchment-surface border border-parchment-border rounded p-4 shadow-2xs hover:border-cocoa-600/40 transition-colors">
-            <div className="text-[11px] font-medium text-cocoa-600 leading-tight">
-              Product Inventory
+          {/* Card 6: Product Inventory Attention */}
+          <Link
+            href="/admin/products"
+            className="bg-parchment-surface border border-parchment-border rounded p-4 shadow-2xs hover:border-cocoa-600/40 transition-colors block group"
+          >
+            <div className="text-[11px] font-medium text-cocoa-600 leading-tight group-hover:text-cocoa-950">
+              Low / Out of Stock
             </div>
             <div className="text-2xl sm:text-3xl font-bold font-mono text-cocoa-950 mt-2 mb-1">
-              1
+              {metrics.lowStockCount + metrics.outOfStockCount}
             </div>
             <div className="text-[11px] text-amber-800 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span> 1
-              Low stock item
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Stock warning
             </div>
-          </div>
+          </Link>
         </div>
       </section>
 
-      {/* SECTION 2: ORDERS NEEDING DIRECT OPERATIONAL ATTENTION */}
-      <section aria-labelledby="attentionOrdersHeading">
-        <div className="flex items-center justify-between mb-3.5">
-          <div className="flex items-center gap-2">
-            <h2
-              id="attentionOrdersHeading"
-              className="text-sm font-serif font-bold text-cocoa-950"
-            >
-              Orders Needing Attention
-            </h2>
-            <span className="text-xs text-cocoa-600">
-              (Unresolved anomalies, payment failures, or courier holds)
-            </span>
-          </div>
-          <span className="text-xs text-burgundy font-medium">
-            Immediate Resolution Required
-          </span>
-        </div>
-
-        <div className="space-y-2.5">
-          {/* Item 1: Payment Failed */}
-          <div className="bg-parchment-surface border border-status-redBorder/80 rounded-md p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs hover:border-status-redBorder transition-colors">
-            <div className="flex items-start gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-600 mt-1 shrink-0"></span>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono font-bold text-sm text-cocoa-950">
-                    AJV-000131
-                  </span>
-                  <span className="px-2 py-0.5 text-[11px] font-mono font-semibold rounded bg-status-redBg text-status-redText border border-status-redBorder">
-                    Payment: Failed
-                  </span>
-                  <span className="text-xs text-cocoa-600 font-mono">
-                    ₹3,450 • Razorpay Callback Error
-                  </span>
-                </div>
-                <div className="text-xs text-cocoa-700 mt-1">
-                  Customer:{" "}
-                  <span className="font-medium text-cocoa-950">
-                    Customer A
-                  </span>{" "}
-                  (+91 XXXXX XXXXX) • Pincode: 682016 (Ernakulam, KL)
-                </div>
-                <div className="text-[11px] text-status-redText font-medium mt-0.5">
-                  Customer reached payment gateway; card transaction declined
-                  by issuing bank. Order unconfirmed.
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 sm:self-center shrink-0">
-              <Link
-                href="/admin/orders"
-                className="touch-target px-3.5 py-1.5 bg-parchment-surface hover:bg-parchment-muted text-xs font-semibold text-cocoa-900 border border-parchment-line rounded transition-colors focus:ring-2 focus:ring-cocoa-700"
-              >
-                View Order
-              </Link>
-            </div>
-          </div>
-
-          {/* Item 2: Shipping Calculation Holds */}
-          <div className="bg-parchment-surface border border-amber-300 rounded-md p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs hover:border-amber-400 transition-colors">
-            <div className="flex items-start gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 mt-1 shrink-0"></span>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono font-bold text-sm text-cocoa-950">
-                    AJV-000129
-                  </span>
-                  <span className="px-2 py-0.5 text-[11px] font-mono font-semibold rounded bg-status-amberBg text-status-amberText border border-status-amberBorder">
-                    Shipping: Recalc Required
-                  </span>
-                  <span className="text-xs text-cocoa-600 font-mono">
-                    ₹4,300 • Combined Shipment
-                  </span>
-                </div>
-                <div className="text-xs text-cocoa-700 mt-1">
-                  Customer:{" "}
-                  <span className="font-medium text-cocoa-950">
-                    Customer B
-                  </span>{" "}
-                  (+91 XXXXX XXXXX) • Destination Pincode: 560034 (Bengaluru,
-                  KA)
-                </div>
-                <div className="text-[11px] text-amber-900 font-medium mt-0.5">
-                  Courier quote pending. Package awaiting rate assignment.
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 sm:self-center shrink-0">
-              <Link
-                href="/admin/orders"
-                className="touch-target px-3.5 py-1.5 bg-parchment-surface hover:bg-parchment-muted text-xs font-semibold text-cocoa-900 border border-parchment-line rounded transition-colors focus:ring-2 focus:ring-cocoa-700"
-              >
-                View Order
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 3: RECENT ORDERS DATA TABLE */}
+      {/* SECTION 2: RECENT ORDERS STREAM */}
       <section
         aria-labelledby="recentOrdersHeading"
         className="bg-parchment-surface border border-parchment-border rounded-md shadow-2xs overflow-hidden"
@@ -241,10 +167,10 @@ export default async function AdminDashboardPage() {
               id="recentOrdersHeading"
               className="text-base font-serif font-bold text-cocoa-950"
             >
-              Recent Orders
+              Recent Store Orders
             </h2>
             <p className="text-xs text-cocoa-600">
-              Authoritative orders stream bound to guest checkout data.
+              Real-time store orders stream from Supabase database.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -257,105 +183,110 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-parchment-border bg-parchment-surface font-mono text-[11px] uppercase tracking-wider text-cocoa-600">
-                <th scope="col" className="py-3 px-4 sm:px-6 font-semibold">
-                  Order
-                </th>
-                <th scope="col" className="py-3 px-4 font-semibold">
-                  Customer
-                </th>
-                <th scope="col" className="py-3 px-4 font-semibold">
-                  Destination
-                </th>
-                <th scope="col" className="py-3 px-4 font-semibold">
-                  Date &amp; Time
-                </th>
-                <th scope="col" className="py-3 px-4 font-semibold">
-                  Items
-                </th>
-                <th scope="col" className="py-3 px-4 font-semibold text-right">
-                  Total
-                </th>
-                <th scope="col" className="py-3 px-4 font-semibold text-center">
-                  Payment
-                </th>
-                <th scope="col" className="py-3 px-4 font-semibold text-center">
-                  Order Status
-                </th>
-                <th scope="col" className="py-3 px-4 font-semibold">
-                  Courier
-                </th>
-                <th
-                  scope="col"
-                  className="py-3 px-4 sm:px-6 font-semibold text-right"
-                >
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-parchment-border bg-parchment-surface">
-              <tr className="hover:bg-parchment-muted/40 transition-colors">
-                <td className="py-3.5 px-4 sm:px-6 font-mono font-bold text-cocoa-950">
-                  AJV-000123
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-medium text-cocoa-950">Customer D</div>
-                  <div className="text-[11px] text-cocoa-600 font-mono">
-                    +91 XXXXX XXXXX
-                  </div>
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-medium text-cocoa-950">Ernakulam, KL</div>
-                  <div className="text-[11px] text-cocoa-600 font-mono">
-                    682001
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-cocoa-700 whitespace-nowrap">
-                  <div>Oct 24, 2025</div>
-                  <div className="text-[11px] text-cocoa-600 font-mono">
-                    14:32 IST
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 text-cocoa-800">
-                  <span className="font-medium">The Grand Velvet Hamper</span>{" "}
-                  (1)
-                </td>
-                <td className="py-3.5 px-4 text-right font-mono font-bold text-cocoa-950">
-                  ₹4,385
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-status-greenBg text-status-greenText border border-status-greenBorder">
-                    Paid
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-status-amberBg text-status-amberText border border-status-amberBorder">
-                    Processing
-                  </span>
-                </td>
-                <td className="py-3.5 px-4">
-                  <div className="font-medium text-cocoa-950">
-                    DTDC Priority Air
-                  </div>
-                </td>
-                <td className="py-3.5 px-4 sm:px-6 text-right">
-                  <Link
-                    href="/admin/orders"
-                    className="touch-target px-3 py-1 bg-parchment-surface hover:bg-parchment-muted text-cocoa-900 border border-parchment-line rounded font-semibold text-xs transition-colors"
-                  >
-                    View Order
-                  </Link>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        {metrics.recentOrders.length === 0 ? (
+          <div className="p-12 text-center text-cocoa-600 space-y-2">
+            <ShoppingBag className="w-10 h-10 text-cocoa-400 mx-auto mb-2" />
+            <p className="font-serif text-base font-bold text-cocoa-950">No store orders recorded yet</p>
+            <p className="text-xs text-cocoa-600 max-w-sm mx-auto">
+              Guest checkout orders will automatically stream into this dashboard upon placement.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-parchment-border bg-parchment-surface font-mono text-[11px] uppercase tracking-wider text-cocoa-600">
+                  <th scope="col" className="py-3 px-4 sm:px-6 font-semibold">
+                    Order #
+                  </th>
+                  <th scope="col" className="py-3 px-4 font-semibold">
+                    Customer
+                  </th>
+                  <th scope="col" className="py-3 px-4 font-semibold">
+                    Destination
+                  </th>
+                  <th scope="col" className="py-3 px-4 font-semibold">
+                    Date
+                  </th>
+                  <th scope="col" className="py-3 px-4 font-semibold text-right">
+                    Total
+                  </th>
+                  <th scope="col" className="py-3 px-4 font-semibold text-center">
+                    Payment
+                  </th>
+                  <th scope="col" className="py-3 px-4 font-semibold text-center">
+                    Order Status
+                  </th>
+                  <th scope="col" className="py-3 px-4 sm:px-6 font-semibold text-right">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-parchment-border bg-parchment-surface">
+                {metrics.recentOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-parchment-muted/40 transition-colors">
+                    <td className="py-3.5 px-4 sm:px-6 font-mono font-bold text-cocoa-950">
+                      {order.order_number}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-medium text-cocoa-950">{order.customer_name}</div>
+                      <div className="text-[11px] text-cocoa-600 font-mono">
+                        {order.customer_phone}
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-medium text-cocoa-950">
+                        {order.shipping_district}, {order.shipping_state}
+                      </div>
+                      <div className="text-[11px] text-cocoa-600 font-mono">
+                        {order.shipping_pincode}
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4 text-cocoa-700 whitespace-nowrap">
+                      {new Date(order.created_at).toLocaleDateString("en-IN", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-cocoa-950">
+                      ₹{Number(order.total_amount || 0).toLocaleString("en-IN")}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                          order.payment_status === "paid"
+                            ? "bg-status-greenBg text-status-greenText border border-status-greenBorder"
+                            : order.payment_status === "failed"
+                            ? "bg-status-redBg text-status-redText border border-status-redBorder"
+                            : "bg-status-amberBg text-status-amberText border border-status-amberBorder"
+                        }`}
+                      >
+                        {order.payment_status}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-parchment-muted text-cocoa-900 border border-parchment-border">
+                        {order.order_status}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 sm:px-6 text-right">
+                      <Link
+                        href={`/admin/orders/${order.id}`}
+                        className="touch-target px-3 py-1 bg-parchment-surface hover:bg-parchment-muted text-cocoa-900 border border-parchment-line rounded font-semibold text-xs transition-colors"
+                      >
+                        View Order
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
-      {/* SECTION 4: SECONDARY METRICS & LOGISTICS MATRIX */}
+      {/* SECTION 3: SECONDARY METRICS & LOGISTICS MATRIX */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Column 1: Courier Operations */}
         <div className="bg-parchment-surface border border-parchment-border rounded-md p-5 shadow-2xs">
@@ -364,44 +295,21 @@ export default async function AdminDashboardPage() {
               Courier Operations
             </h3>
             <span className="text-[11px] font-mono text-cocoa-600">
-              Active Partners
+              {metrics.activeCouriersCount} Active Partners
             </span>
           </div>
 
-          <div className="mt-4 space-y-3.5 text-xs">
-            <div className="p-3 bg-parchment-muted/60 rounded border border-parchment-line flex items-center justify-between">
-              <div>
-                <div className="font-bold text-cocoa-950">
-                  Blue Dart Express
-                </div>
-                <div className="text-[11px] text-cocoa-600">
-                  Standard &amp; Express
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-mono font-bold text-cocoa-950">
-                  Active
-                </div>
-              </div>
-            </div>
-            <div className="p-3 bg-parchment-muted/60 rounded border border-parchment-line flex items-center justify-between">
-              <div>
-                <div className="font-bold text-cocoa-950">
-                  Delhivery Surface
-                </div>
-                <div className="text-[11px] text-cocoa-600">
-                  Surface Parcel
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-mono font-bold text-cocoa-950">
-                  Active
-                </div>
-              </div>
+          <div className="mt-4 space-y-3 text-xs text-cocoa-700 leading-relaxed">
+            <p>
+              Couriers dynamically resolve based on the customer&apos;s 6-digit destination pincode.
+            </p>
+            <div className="p-3 bg-parchment-muted/60 rounded border border-parchment-line flex items-center justify-between font-mono">
+              <span>Active Partners</span>
+              <span className="font-bold text-cocoa-950">{metrics.activeCouriersCount}</span>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-parchment-border flex items-center justify-between text-xs">
+          <div className="mt-5 pt-3 border-t border-parchment-border flex items-center justify-between text-xs">
             <span className="text-cocoa-600">Pincode Service Matrix</span>
             <Link
               href="/admin/shipping-rates"
@@ -419,35 +327,32 @@ export default async function AdminDashboardPage() {
               Product Inventory
             </h3>
             <span className="text-[11px] font-mono text-amber-800">
-              1 Item Low
+              {metrics.lowStockCount} Low Stock
             </span>
           </div>
 
-          <div className="mt-4 space-y-3 text-xs">
+          <div className="mt-4 space-y-3.5 text-xs">
             <div className="flex items-center justify-between p-2.5 rounded border border-parchment-line bg-parchment-surface">
               <div>
-                <div className="font-medium text-cocoa-950">
-                  The Grand Velvet Hamper
-                </div>
+                <div className="font-medium text-cocoa-950">Total Catalog Items</div>
                 <div className="text-[11px] text-cocoa-600 font-mono">
-                  ₹3,450 • In Stock
+                  {metrics.activeProductsCount} Active on Storefront
                 </div>
               </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-status-greenBg text-status-greenText border border-status-greenBorder">
-                In Stock
+              <span className="font-mono font-bold text-cocoa-950 text-base">
+                {metrics.totalProductsCount}
               </span>
             </div>
+
             <div className="flex items-center justify-between p-2.5 rounded border border-status-amberBorder bg-status-amberBg/20">
               <div>
-                <div className="font-medium text-cocoa-950">
-                  The Petite Chocolate Selection
-                </div>
+                <div className="font-medium text-cocoa-950">Inventory Warnings</div>
                 <div className="text-[11px] text-cocoa-600 font-mono">
-                  ₹1,100 • Low Stock
+                  {metrics.lowStockCount} Low Stock • {metrics.outOfStockCount} Sold Out
                 </div>
               </div>
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-status-amberBg text-status-amberText border border-status-amberBorder">
-                Low Stock
+                Warning
               </span>
             </div>
           </div>
@@ -467,7 +372,7 @@ export default async function AdminDashboardPage() {
         <div className="bg-parchment-surface border border-parchment-border rounded-md p-5 shadow-2xs">
           <div className="flex items-center justify-between pb-3 border-b border-parchment-border">
             <h3 className="text-sm font-serif font-bold text-cocoa-950">
-              Store Activity
+              Today&apos;s Store Performance
             </h3>
             <span className="text-[11px] font-mono text-cocoa-600">
               Live Operations
@@ -476,34 +381,32 @@ export default async function AdminDashboardPage() {
 
           <div className="mt-4 space-y-4 text-xs">
             <div className="p-3 bg-parchment-muted/50 rounded border border-parchment-line">
-              <div className="text-[11px] text-cocoa-600">Orders Today</div>
+              <div className="text-[11px] text-cocoa-600">Orders Placed Today</div>
               <div className="flex items-baseline justify-between mt-1">
                 <span className="text-2xl font-bold font-mono text-cocoa-950">
-                  14
+                  {metrics.ordersTodayCount}
                 </span>
               </div>
             </div>
 
             <div className="p-3 bg-parchment-muted/50 rounded border border-parchment-line">
-              <div className="text-[11px] text-cocoa-600">
-                Revenue Today (Captured)
-              </div>
+              <div className="text-[11px] text-cocoa-600">Revenue Today (Captured)</div>
               <div className="flex items-baseline justify-between mt-1">
                 <span className="text-2xl font-bold font-mono text-cocoa-950">
-                  ₹52,620
+                  ₹{metrics.revenueToday.toLocaleString("en-IN")}
                 </span>
                 <span className="text-[11px] text-cocoa-600 font-mono">
-                  Razorpay Handoff
+                  Confirmed Payments
                 </span>
               </div>
             </div>
           </div>
 
           <div className="mt-4 pt-3 border-t border-parchment-border flex items-center justify-between text-xs">
-            <span className="text-cocoa-600">Guest Customers</span>
-            <span className="font-mono text-cocoa-800">
-              48 Unique Recipients
-            </span>
+            <span className="text-cocoa-600">Registered Customers</span>
+            <Link href="/admin/customers" className="font-mono text-burgundy hover:underline">
+              {metrics.totalCustomersCount} Recipients →
+            </Link>
           </div>
         </div>
       </div>
