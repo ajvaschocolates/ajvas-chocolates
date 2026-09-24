@@ -25,9 +25,12 @@ export interface PincodeResolution {
   error?: string;
 }
 
+export type ShippingZone = "kerala" | "tn_kar" | "other";
+
 export interface ShippingCalculationResult {
   success: boolean;
   shippingAmount?: number;
+  zone?: ShippingZone;
   error?: string;
 }
 
@@ -47,8 +50,7 @@ export type CourierState =
   | "none_available";
 
 export type ShippingCalculationState =
-  | "awaiting_pincode"
-  | "awaiting_courier"
+  | "awaiting_state"
   | "calculating"
   | "calculated"
   | "calculation_failed"
@@ -63,3 +65,4 @@ export type PaymentState =
   | "cancelled"
   | "pending"
   | "unavailable";
+

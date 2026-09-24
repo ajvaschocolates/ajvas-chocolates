@@ -8,11 +8,10 @@ import { useCart } from "@/context/cart-context";
 import { Container } from "@/components/ui/container";
 import {
   GuestCustomerFormData,
-  PincodeResolution,
   ShippingCalculationState,
+  ShippingZone,
 } from "@/types/checkout";
-import { calculateShippingRateAction } from "@/app/checkout/actions";
-import { PincodeCourierStep } from "./pincode-courier-step";
+import { calculateStateShippingAction } from "@/app/checkout/actions";
 import { CustomerAddressStep } from "./customer-address-step";
 import { PaymentActionStep } from "./payment-action-step";
 import { CheckoutSummary } from "./checkout-summary";
@@ -55,10 +54,9 @@ export function CheckoutView() {
   });
 
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof GuestCustomerFormData, string>>>({});
-  const [pincodeResolution, setPincodeResolution] = useState<PincodeResolution | null>(null);
-  const [selectedCourierId, setSelectedCourierId] = useState<string | null>(null);
   const [shippingAmount, setShippingAmount] = useState<number | null>(null);
-  const [shippingState, setShippingState] = useState<ShippingCalculationState>("awaiting_pincode");
+  const [shippingZone, setShippingZone] = useState<ShippingZone | null>(null);
+  const [shippingState, setShippingState] = useState<ShippingCalculationState>("awaiting_state");
 
   const handleFieldChange = useCallback((field: keyof GuestCustomerFormData, value: string) => {
     setFormData((prev) => {
@@ -71,70 +69,35 @@ export function CheckoutView() {
     });
   }, []);
 
-  const handlePincodeChange = useCallback((pin: string) => {
-    setFormData((prev) => {
-      if (prev.pincode === pin) return prev;
-      return { ...prev, pincode: pin };
-    });
-    setFormErrors((prev) => {
-      if (!prev.pincode) return prev;
-      return { ...prev, pincode: undefined };
-    });
-    setSelectedCourierId(null);
-    setShippingAmount(null);
-    setShippingState("awaiting_pincode");
-  }, []);
-
-  const handleResolutionChange = useCallback((res: PincodeResolution | null) => {
-    setPincodeResolution(res);
-
-    if (res && res.recognized) {
-      setFormData((prev) => {
-        if (prev.district === res.district && prev.state === res.state) return prev;
-        return { ...prev, district: res.district, state: res.state };
-      });
-      setShippingState((prev) => (prev === "awaiting_courier" ? prev : "awaiting_courier"));
-    } else {
-      setFormData((prev) => {
-        if (prev.district === "" && prev.state === "") return prev;
-        return { ...prev, district: "", state: "" };
-      });
-      setShippingState("awaiting_pincode");
-      setSelectedCourierId(null);
-      setShippingAmount(null);
-    }
-  }, []);
-
-  const handleCourierSelect = useCallback((courierId: string) => {
-    setSelectedCourierId(courierId);
-    setShippingAmount(null);
-    setShippingState("calculating");
-  }, []);
-
-  // Recalculate shipping whenever destination pincode, courier, or total weight changes
+  // Recalculate shipping whenever selected State or active items/quantities change
   useEffect(() => {
-    if (!pincodeResolution?.pincodeId || !selectedCourierId || totalWeightGrams <= 0) {
+    if (!formData.state || activeItems.length === 0) {
       setShippingAmount(null);
+      setShippingZone(null);
+      setShippingState("awaiting_state");
       return;
     }
 
     let isMounted = true;
     setShippingState("calculating");
 
+    const itemsPayload = activeItems.map((item) => ({
+      productId: item.productId,
+      quantity: item.quantity,
+    }));
+
     const runCalculation = async () => {
-      const res = await calculateShippingRateAction(
-        pincodeResolution.pincodeId!,
-        selectedCourierId,
-        totalWeightGrams
-      );
+      const res = await calculateStateShippingAction(formData.state, itemsPayload);
 
       if (!isMounted) return;
 
       if (res.success && res.shippingAmount !== undefined) {
         setShippingAmount(res.shippingAmount);
+        setShippingZone(res.zone || null);
         setShippingState("calculated");
       } else {
         setShippingAmount(null);
+        setShippingZone(null);
         setShippingState("calculation_failed");
       }
     };
@@ -144,7 +107,7 @@ export function CheckoutView() {
     return () => {
       isMounted = false;
     };
-  }, [pincodeResolution?.pincodeId, selectedCourierId, totalWeightGrams]);
+  }, [formData.state, activeItems]);
 
   // Form Validation
   const validateForm = useCallback((): boolean => {
@@ -161,23 +124,30 @@ export function CheckoutView() {
     if (!formData.addressLine1.trim()) {
       errors.addressLine1 = "Please enter your street address.";
     }
-    if (!pincodeResolution?.recognized) {
-      errors.pincode = "Please enter a validated 6-digit destination pincode.";
+    if (!formData.state.trim()) {
+      errors.state = "Please select your delivery state.";
+    }
+    if (!formData.district.trim()) {
+      errors.district = "Please select your delivery district.";
+    }
+    if (!/^\d{6}$/.test(formData.pincode.trim())) {
+      errors.pincode = "Please enter a valid 6-digit pincode.";
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [formData, pincodeResolution]);
+  }, [formData]);
 
   const isFormValid =
     formData.fullName.trim().length > 0 &&
     /^\d{10}$/.test(formData.phone.trim()) &&
     (!formData.email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) &&
     formData.addressLine1.trim().length > 0 &&
-    pincodeResolution?.recognized === true;
+    formData.state.trim().length > 0 &&
+    formData.district.trim().length > 0 &&
+    /^\d{6}$/.test(formData.pincode.trim());
 
   const canProceedToPayment =
     isFormValid &&
-    selectedCourierId !== null &&
     shippingAmount !== null &&
     shippingState === "calculated";
 
@@ -251,7 +221,7 @@ export function CheckoutView() {
                 Guest Checkout
               </h1>
               <p className="font-sans text-xs text-brand-muted mt-1">
-                Direct single-package order dispatch. No customer account required.
+                Direct order dispatch. No customer account required. State-based shipping calculation.
               </p>
             </div>
 
@@ -268,25 +238,14 @@ export function CheckoutView() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             {/* Left Column: Checkout Steps */}
             <div className="lg:col-span-7 flex flex-col gap-6">
-              {/* Step 1: Pincode & Delivery Partner */}
-              <PincodeCourierStep
-                pincode={formData.pincode}
-                onPincodeChange={handlePincodeChange}
-                onResolutionChange={handleResolutionChange}
-                selectedCourierId={selectedCourierId}
-                onCourierSelect={handleCourierSelect}
-              />
-
-              {/* Step 2: Contact Information & Address */}
+              {/* Step 1: Contact & Delivery Address Form */}
               <CustomerAddressStep
                 formData={formData}
                 onChange={handleFieldChange}
-                resolvedDistrict={formData.district}
-                resolvedState={formData.state}
                 errors={formErrors}
               />
 
-              {/* Step 3: Payment Handoff */}
+              {/* Step 2: Payment Handoff */}
               <PaymentActionStep
                 canProceed={canProceedToPayment}
                 totalAmount={totalPayable}
@@ -300,6 +259,7 @@ export function CheckoutView() {
                 items={activeItems}
                 subtotal={subtotal}
                 shippingAmount={shippingAmount}
+                shippingZone={shippingZone}
                 shippingState={shippingState}
                 totalWeightGrams={totalWeightGrams}
                 isBuyNowMode={isBuyNowMode}

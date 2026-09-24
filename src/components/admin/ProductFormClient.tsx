@@ -75,6 +75,21 @@ export default function ProductFormClient({
       ? String(product.height_cm)
       : ""
   );
+  const [shippingKerala, setShippingKerala] = useState<string>(
+    product?.shipping_kerala !== undefined && product.shipping_kerala !== null
+      ? String(product.shipping_kerala)
+      : "0"
+  );
+  const [shippingTnKar, setShippingTnKar] = useState<string>(
+    product?.shipping_tn_kar !== undefined && product.shipping_tn_kar !== null
+      ? String(product.shipping_tn_kar)
+      : "0"
+  );
+  const [shippingOther, setShippingOther] = useState<string>(
+    product?.shipping_other !== undefined && product.shipping_other !== null
+      ? String(product.shipping_other)
+      : "0"
+  );
 
   // Image URL & Gallery State
   const initialImagesList: ProductImage[] =
@@ -131,6 +146,9 @@ export default function ProductFormClient({
     formData.append("length_cm", lengthCm);
     formData.append("width_cm", widthCm);
     formData.append("height_cm", heightCm);
+    formData.append("shipping_kerala", shippingKerala);
+    formData.append("shipping_tn_kar", shippingTnKar);
+    formData.append("shipping_other", shippingOther);
     formData.append("image_url", imageUrl);
     formData.append("cloudinary_public_id", cloudinaryPublicId);
 
@@ -612,6 +630,97 @@ export default function ProductFormClient({
                   placeholder="10"
                   className="w-full px-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
                 />
+              </div>
+            </div>
+          </section>
+
+          {/* Card 5: State Shipping Rates */}
+          <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-4">
+            <div className="border-b border-parchment-border pb-3">
+              <div className="flex items-center gap-2">
+                <h2 className="font-sans text-lg font-bold text-cocoa-950">
+                  State Shipping Rates
+                </h2>
+                <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-brand-pink/20 text-brand-pink uppercase tracking-wider">
+                  Per-Unit Charging
+                </span>
+              </div>
+              <p className="text-xs text-cocoa-600 mt-1">
+                Regional unit shipping charges applied at checkout based on customer&apos;s state selection. 0.00 indicates free shipping.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+              <div>
+                <label
+                  htmlFor="shippingKerala"
+                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1"
+                >
+                  Kerala Charge (₹) <span className="text-burgundy">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-cocoa-600 text-xs font-bold">₹</span>
+                  <input
+                    id="shippingKerala"
+                    type="number"
+                    required
+                    min="0"
+                    step="1"
+                    value={shippingKerala}
+                    onChange={(e) => setShippingKerala(e.target.value)}
+                    placeholder="50"
+                    className="w-full pl-7 pr-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
+                  />
+                </div>
+                <span className="text-[10px] text-cocoa-600 block mt-1">Kerala deliveries</span>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="shippingTnKar"
+                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1"
+                >
+                  TN &amp; KA Charge (₹) <span className="text-burgundy">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-cocoa-600 text-xs font-bold">₹</span>
+                  <input
+                    id="shippingTnKar"
+                    type="number"
+                    required
+                    min="0"
+                    step="1"
+                    value={shippingTnKar}
+                    onChange={(e) => setShippingTnKar(e.target.value)}
+                    placeholder="80"
+                    className="w-full pl-7 pr-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
+                  />
+                </div>
+                <span className="text-[10px] text-cocoa-600 block mt-1">Tamil Nadu &amp; Karnataka</span>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="shippingOther"
+                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1"
+                >
+                  Other States Charge (₹) <span className="text-burgundy">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-cocoa-600 text-xs font-bold">₹</span>
+                  <input
+                    id="shippingOther"
+                    type="number"
+                    required
+                    min="0"
+                    step="1"
+                    value={shippingOther}
+                    onChange={(e) => setShippingOther(e.target.value)}
+                    placeholder="120"
+                    className="w-full pl-7 pr-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
+                  />
+                </div>
+                <span className="text-[10px] text-cocoa-600 block mt-1">Rest of India &amp; UTs</span>
               </div>
             </div>
           </section>

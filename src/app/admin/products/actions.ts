@@ -125,6 +125,9 @@ export async function createProductAction(
   const lengthCm = parseFloat(formData.get("length_cm") as string || "0") || null;
   const widthCm = parseFloat(formData.get("width_cm") as string || "0") || null;
   const heightCm = parseFloat(formData.get("height_cm") as string || "0") || null;
+  const shippingKerala = parseFloat(formData.get("shipping_kerala") as string || "0");
+  const shippingTnKar = parseFloat(formData.get("shipping_tn_kar") as string || "0");
+  const shippingOther = parseFloat(formData.get("shipping_other") as string || "0");
   const imageUrl = (formData.get("image_url") as string || "").trim() || null;
   const cloudinaryPublicIdFromForm = (formData.get("cloudinary_public_id") as string || "").trim() || null;
 
@@ -138,6 +141,18 @@ export async function createProductAction(
 
   if (isNaN(weightGrams) || weightGrams <= 0) {
     return { success: false, error: "Valid weight (in grams) is required for shipping calculations." };
+  }
+
+  if (isNaN(shippingKerala) || shippingKerala < 0 || !Number.isFinite(shippingKerala)) {
+    return { success: false, error: "Valid Kerala shipping charge is required (0.00 or higher)." };
+  }
+
+  if (isNaN(shippingTnKar) || shippingTnKar < 0 || !Number.isFinite(shippingTnKar)) {
+    return { success: false, error: "Valid TN & Karnataka shipping charge is required (0.00 or higher)." };
+  }
+
+  if (isNaN(shippingOther) || shippingOther < 0 || !Number.isFinite(shippingOther)) {
+    return { success: false, error: "Valid Other States shipping charge is required (0.00 or higher)." };
   }
 
   if (!slug) {
@@ -163,6 +178,9 @@ export async function createProductAction(
         length_cm: lengthCm,
         width_cm: widthCm,
         height_cm: heightCm,
+        shipping_kerala: shippingKerala,
+        shipping_tn_kar: shippingTnKar,
+        shipping_other: shippingOther,
       })
       .select("id")
       .single();
@@ -236,6 +254,9 @@ export async function updateProductAction(
   const lengthCm = parseFloat(formData.get("length_cm") as string || "0") || null;
   const widthCm = parseFloat(formData.get("width_cm") as string || "0") || null;
   const heightCm = parseFloat(formData.get("height_cm") as string || "0") || null;
+  const shippingKerala = parseFloat(formData.get("shipping_kerala") as string || "0");
+  const shippingTnKar = parseFloat(formData.get("shipping_tn_kar") as string || "0");
+  const shippingOther = parseFloat(formData.get("shipping_other") as string || "0");
   const imageUrl = (formData.get("image_url") as string || "").trim() || null;
 
   if (!name) {
@@ -248,6 +269,18 @@ export async function updateProductAction(
 
   if (isNaN(weightGrams) || weightGrams <= 0) {
     return { success: false, error: "Valid weight (in grams) is required for shipping calculations." };
+  }
+
+  if (isNaN(shippingKerala) || shippingKerala < 0 || !Number.isFinite(shippingKerala)) {
+    return { success: false, error: "Valid Kerala shipping charge is required (0.00 or higher)." };
+  }
+
+  if (isNaN(shippingTnKar) || shippingTnKar < 0 || !Number.isFinite(shippingTnKar)) {
+    return { success: false, error: "Valid TN & Karnataka shipping charge is required (0.00 or higher)." };
+  }
+
+  if (isNaN(shippingOther) || shippingOther < 0 || !Number.isFinite(shippingOther)) {
+    return { success: false, error: "Valid Other States shipping charge is required (0.00 or higher)." };
   }
 
   if (!slug) {
@@ -273,6 +306,9 @@ export async function updateProductAction(
         length_cm: lengthCm,
         width_cm: widthCm,
         height_cm: heightCm,
+        shipping_kerala: shippingKerala,
+        shipping_tn_kar: shippingTnKar,
+        shipping_other: shippingOther,
         updated_at: new Date().toISOString(),
       })
       .eq("id", productId);

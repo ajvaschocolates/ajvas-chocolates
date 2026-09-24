@@ -1,12 +1,13 @@
 import { Package, ShieldCheck, Truck, Scale } from "lucide-react";
 import { CartItem } from "@/types/cart";
-import { ShippingCalculationState } from "@/types/checkout";
+import { ShippingCalculationState, ShippingZone } from "@/types/checkout";
 import { BrandLogo } from "@/components/layout/brand-logo";
 
 interface CheckoutSummaryProps {
   items: CartItem[];
   subtotal: number;
   shippingAmount: number | null;
+  shippingZone?: ShippingZone | null;
   shippingState: ShippingCalculationState;
   totalWeightGrams: number;
   isBuyNowMode?: boolean;
@@ -16,6 +17,7 @@ export function CheckoutSummary({
   items,
   subtotal,
   shippingAmount,
+  shippingZone,
   shippingState,
   totalWeightGrams,
   isBuyNowMode,
@@ -27,6 +29,19 @@ export function CheckoutSummary({
     totalWeightGrams >= 1000
       ? `${(totalWeightGrams / 1000).toFixed(1)} kg`
       : `${totalWeightGrams} g`;
+
+  const getZoneLabel = (zone?: ShippingZone | null) => {
+    switch (zone) {
+      case "kerala":
+        return "Kerala Rate Zone";
+      case "tn_kar":
+        return "TN & Karnataka Rate Zone";
+      case "other":
+        return "Rest of India Rate Zone";
+      default:
+        return "State-Based Shipping";
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-brand-sand/80 p-6 sm:p-7 shadow-subtle flex flex-col gap-6 lg:sticky lg:top-28">
@@ -93,31 +108,38 @@ export function CheckoutSummary({
         {/* Delivery */}
         <div className="flex flex-col gap-1 pt-1">
           <div className="flex items-center justify-between text-brand-espresso">
-            <span className="text-brand-muted">Delivery</span>
+            <span className="text-brand-muted flex items-center gap-1.5">
+              <span>Delivery Fee</span>
+              {shippingZone && (
+                <span className="px-1.5 py-0.5 text-[10px] font-mono bg-brand-pink/15 text-brand-pink rounded font-semibold">
+                  {getZoneLabel(shippingZone)}
+                </span>
+              )}
+            </span>
             {shippingAmount !== null ? (
               <span className="font-bold text-brand-espresso">
-                ₹{shippingAmount.toLocaleString("en-IN")}
+                {shippingAmount === 0 ? (
+                  <span className="text-emerald-700 font-bold uppercase text-xs">FREE</span>
+                ) : (
+                  `₹${shippingAmount.toLocaleString("en-IN")}`
+                )}
               </span>
             ) : shippingState === "calculating" || shippingState === "recalculating" ? (
               <span className="text-xs font-medium text-brand-gold animate-pulse">
-                Calculating rate...
+                Calculating state rate...
               </span>
             ) : shippingState === "calculation_failed" ? (
               <span className="text-xs font-medium text-amber-700">
-                Unavailable for destination
-              </span>
-            ) : shippingState === "awaiting_courier" ? (
-              <span className="text-xs font-medium text-brand-muted">
-                Select courier service
+                Unavailable for state
               </span>
             ) : (
               <span className="text-xs font-medium text-brand-muted">
-                Calculated in Step 1
+                Select State in Step 1
               </span>
             )}
           </div>
           <p className="text-[11px] text-brand-muted leading-tight">
-            Single combined package shipment based on destination pincode and courier service.
+            Per-unit regional shipping calculated automatically based on destination state.
           </p>
         </div>
 
@@ -130,7 +152,7 @@ export function CheckoutSummary({
             <span className="text-[11px] text-brand-muted font-normal block">
               {finalTotal !== null
                 ? "Total payable amount including delivery"
-                : "Final total calculated after delivery selection"}
+                : "Select delivery State in Step 1 to calculate total"}
             </span>
           </div>
           <div className="text-right">
@@ -150,11 +172,11 @@ export function CheckoutSummary({
       <div className="grid grid-cols-1 gap-2.5 text-[11px] font-sans text-brand-muted">
         <div className="flex items-center gap-2">
           <Truck className="w-3.5 h-3.5 text-brand-gold shrink-0" />
-          <span>Pan-India Courier Delivery</span>
+          <span>Pan-India Courier Dispatch</span>
         </div>
         <div className="flex items-center gap-2">
           <Package className="w-3.5 h-3.5 text-brand-gold shrink-0" />
-          <span>Consolidated Package Shipment</span>
+          <span>Carefully Packaged Confectionery</span>
         </div>
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-3.5 h-3.5 text-brand-gold shrink-0" />
