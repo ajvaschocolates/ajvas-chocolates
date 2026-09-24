@@ -1,4 +1,9 @@
 import { getActiveProducts } from "@/lib/supabase/catalog";
+import {
+  getActiveHeroBanners,
+  getHomepageSections,
+  getHomepageCategories,
+} from "@/lib/supabase/cms";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { HeroSection } from "@/components/home/hero-section";
@@ -14,7 +19,16 @@ import { GiftingCtaSection } from "@/components/home/gifting-cta-section";
 export const revalidate = 60; // ISR revalidation every 60 seconds
 
 export default async function HomePage() {
-  const products = await getActiveProducts(12);
+  const [products, heroBanners, sections, categories] = await Promise.all([
+    getActiveProducts(12),
+    getActiveHeroBanners(),
+    getHomepageSections(),
+    getHomepageCategories(),
+  ]);
+
+  const heroBanner = heroBanners[0] || null;
+  const brandStorySection = sections["brand_story"] || null;
+  const giftingExpSection = sections["gifting_experience"] || null;
 
   return (
     <div className="flex flex-col min-h-screen bg-brand-cream selection:bg-brand-gold selection:text-brand-espresso">
@@ -24,13 +38,13 @@ export default async function HomePage() {
       {/* Main Content Sections in Approved Top-to-Bottom Order */}
       <main className="flex-1 w-full">
         {/* 1. Hero Section */}
-        <HeroSection />
+        <HeroSection banner={heroBanner} />
 
         {/* 2. Curated Collections / Featured Selections */}
         <CuratedCollectionsSection products={products} />
 
         {/* 3. Shop by Occasion */}
-        <ShopByOccasionSection />
+        <ShopByOccasionSection categories={categories} />
 
         {/* 4. Flagship Product Spotlight */}
         <SpotlightSection featuredProduct={products[0] || null} />
@@ -39,10 +53,10 @@ export default async function HomePage() {
         <CuratedProductsGrid products={products} />
 
         {/* 6. Brand & Gifting Philosophy */}
-        <BrandStorySection />
+        <BrandStorySection section={brandStorySection} />
 
         {/* 7. Gifting Experience & Values */}
-        <GiftingExperienceSection />
+        <GiftingExperienceSection section={giftingExpSection} />
 
         {/* 8. Delivery Pincode Availability Checker */}
         <PincodeCheckerSection />

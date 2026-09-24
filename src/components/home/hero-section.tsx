@@ -1,8 +1,24 @@
-import { Gift, Truck, Lock, ArrowRight } from "lucide-react";
+import { Gift, Truck, Lock, ArrowRight, Sparkles } from "lucide-react";
+import { HeroBanner } from "@/types/cms";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 
-export function HeroSection() {
+export interface HeroSectionProps {
+  banner?: HeroBanner | null;
+}
+
+export function HeroSection({ banner }: HeroSectionProps) {
+  const eyebrow = banner?.eyebrow || "Celebration & Gifting";
+  const title = banner?.title || "Gifts worth opening slowly.";
+  const description =
+    banner?.description ||
+    "Chocolates crafted for life's celebrations and thoughtful gestures. Hand-assembled in keepsake presentation boxes with personalized greetings.";
+  const primaryCtaText = banner?.primary_cta_text || "Shop Gifts";
+  const primaryCtaLink = banner?.primary_cta_link || "#collections";
+  const secondaryCtaText = banner?.secondary_cta_text || "Explore Chocolates";
+  const secondaryCtaLink = banner?.secondary_cta_link || "#gifts";
+  const imageUrl = banner?.image_url;
+
   return (
     <section className="w-full bg-[#fdf2f5]/60 overflow-hidden py-12 lg:py-20 border-b border-brand-sand/50">
       <Container>
@@ -13,31 +29,31 @@ export function HeroSection() {
             <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 bg-brand-pink-light rounded-full border border-brand-pink/20">
               <span className="w-2 h-2 rounded-full bg-brand-pink"></span>
               <span className="font-sans text-xs uppercase tracking-widest text-brand-pink font-bold">
-                Celebration &amp; Gifting
+                {eyebrow}
               </span>
             </div>
 
             {/* H1 Main Headline */}
             <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-brand-navy leading-[1.1] mb-5">
-              <span className="text-brand-pink">Gifts</span> worth opening slowly.
+              {title}
             </h1>
 
             {/* Description */}
             <p className="font-sans text-base sm:text-lg text-brand-muted leading-relaxed mb-8 max-w-lg">
-              Chocolates crafted for life&apos;s celebrations and thoughtful gestures. Hand-assembled in keepsake presentation boxes with personalized greetings.
+              {description}
             </p>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full sm:w-auto">
-              <a href="#collections">
+              <a href={primaryCtaLink}>
                 <Button variant="primary" size="lg" className="w-full sm:w-auto gap-2 bg-brand-pink text-white hover:bg-brand-pink-hover shadow-md rounded-full">
-                  <span>Shop Gifts</span>
+                  <span>{primaryCtaText}</span>
                   <ArrowRight className="w-4 h-4 text-white" />
                 </Button>
               </a>
-              <a href="#gifts">
+              <a href={secondaryCtaLink}>
                 <Button variant="outline" size="lg" className="w-full sm:w-auto rounded-full border-brand-navy/30 text-brand-navy hover:bg-white hover:border-brand-pink">
-                  Explore Chocolates
+                  {secondaryCtaText}
                 </Button>
               </a>
             </div>
@@ -62,12 +78,26 @@ export function HeroSection() {
           {/* Right Hero Showcase Image */}
           <div className="lg:col-span-6 relative">
             <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] rounded-3xl overflow-hidden bg-white shadow-elevated border border-brand-sand/80">
-              <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqgb9Q_fPTLG8u1oxJQ4NcTtSITwo3_7oh9hsOCEttnPmJ7Lga1rkVsxd8FUGexLaKo3nMcZ4CRsTPJuiBeWjzQsLMhtlWHnprvmMQBAV6fl9j29X8rdNYWhieYKkEqUVGnUAGa4PYEgb2wzZJy_OGydPb_5Q5eFFRMei5c6XdNMhy4O1rMmTCkDmnKsC1yumFgFdKIVZK0WmITEhuWQFL45fLq2UwTQ8ETlP9RGcmbXpEOsD06-uy"
-                alt="AJVAS Chocolates keepsake gift hamper presentation"
-                className="w-full h-full object-cover"
-                loading="eager"
-              />
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={title}
+                  className="w-full h-full object-cover"
+                  loading="eager"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#fdf2f6] via-[#f7e4eb] to-[#e8d5de] flex flex-col items-center justify-center p-8 text-center border border-brand-pink/20">
+                  <div className="w-16 h-16 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-brand-pink mb-4 shadow-sm">
+                    <Sparkles className="w-8 h-8" />
+                  </div>
+                  <h3 className="font-serif text-2xl font-extrabold text-brand-navy max-w-sm">
+                    {title}
+                  </h3>
+                  <p className="font-sans text-xs text-brand-muted mt-2 max-w-xs">
+                    AJVAS Artisanal Confections & Keepsake Presentation Box
+                  </p>
+                </div>
+              )}
 
               {/* Top Right Floating Badge */}
               <div className="absolute top-4 right-4 bg-amber-100/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-amber-200/80 shadow-md max-w-[150px] text-center hidden sm:block">

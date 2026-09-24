@@ -1,6 +1,19 @@
+import { Sparkles } from "lucide-react";
+import { HomepageSection } from "@/types/cms";
 import { Container } from "@/components/ui/container";
 
-export function BrandStorySection() {
+export interface BrandStorySectionProps {
+  section?: HomepageSection | null;
+}
+
+export function BrandStorySection({ section }: BrandStorySectionProps) {
+  const eyebrow = section?.eyebrow || "The Ajvas Philosophy";
+  const title = section?.title || "Chocolates made for human moments.";
+  const description =
+    section?.description ||
+    "Ajvas was founded on a simple premise: a box of chocolates should feel like a celebration before it's even opened. We make chocolate confections presented with woven ribbons and personalized notes.";
+  const imageUrl = section?.image_url;
+
   return (
     <section className="w-full bg-brand-surface py-16 lg:py-24 border-b border-brand-sand/60" id="story">
       <Container>
@@ -8,15 +21,15 @@ export function BrandStorySection() {
           {/* Story Text */}
           <div className="lg:col-span-6 flex flex-col items-start">
             <span className="font-sans text-xs uppercase tracking-widest text-brand-gold font-bold">
-              The Ajvas Philosophy
+              {eyebrow}
             </span>
 
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-brand-espresso mt-2 mb-5 leading-tight">
-              Chocolates made for human moments.
+              {title}
             </h2>
 
             <p className="font-sans text-base text-brand-muted mb-4 leading-relaxed">
-              Ajvas was founded on a simple premise: a box of chocolates should feel like a celebration before it&apos;s even opened. We make chocolate confections presented with woven ribbons and personalized notes.
+              {description}
             </p>
 
             <p className="font-sans text-base text-brand-muted mb-8 leading-relaxed">
@@ -55,12 +68,26 @@ export function BrandStorySection() {
           {/* Lifestyle / Packaging Image */}
           <div className="lg:col-span-6">
             <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-elevated bg-white border border-brand-border/60">
-              <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDStnchmpvuQiHPSwZWLXqPNYNNtIAM8R1zfAnWkcJklCX0G2gsguGTaN4RZkf3g3R63w56OHHFoOgMu1263gSJ6i47R8tzLtbSb2XGWgWm5grX4h7K_qBkyxqfz4TupAkb-8cxhRvz6q1kKOtNAD4jwBoFVbCzlaPuY1sk0xmsi3RdJbtbQiRz7KgrlDbP53TfytiQjUOxYnsjfEYvtnyp-Dg2UWKYQ6GXoi_Q4rWgkQ3KBY8UBYrx"
-                alt="AJVAS Chocolates keepsake packaging and personalized greeting cards"
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#f8ece9] via-[#f2deda font-serif] to-[#e6cbc5] flex flex-col items-center justify-center p-8 text-center border border-brand-sand">
+                  <div className="w-14 h-14 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-brand-burgundy mb-3 shadow-xs">
+                    <Sparkles className="w-7 h-7" />
+                  </div>
+                  <h3 className="font-serif text-xl font-bold text-brand-espresso max-w-sm">
+                    {title}
+                  </h3>
+                  <p className="font-sans text-xs text-brand-muted mt-1 max-w-xs">
+                    Keepsake Box &amp; Personalized Note Presentation
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
