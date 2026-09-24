@@ -1,6 +1,8 @@
 "use server";
 
 import {
+  calculateStateShippingServer,
+  StateShippingItemInput,
   resolvePincode,
   getCouriersForPincode,
   calculateShippingRateServer,
@@ -9,30 +11,29 @@ import { lookupPincode, PincodeLookupResult } from "@/lib/supabase/pincode";
 import { AvailableCourier, PincodeResolution, ShippingCalculationResult } from "@/types/checkout";
 
 /**
- * Server-side action to resolve destination pincode for checkout.
+ * Server Action: Calculates state-based shipping amount for checkout (Rule A - PER_UNIT).
  */
+export async function calculateStateShippingAction(
+  stateName: string,
+  items: StateShippingItemInput[]
+): Promise<ShippingCalculationResult> {
+  return await calculateStateShippingServer(stateName, items);
+}
+
+/* Legacy Server Actions (Preserved for compatibility) */
+
 export async function resolvePincodeAction(pincode: string): Promise<PincodeResolution> {
   return await resolvePincode(pincode);
 }
 
-/**
- * Server-side action for PDP pincode availability lookup.
- */
 export async function lookupPincodeAction(pincode: string): Promise<PincodeLookupResult> {
   return await lookupPincode(pincode);
 }
 
-/**
- * Server-side action to get active couriers for a recognized destination pincode.
- */
 export async function getCouriersForPincodeAction(pincodeId: string): Promise<AvailableCourier[]> {
   return await getCouriersForPincode(pincodeId);
 }
 
-/**
- * Server-side action to calculate shipping rate based on package weight and courier selection.
- * Raw rate tables are never sent to the client.
- */
 export async function calculateShippingRateAction(
   pincodeId: string,
   courierId: string,

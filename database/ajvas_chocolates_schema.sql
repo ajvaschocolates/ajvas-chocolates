@@ -177,11 +177,15 @@ create table if not exists public.products (
   status public.record_status not null default 'active',
   availability public.product_availability not null default 'in_stock',
 
-  -- Package metrics used for shipping calculation.
+  -- Package metrics & regional shipping rates used for calculation.
   weight_grams integer not null,
   length_cm numeric(10,2),
   width_cm numeric(10,2),
   height_cm numeric(10,2),
+
+  shipping_kerala numeric(12,2) not null default 0.00,
+  shipping_tn_kar numeric(12,2) not null default 0.00,
+  shipping_other numeric(12,2) not null default 0.00,
 
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -197,6 +201,15 @@ create table if not exists public.products (
 
   constraint products_discount_value_non_negative
     check (discount_value >= 0),
+
+  constraint products_shipping_kerala_non_negative
+    check (shipping_kerala >= 0),
+
+  constraint products_shipping_tn_kar_non_negative
+    check (shipping_tn_kar >= 0),
+
+  constraint products_shipping_other_non_negative
+    check (shipping_other >= 0),
 
   constraint products_weight_positive
     check (weight_grams > 0),
