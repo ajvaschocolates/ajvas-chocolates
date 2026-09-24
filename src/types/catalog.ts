@@ -6,6 +6,9 @@ export interface Category {
   id: string;
   name: string;
   status: RecordStatus;
+  image_url?: string | null;
+  image_public_id?: string | null;
+  display_order?: number;
   created_at: string;
   updated_at: string;
 }

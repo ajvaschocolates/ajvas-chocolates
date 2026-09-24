@@ -20,6 +20,19 @@ interface ProductSingleImageUploaderProps {
   currentPublicId?: string;
   onImageChange: (imageUrl: string, publicId?: string) => void;
   productId?: string;
+  getSignatureAction?: (targetId: string) => Promise<{
+    success: boolean;
+    error?: string;
+    params?: {
+      signature: string;
+      timestamp: number;
+      apiKey: string;
+      cloudName: string;
+      folder: string;
+      publicId: string;
+      tags: string;
+    };
+  }>;
 }
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB limit
@@ -35,6 +48,7 @@ export default function ProductSingleImageUploader({
   currentPublicId,
   onImageChange,
   productId = "new",
+  getSignatureAction = getCloudinaryUploadSignatureAction,
 }: ProductSingleImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const xhrRef = useRef<XMLHttpRequest | null>(null);
@@ -123,7 +137,7 @@ export default function ProductSingleImageUploader({
     setUploadProgress(0);
 
     try {
-      const sigRes = await getCloudinaryUploadSignatureAction(productId);
+      const sigRes = await getSignatureAction(productId);
       if (!sigRes.success || !sigRes.params) {
         throw new Error(
           sigRes.error || "Failed to obtain secure upload signature from server."

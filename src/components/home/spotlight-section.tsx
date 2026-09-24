@@ -1,4 +1,4 @@
-import { CheckCircle2, Gift } from "lucide-react";
+import { CheckCircle2, Gift, Sparkles } from "lucide-react";
 import { Product } from "@/types/catalog";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,12 @@ export function SpotlightSection({ featuredProduct }: SpotlightSectionProps) {
     "Delivery across supported pincodes",
   ];
 
+  const imageUrl = featuredProduct?.images?.[0]?.image_url;
+  const imageAlt =
+    featuredProduct?.images?.[0]?.alt_text ||
+    featuredProduct?.name ||
+    "AJVAS Chocolates signature gift presentation";
+
   return (
     <section className="w-full bg-[#fdf2f6] py-14 lg:py-20 border-b border-brand-sand/60" id="spotlight">
       <Container>
@@ -23,18 +29,26 @@ export function SpotlightSection({ featuredProduct }: SpotlightSectionProps) {
             {/* Spotlight Image */}
             <div className="lg:col-span-6 order-2 lg:order-1">
               <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-elevated bg-brand-pink-light/30 border border-brand-sand/60">
-                <img
-                  src={
-                    featuredProduct?.images?.[0]?.image_url ||
-                    "https://lh3.googleusercontent.com/aida-public/AB6AXuD24TCFqGpo1K0QhKNIXE-Bf3Zx11VI1RQMGckQr9SGEl1F_UydlSn9-xPwKB_19gpN8bxE1uajEXlFzM6jDYBlpLTb0IKOP1iatfYwH19iKoxSaZdFvZYLX0pp-lmUK5WUMdfxMTQQe4MbemVHRpb_MtraF0mACudl1NtUctAhHcj76tTZFoqsZI4a23maGt_pvLBlWUU3js9x-7YNTLq5ZrDMMDhZuWHTamQl_eGCvOod6yB-N0ST"
-                  }
-                  alt={
-                    featuredProduct?.images?.[0]?.alt_text ||
-                    "AJVAS Chocolates signature gift presentation"
-                  }
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={imageAlt}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#fdf2f6] via-[#f7e4eb] to-[#eed2de] flex flex-col items-center justify-center p-8 text-center border border-brand-pink/20">
+                    <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-brand-pink mb-3 shadow-md">
+                      <Sparkles className="w-7 h-7" />
+                    </div>
+                    <h3 className="font-serif text-xl font-bold text-brand-navy max-w-xs">
+                      Treat Every Moment with Something Special
+                    </h3>
+                    <p className="font-sans text-xs text-brand-muted mt-1 max-w-xs font-medium">
+                      Handcrafted Confections &amp; Signature Gift Hampers
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
