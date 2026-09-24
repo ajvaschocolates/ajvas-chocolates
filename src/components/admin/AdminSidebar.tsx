@@ -69,11 +69,6 @@ export default function AdminSidebar({
       href: "/admin/couriers",
       icon: Truck,
     },
-    {
-      name: "Shipping Rates",
-      href: "/admin/shipping-rates",
-      icon: Receipt,
-    },
   ];
 
   return (

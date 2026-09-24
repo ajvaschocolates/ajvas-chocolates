@@ -36,6 +36,9 @@ export interface Product {
   length_cm: number | null;
   width_cm: number | null;
   height_cm: number | null;
+  shipping_kerala?: number;
+  shipping_tn_kar?: number;
+  shipping_other?: number;
   created_at: string;
   updated_at: string;
   images?: ProductImage[];
