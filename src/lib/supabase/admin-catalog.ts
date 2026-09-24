@@ -146,7 +146,8 @@ export async function getAllAdminCategories(): Promise<Category[]> {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("categories")
-      .select("id, name, status, created_at, updated_at")
+      .select("id, name, status, image_url, image_public_id, display_order, created_at, updated_at")
+      .order("display_order", { ascending: true })
       .order("name", { ascending: true });
 
     if (error) {
@@ -173,7 +174,8 @@ export async function getAdminCategoriesWithCounts(): Promise<CategoryWithCount[
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("categories")
-      .select("id, name, status, created_at, updated_at, products:products(id)")
+      .select("id, name, status, image_url, image_public_id, display_order, created_at, updated_at, products:products(id)")
+      .order("display_order", { ascending: true })
       .order("name", { ascending: true });
 
     if (error) {
@@ -187,6 +189,9 @@ export async function getAdminCategoriesWithCounts(): Promise<CategoryWithCount[
       id: string;
       name: string;
       status: "active" | "inactive";
+      image_url?: string | null;
+      image_public_id?: string | null;
+      display_order?: number;
       created_at: string;
       updated_at: string;
       products: Array<{ id: string }> | null;
@@ -194,6 +199,9 @@ export async function getAdminCategoriesWithCounts(): Promise<CategoryWithCount[
       id: cat.id,
       name: cat.name,
       status: cat.status,
+      image_url: cat.image_url || null,
+      image_public_id: cat.image_public_id || null,
+      display_order: cat.display_order ?? 0,
       created_at: cat.created_at,
       updated_at: cat.updated_at,
       product_count: Array.isArray(cat.products) ? cat.products.length : 0,

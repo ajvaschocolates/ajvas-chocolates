@@ -24,6 +24,10 @@ export async function createCategoryAction(
 
   const name = (formData.get("name") as string || "").trim();
   const status = (formData.get("status") as string || "active") as "active" | "inactive";
+  const imageUrl = (formData.get("image_url") as string || "").trim() || null;
+  const imagePublicId = (formData.get("image_public_id") as string || "").trim() || null;
+  const displayOrderRaw = formData.get("display_order");
+  const displayOrder = displayOrderRaw !== null && displayOrderRaw !== "" ? parseInt(String(displayOrderRaw), 10) : 0;
 
   if (!name) {
     return { success: false, error: "Category name is required." };
@@ -37,6 +41,9 @@ export async function createCategoryAction(
       .insert({
         name,
         status,
+        image_url: imageUrl,
+        image_public_id: imagePublicId,
+        display_order: isNaN(displayOrder) ? 0 : displayOrder,
       })
       .select("id")
       .single();
@@ -70,7 +77,7 @@ export async function createCategoryAction(
 }
 
 /**
- * Updates an existing category's name and status.
+ * Updates an existing category's name, status, image, and display order.
  */
 export async function updateCategoryAction(
   categoryId: string,
@@ -87,6 +94,10 @@ export async function updateCategoryAction(
 
   const name = (formData.get("name") as string || "").trim();
   const status = (formData.get("status") as string || "active") as "active" | "inactive";
+  const imageUrl = (formData.get("image_url") as string || "").trim() || null;
+  const imagePublicId = (formData.get("image_public_id") as string || "").trim() || null;
+  const displayOrderRaw = formData.get("display_order");
+  const displayOrder = displayOrderRaw !== null && displayOrderRaw !== "" ? parseInt(String(displayOrderRaw), 10) : 0;
 
   if (!name) {
     return { success: false, error: "Category name is required." };
@@ -100,6 +111,9 @@ export async function updateCategoryAction(
       .update({
         name,
         status,
+        image_url: imageUrl,
+        image_public_id: imagePublicId,
+        display_order: isNaN(displayOrder) ? 0 : displayOrder,
         updated_at: new Date().toISOString(),
       })
       .eq("id", categoryId);

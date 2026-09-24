@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutGrid,
+  Sparkles,
   ShoppingBag,
   Package,
   Tag,
@@ -43,6 +44,12 @@ export default function AdminSidebar({
       href: "/admin",
       icon: LayoutGrid,
       exact: true,
+    },
+    {
+      name: "Homepage CMS",
+      href: "/admin/homepage",
+      icon: Sparkles,
+      badge: "CMS",
     },
     {
       name: "Orders",

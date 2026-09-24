@@ -1,29 +1,22 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { Category } from "@/types/catalog";
 import { Container } from "@/components/ui/container";
 
-export function ShopByOccasionSection() {
-  const occasions = [
-    {
-      title: "Festive Celebrations",
-      imageUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDVzufnEHtGwfs8yRMGCcnygXcWB3jilaMPOCsLrbebtbLU3QgGHKszisKxEIaBYK9LIabqMV_xhMEnW7luZxnqGaQOgdKQvlunt5imrx0sx1TffKs2yKKSf9SEnKqxO7XZyRztpwKvu4z0EgEURsMMdx9wbruBC1-WWW_NgQwGR6xw3_iJ74VtCL_OPFH8AQHQN3dqqp0u_lfF9wgo5xkiqXIApk4e5uXBbsLgBxLCYa1ofuwpcyYr",
-    },
-    {
-      title: "Weddings & Anniversaries",
-      imageUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuD2cEL6SHwP-9ZrglJ3NvJ_R39zmuR0Ra9BsJ_R7k9LREZRH1SJm6th2-fu776gAUyaCWXsSLF95psqFU4Xkj3g8oH7kKBvGg46qcL-cGUHPgVHhBx3wk7ut9MmbtJNU-Q0SJCrRkbLdIsPWVFEqWZXAZKZiHd7cAR1_lz4OejrQNoP0O1WzSUFckXjy49kSRnuL8XOo5K9Q_s1VYKDg6T5qTOgP7ZMLbiaEE2A-S59aEFIzzJ_7P8X",
-    },
-    {
-      title: "Birthdays",
-      imageUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuChToowsg6bjcQZ9KcVr_7KOPobqVlANMpWcZcb0aGhkhlJLqcP0AfUujvxyJy9meO6pvayWZkkIsltUqr2wAak1_QDNac6d4xFmqumeIMVHDiH0BxKPaIZdxm01g0tSDlM8Kgi85dzPT_oviwbi-arprFPSqZDT_rxhDDr_Eg-bXLl30zKSEUBxib7nijtEHrczYqp5X1y5yKvKPHXafTOQqetOQdnX5XmqbTiI2ggdIJVwJGng9cv",
-    },
-    {
-      title: "Corporate Gifting",
-      imageUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAi403r0Vk3s5XNGGhXIoufr-T0MGcPMLCoVPbpmTjsLHg8LGGHP2r3WaE-4zaZWe_pR-P25zl-y0zdDnjzzyDW2tYaVoBqpPJQY2QSol8SRXQmGx-IvZiYXu74piao8UXnzZCJnim63Rn8gbX7BTEKTOVKOWH5ty1FhnYALgP-ozWQ4iKY68DW8r3zf9lswCl6HCGk4zAUCkh7DHzQGRvFLreIVRnB54h8hwvE6SY62Q3V_U4H-sBR",
-    },
-  ];
+export interface ShopByOccasionSectionProps {
+  categories?: Category[];
+}
+
+export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps) {
+  // Use active categories if provided, otherwise fallback array of titles
+  const displayItems =
+    categories && categories.length > 0
+      ? categories
+      : [
+          { id: "1", name: "Festive Celebrations", image_url: null },
+          { id: "2", name: "Weddings & Anniversaries", image_url: null },
+          { id: "3", name: "Birthdays", image_url: null },
+          { id: "4", name: "Corporate Gifting", image_url: null },
+        ];
 
   return (
     <section className="w-full bg-[#fdf8f5] py-14 lg:py-20 border-b border-brand-sand/60" id="occasions">
@@ -38,32 +31,42 @@ export function ShopByOccasionSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {occasions.map((occasion) => (
-            <a
-              key={occasion.title}
-              href="/shop"
-              className="group relative h-72 rounded-2xl overflow-hidden shadow-subtle hover:shadow-elevated transition-all duration-300 flex flex-col justify-end p-5 border border-brand-sand/60"
-            >
-              {/* Background Image */}
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url('${occasion.imageUrl}')` }}
-              />
+          {displayItems.slice(0, 4).map((item) => {
+            const hasImage = Boolean(item.image_url);
+            return (
+              <a
+                key={item.id || item.name}
+                href="/shop"
+                className="group relative h-72 rounded-2xl overflow-hidden shadow-subtle hover:shadow-elevated transition-all duration-300 flex flex-col justify-end p-5 border border-brand-sand/60 bg-gradient-to-br from-brand-navy to-[#1a2d42]"
+              >
+                {/* Background Image if available */}
+                {hasImage ? (
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                    style={{ backgroundImage: `url('${item.image_url}')` }}
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-navy via-[#2c1d27] to-[#4a2638] flex flex-col items-center justify-center p-6 text-center">
+                    <Sparkles className="w-8 h-8 text-brand-pink/60 mb-2" />
+                    <span className="font-serif text-sm text-white/80 font-bold">AJVAS Confections</span>
+                  </div>
+                )}
 
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/30 to-transparent" />
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/30 to-transparent" />
 
-              {/* Content */}
-              <div className="relative z-10 flex items-end justify-between gap-3 w-full">
-                <h3 className="font-serif text-xl font-bold text-white leading-snug">
-                  {occasion.title}
-                </h3>
-                <span className="w-8 h-8 rounded-full bg-white text-brand-navy group-hover:bg-brand-pink group-hover:text-white flex items-center justify-center shrink-0 shadow-md transition-all duration-300">
-                  <ArrowRight className="w-4 h-4" />
-                </span>
-              </div>
-            </a>
-          ))}
+                {/* Content */}
+                <div className="relative z-10 flex items-end justify-between gap-3 w-full">
+                  <h3 className="font-serif text-xl font-bold text-white leading-snug">
+                    {item.name}
+                  </h3>
+                  <span className="w-8 h-8 rounded-full bg-white text-brand-navy group-hover:bg-brand-pink group-hover:text-white flex items-center justify-center shrink-0 shadow-md transition-all duration-300">
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
+                </div>
+              </a>
+            );
+          })}
         </div>
       </Container>
     </section>

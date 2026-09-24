@@ -136,6 +136,9 @@ create table if not exists public.categories (
 
   name text not null,
   status public.record_status not null default 'active',
+  image_url text,
+  image_public_id text,
+  display_order integer not null default 0,
 
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -150,8 +153,92 @@ create unique index if not exists categories_name_lower_unique
 create index if not exists categories_status_idx
   on public.categories (status);
 
+create index if not exists categories_display_order_idx
+  on public.categories (display_order, name);
+
 create trigger categories_set_updated_at
 before update on public.categories
+for each row
+execute function public.set_updated_at();
+
+
+-- ============================================================
+-- 4B. HERO BANNERS (HOMEPAGE CMS)
+-- ============================================================
+
+create table if not exists public.hero_banners (
+  id uuid primary key default gen_random_uuid(),
+
+  eyebrow text,
+  title text not null,
+  description text,
+
+  image_url text not null,
+  image_public_id text,
+
+  primary_cta_text text,
+  primary_cta_link text,
+  secondary_cta_text text,
+  secondary_cta_link text,
+
+  status public.record_status not null default 'active',
+  display_order integer not null default 0,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+
+  constraint hero_banners_title_not_empty
+    check (length(trim(title)) > 0),
+
+  constraint hero_banners_image_url_not_empty
+    check (length(trim(image_url)) > 0)
+);
+
+create index if not exists hero_banners_status_display_order_idx
+  on public.hero_banners (status, display_order, created_at desc);
+
+create trigger hero_banners_set_updated_at
+before update on public.hero_banners
+for each row
+execute function public.set_updated_at();
+
+
+-- ============================================================
+-- 4C. HOMEPAGE SECTIONS (HOMEPAGE EDITORIAL CMS)
+-- ============================================================
+
+create table if not exists public.homepage_sections (
+  id uuid primary key default gen_random_uuid(),
+
+  section_key text unique not null,
+  eyebrow text,
+  title text,
+  description text,
+
+  image_url text,
+  image_public_id text,
+
+  primary_cta_text text,
+  primary_cta_link text,
+  secondary_cta_text text,
+  secondary_cta_link text,
+
+  content_json jsonb,
+  status public.record_status not null default 'active',
+  display_order integer not null default 0,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+
+  constraint homepage_sections_key_not_empty
+    check (length(trim(section_key)) > 0)
+);
+
+create index if not exists homepage_sections_key_idx
+  on public.homepage_sections (section_key);
+
+create trigger homepage_sections_set_updated_at
+before update on public.homepage_sections
 for each row
 execute function public.set_updated_at();
 
@@ -939,6 +1026,55 @@ with check (public.is_admin());
 
 
 -- ============================================================
+-- 19B. HOMEPAGE CMS POLICIES (HERO BANNERS & SECTIONS)
+-- ============================================================
+
+alter table public.hero_banners enable row level security;
+
+drop policy if exists "Public can read active hero banners"
+on public.hero_banners;
+
+create policy "Public can read active hero banners"
+on public.hero_banners
+for select
+to anon, authenticated
+using (status = 'active');
+
+drop policy if exists "Admins can manage hero banners"
+on public.hero_banners;
+
+create policy "Admins can manage hero banners"
+on public.hero_banners
+for all
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+
+alter table public.homepage_sections enable row level security;
+
+drop policy if exists "Public can read active homepage sections"
+on public.homepage_sections;
+
+create policy "Public can read active homepage sections"
+on public.homepage_sections
+for select
+to anon, authenticated
+using (status = 'active');
+
+drop policy if exists "Admins can manage homepage sections"
+on public.homepage_sections;
+
+create policy "Admins can manage homepage sections"
+on public.homepage_sections
+for all
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+
+
+-- ============================================================
 -- 20. ADMIN PRODUCT POLICIES
 -- ============================================================
 
@@ -1136,6 +1272,8 @@ from information_schema.tables
 where table_schema = 'public'
   and table_name in (
     'categories',
+    'hero_banners',
+    'homepage_sections',
     'products',
     'product_images',
     'pincodes',

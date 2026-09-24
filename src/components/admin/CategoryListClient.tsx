@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { CategoryWithCount } from "@/lib/supabase/admin-catalog";
+import ProductSingleImageUploader from "@/components/admin/ProductSingleImageUploader";
+import { getCloudinaryCmsUploadSignatureAction } from "@/app/admin/homepage/actions";
 import {
   createCategoryAction,
   updateCategoryAction,
@@ -45,6 +47,9 @@ export default function CategoryListClient({
   const [editingCategory, setEditingCategory] = useState<CategoryWithCount | null>(null);
   const [modalName, setModalName] = useState("");
   const [modalStatus, setModalStatus] = useState<"active" | "inactive">("active");
+  const [modalImageUrl, setModalImageUrl] = useState("");
+  const [modalImagePublicId, setModalImagePublicId] = useState("");
+  const [modalDisplayOrder, setModalDisplayOrder] = useState<number>(0);
   const [modalError, setModalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -80,6 +85,9 @@ export default function CategoryListClient({
     setEditingCategory(null);
     setModalName("");
     setModalStatus("active");
+    setModalImageUrl("");
+    setModalImagePublicId("");
+    setModalDisplayOrder(categories.length);
     setModalError(null);
     setIsModalOpen(true);
   }
@@ -89,6 +97,9 @@ export default function CategoryListClient({
     setEditingCategory(cat);
     setModalName(cat.name);
     setModalStatus(cat.status);
+    setModalImageUrl(cat.image_url || "");
+    setModalImagePublicId(cat.image_public_id || "");
+    setModalDisplayOrder(cat.display_order ?? 0);
     setModalError(null);
     setIsModalOpen(true);
   }
@@ -115,6 +126,9 @@ export default function CategoryListClient({
     const formData = new FormData();
     formData.append("name", modalName.trim());
     formData.append("status", modalStatus);
+    formData.append("image_url", modalImageUrl);
+    formData.append("image_public_id", modalImagePublicId);
+    formData.append("display_order", String(modalDisplayOrder));
 
     startTransition(async () => {
       let res;
@@ -601,6 +615,35 @@ export default function CategoryListClient({
                   <option value="active">Active (Visible in storefront)</option>
                   <option value="inactive">Inactive (Hidden from storefront)</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
+                  Display Order
+                </label>
+                <input
+                  type="number"
+                  value={modalDisplayOrder}
+                  onChange={(e) => setModalDisplayOrder(parseInt(e.target.value || "0", 10))}
+                  min={0}
+                  className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs font-sans text-cocoa-900 focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
+                  Category Image (Used in Shop by Occasion)
+                </label>
+                <ProductSingleImageUploader
+                  currentImageUrl={modalImageUrl}
+                  currentPublicId={modalImagePublicId}
+                  productId={editingCategory?.id || "cat_new"}
+                  getSignatureAction={getCloudinaryCmsUploadSignatureAction}
+                  onImageChange={(url, publicId) => {
+                    setModalImageUrl(url);
+                    setModalImagePublicId(publicId || "");
+                  }}
+                />
               </div>
 
               {/* Modal Buttons */}
