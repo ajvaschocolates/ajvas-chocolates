@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { HomepageSection } from "@/types/cms";
 import { Container } from "@/components/ui/container";
@@ -12,7 +15,10 @@ export function BrandStorySection({ section }: BrandStorySectionProps) {
   const description =
     section?.description ||
     "Ajvas was founded on a simple premise: a box of chocolates should feel like a celebration before it's even opened. We make chocolate confections presented with woven ribbons and personalized notes.";
-  const imageUrl = section?.image_url;
+  const imageUrl = section?.image_url?.trim() || null;
+  const [imageError, setImageError] = useState(false);
+
+  const showImage = imageUrl && !imageError;
 
   return (
     <section className="w-full bg-brand-surface py-16 lg:py-24 border-b border-brand-sand/60" id="story">
@@ -68,15 +74,23 @@ export function BrandStorySection({ section }: BrandStorySectionProps) {
           {/* Lifestyle / Packaging Image */}
           <div className="lg:col-span-6">
             <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-elevated bg-white border border-brand-border/60">
-              {imageUrl ? (
+              {showImage ? (
                 <img
                   src={imageUrl}
                   alt={title}
                   className="w-full h-full object-cover"
                   loading="lazy"
+                  onError={() => {
+                    console.error("BRAND STORY IMAGE DEBUG", {
+                      imageUrl,
+                      imagePublicId: section?.image_public_id,
+                      sectionData: section,
+                    });
+                    setImageError(true);
+                  }}
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-[#f8ece9] via-[#f2deda font-serif] to-[#e6cbc5] flex flex-col items-center justify-center p-8 text-center border border-brand-sand">
+                <div className="w-full h-full bg-gradient-to-br from-[#f8ece9] via-[#f2deda] to-[#e6cbc5] flex flex-col items-center justify-center p-8 text-center border border-brand-sand">
                   <div className="w-14 h-14 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-brand-burgundy mb-3 shadow-xs">
                     <Sparkles className="w-7 h-7" />
                   </div>

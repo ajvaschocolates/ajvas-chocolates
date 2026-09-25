@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Gift, Truck, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { HeroBanner } from "@/types/cms";
 import { Container } from "@/components/ui/container";
@@ -17,7 +20,10 @@ export function HeroSection({ banner }: HeroSectionProps) {
   const primaryCtaLink = banner?.primary_cta_link || "#collections";
   const secondaryCtaText = banner?.secondary_cta_text || "Explore Chocolates";
   const secondaryCtaLink = banner?.secondary_cta_link || "#gifts";
-  const imageUrl = banner?.image_url;
+  const imageUrl = banner?.image_url?.trim() || null;
+  const [imageError, setImageError] = useState(false);
+
+  const showImage = imageUrl && !imageError;
 
   return (
     <section className="w-full bg-[#fdf2f5]/60 overflow-hidden py-12 lg:py-20 border-b border-brand-sand/50">
@@ -78,12 +84,20 @@ export function HeroSection({ banner }: HeroSectionProps) {
           {/* Right Hero Showcase Image */}
           <div className="lg:col-span-6 relative">
             <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] rounded-3xl overflow-hidden bg-white shadow-elevated border border-brand-sand/80">
-              {imageUrl ? (
+              {showImage ? (
                 <img
                   src={imageUrl}
                   alt={title}
                   className="w-full h-full object-cover"
                   loading="eager"
+                  onError={() => {
+                    console.error("HERO BANNER IMAGE DEBUG", {
+                      imageUrl,
+                      imagePublicId: banner?.image_public_id,
+                      bannerData: banner,
+                    });
+                    setImageError(true);
+                  }}
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-[#fdf2f6] via-[#f7e4eb] to-[#e8d5de] flex flex-col items-center justify-center p-8 text-center border border-brand-pink/20">
