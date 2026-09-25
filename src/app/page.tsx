@@ -13,10 +13,10 @@ import { SpotlightSection } from "@/components/home/spotlight-section";
 import { CuratedProductsGrid } from "@/components/home/curated-products-grid";
 import { BrandStorySection } from "@/components/home/brand-story-section";
 import { GiftingExperienceSection } from "@/components/home/gifting-experience-section";
-import { PincodeCheckerSection } from "@/components/home/pincode-checker-section";
 import { GiftingCtaSection } from "@/components/home/gifting-cta-section";
 
-export const revalidate = 60; // ISR revalidation every 60 seconds
+export const dynamic = "force-dynamic";
+export const revalidate = 0; // Real-time CMS updates without stale ISR cache
 
 export default async function HomePage() {
   const [products, heroBanners, sections, categories] = await Promise.all([
@@ -58,10 +58,7 @@ export default async function HomePage() {
         {/* 7. Gifting Experience & Values */}
         <GiftingExperienceSection section={giftingExpSection} />
 
-        {/* 8. Delivery Pincode Availability Checker */}
-        <PincodeCheckerSection />
-
-        {/* 9. Final Gifting CTA */}
+        {/* 8. Final Gifting CTA */}
         <GiftingCtaSection />
       </main>
 

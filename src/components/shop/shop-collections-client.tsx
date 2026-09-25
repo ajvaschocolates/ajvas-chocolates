@@ -16,7 +16,6 @@ import { Product, Category } from "@/types/catalog";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
-import { PincodeCheckerSection } from "@/components/home/pincode-checker-section";
 import { formatINR } from "@/lib/utils";
 
 export interface ShopCollectionsClientProps {
@@ -122,7 +121,7 @@ export function ShopCollectionsClient({
 
             <div className="flex items-center gap-2 text-brand-muted text-xs sm:text-sm font-sans self-start md:self-end bg-brand-surface px-3 py-1.5 rounded-lg border border-brand-border/60">
               <CheckCircle className="w-4 h-4 text-brand-gold shrink-0" />
-              <span>Delivery availability is checked by destination pincode</span>
+              <span>Pan-India courier delivery available</span>
             </div>
           </div>
         </Container>
@@ -382,9 +381,6 @@ export function ShopCollectionsClient({
               </div>
             </Container>
           </section>
-
-          {/* 6. Pincode Delivery Module */}
-          <PincodeCheckerSection />
         </>
       )}
 

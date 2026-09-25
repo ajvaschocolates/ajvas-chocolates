@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Category } from "@/types/catalog";
 import { Container } from "@/components/ui/container";
@@ -7,6 +10,8 @@ export interface ShopByOccasionSectionProps {
 }
 
 export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps) {
+  const [failedImageIds, setFailedImageIds] = useState<Record<string, boolean>>({});
+
   // Use active categories if provided, otherwise fallback array of titles
   const displayItems =
     categories && categories.length > 0
@@ -32,7 +37,8 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {displayItems.slice(0, 4).map((item) => {
-            const hasImage = Boolean(item.image_url);
+            const imageUrl = item.image_url?.trim() || null;
+            const hasValidImage = Boolean(imageUrl) && !failedImageIds[item.id];
             return (
               <a
                 key={item.id || item.name}
@@ -40,10 +46,20 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
                 className="group relative h-72 rounded-2xl overflow-hidden shadow-subtle hover:shadow-elevated transition-all duration-300 flex flex-col justify-end p-5 border border-brand-sand/60 bg-gradient-to-br from-brand-navy to-[#1a2d42]"
               >
                 {/* Background Image if available */}
-                {hasImage ? (
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                    style={{ backgroundImage: `url('${item.image_url}')` }}
+                {hasValidImage ? (
+                  <img
+                    src={imageUrl!}
+                    alt={item.name}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                    onError={() => {
+                      console.error("SHOP BY OCCASION CATEGORY IMAGE DEBUG", {
+                        categoryName: item.name,
+                        imageUrl,
+                        categoryData: item,
+                      });
+                      setFailedImageIds((prev) => ({ ...prev, [item.id]: true }));
+                    }}
                   />
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-tr from-brand-navy via-[#2c1d27] to-[#4a2638] flex flex-col items-center justify-center p-6 text-center">
@@ -53,7 +69,7 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
                 )}
 
                 {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/30 to-transparent pointer-events-none" />
 
                 {/* Content */}
                 <div className="relative z-10 flex items-end justify-between gap-3 w-full">

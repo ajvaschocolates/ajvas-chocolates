@@ -1,4 +1,5 @@
 import { createClient } from "./server";
+import { createServiceRoleClient } from "./service-role";
 import { HeroBanner, HomepageSection } from "@/types/cms";
 import { Category } from "@/types/catalog";
 
@@ -78,12 +79,19 @@ export async function getAdminHeroBannerById(
 /**
  * Fetch all active homepage sections as a map keyed by section_key.
  * Used for server-side page rendering.
+ * Uses service role client to bypass public RLS policies on homepage_sections table.
  */
 export async function getHomepageSections(): Promise<
   Record<string, HomepageSection>
 > {
   try {
-    const supabase = await createClient();
+    let supabase;
+    try {
+      supabase = createServiceRoleClient();
+    } catch {
+      supabase = await createClient();
+    }
+
     const { data, error } = await supabase
       .from("homepage_sections")
       .select("*")
