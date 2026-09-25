@@ -101,7 +101,7 @@ export async function createHeroBannerAction(
     }
 
     revalidatePath("/admin/homepage");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
 
     return { success: true, id: banner.id };
   } catch (err) {
@@ -175,7 +175,7 @@ export async function updateHeroBannerAction(
     }
 
     revalidatePath("/admin/homepage");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
 
     return { success: true, id: bannerId };
   } catch (err) {
@@ -216,7 +216,7 @@ export async function toggleHeroBannerStatusAction(
     }
 
     revalidatePath("/admin/homepage");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
 
     return { success: true, id: bannerId };
   } catch (err) {
@@ -255,7 +255,7 @@ export async function deleteHeroBannerAction(
     }
 
     revalidatePath("/admin/homepage");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
 
     return { success: true, id: bannerId };
   } catch (err) {
@@ -348,7 +348,7 @@ export async function updateHomepageSectionAction(
     }
 
     revalidatePath("/admin/homepage");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
 
     return { success: true, id: sectionKey };
   } catch (err) {

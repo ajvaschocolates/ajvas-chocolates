@@ -20,6 +20,9 @@ interface ProductSingleImageUploaderProps {
   currentPublicId?: string;
   onImageChange: (imageUrl: string, publicId?: string) => void;
   productId?: string;
+  title?: string;
+  description?: string;
+  dropzoneText?: string;
   getSignatureAction?: (targetId: string) => Promise<{
     success: boolean;
     error?: string;
@@ -48,6 +51,9 @@ export default function ProductSingleImageUploader({
   currentPublicId,
   onImageChange,
   productId = "new",
+  title = "Product Image",
+  description = "Upload a high-resolution photo or specify an image URL.",
+  dropzoneText = "Click or Drag & Drop product photo",
   getSignatureAction = getCloudinaryUploadSignatureAction,
 }: ProductSingleImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -67,7 +73,18 @@ export default function ProductSingleImageUploader({
   const [pastedUrl, setPastedUrl] = useState("");
   const [urlValidationError, setUrlValidationError] = useState<string | null>(null);
 
+  const [isReplacing, setIsReplacing] = useState(false);
   const [imagePreviewError, setImagePreviewError] = useState(false);
+
+  function getAssetFilename(url: string): string {
+    try {
+      const parts = url.split("/");
+      const lastPart = parts[parts.length - 1];
+      return decodeURIComponent(lastPart.split("?")[0]);
+    } catch {
+      return "Uploaded Asset";
+    }
+  }
 
   function validateFile(file: File): string | null {
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
@@ -183,6 +200,7 @@ export default function ProductSingleImageUploader({
             onImageChange(secureUrl, uploadedPublicId);
             setSuccessMessage("Image uploaded to Cloudinary successfully!");
             setSelectedFile(null);
+            setIsReplacing(false);
             setImagePreviewError(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
           } catch (err) {
@@ -235,7 +253,7 @@ export default function ProductSingleImageUploader({
       return;
     }
 
-    const validation = validateImageInput(trimmed, "Product Image");
+    const validation = validateImageInput(trimmed, title);
     if (!validation.valid || !validation.url) {
       setUrlValidationError(validation.error || "Invalid image URL format.");
       return;
@@ -243,6 +261,7 @@ export default function ProductSingleImageUploader({
 
     onImageChange(validation.url);
     setPastedUrl("");
+    setIsReplacing(false);
     setImagePreviewError(false);
     setSuccessMessage("Image URL applied successfully.");
   }
@@ -250,20 +269,21 @@ export default function ProductSingleImageUploader({
   function handleRemoveImage() {
     onImageChange("");
     setSelectedFile(null);
+    setIsReplacing(false);
     setSuccessMessage(null);
     setErrorMessage(null);
   }
 
   return (
-    <div className="bg-white border border-brand-sand/80 rounded-2xl p-6 shadow-subtle space-y-5">
+    <div className="bg-white border border-brand-sand/80 rounded-2xl p-4 sm:p-5 shadow-subtle space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-brand-sand/60 pb-3">
+      <div className="flex items-center justify-between border-b border-brand-sand/60 pb-2.5">
         <div>
-          <h2 className="font-sans text-lg font-extrabold text-brand-navy">
-            Product Image
+          <h2 className="font-sans text-base font-extrabold text-brand-navy">
+            {title}
           </h2>
           <p className="font-sans text-xs text-brand-muted mt-0.5">
-            Upload a high-resolution photo or specify an image URL.
+            {description}
           </p>
         </div>
       </div>
@@ -307,15 +327,15 @@ export default function ProductSingleImageUploader({
         </div>
       )}
 
-      {/* Active Image Preview Card (If an image URL exists) */}
-      {currentImageUrl ? (
-        <div className="rounded-xl border border-brand-sand/80 bg-brand-cream/40 p-4 space-y-4">
-          <div className="flex items-start gap-4">
-            <div className="w-24 h-24 rounded-lg overflow-hidden bg-white border border-brand-sand/60 shrink-0 relative flex items-center justify-center">
+      {/* Active Image Preview Card (If an image URL exists and not in replacing mode) */}
+      {currentImageUrl && !isReplacing ? (
+        <div className="rounded-xl border border-brand-sand/80 bg-brand-cream/40 p-3 sm:p-4 space-y-3">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-white border border-brand-sand/60 shrink-0 relative flex items-center justify-center">
               {!imagePreviewError ? (
                 <img
                   src={currentImageUrl}
-                  alt="Product preview"
+                  alt="Preview"
                   onError={() => setImagePreviewError(true)}
                   className="w-full h-full object-cover"
                 />
@@ -335,21 +355,28 @@ export default function ProductSingleImageUploader({
                   : "External Image URL"}
               </span>
 
-              <p className="font-mono text-xs text-brand-navy truncate block font-medium">
+              <p className="font-sans text-xs text-brand-navy font-bold truncate block">
+                {currentPublicId || getAssetFilename(currentImageUrl)}
+              </p>
+
+              <p className="font-mono text-[10px] text-brand-muted truncate block">
                 {currentImageUrl}
               </p>
 
-              {currentPublicId && (
-                <p className="font-mono text-[10px] text-brand-muted truncate">
-                  ID: {currentPublicId}
-                </p>
-              )}
+              <div className="flex items-center gap-2 pt-1.5">
+                <button
+                  type="button"
+                  onClick={() => setIsReplacing(true)}
+                  className="px-3 py-1.5 rounded-full border border-cocoa-200 bg-white text-cocoa-800 hover:bg-parchment-hover text-xs font-bold flex items-center gap-1.5 transition"
+                >
+                  <RefreshCw className="w-3 h-3 text-cocoa-600" />
+                  Replace Image
+                </button>
 
-              <div className="flex items-center gap-2 pt-2">
                 <button
                   type="button"
                   onClick={handleRemoveImage}
-                  className="px-3 py-1.5 rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-extrabold flex items-center gap-1.5 transition"
+                  className="px-3 py-1.5 rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold flex items-center gap-1.5 transition"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Remove
@@ -360,53 +387,65 @@ export default function ProductSingleImageUploader({
         </div>
       ) : (
         /* Image Selection Controls (Tabs & Upload Area) */
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Mode Switcher Tabs */}
-          <div className="flex items-center gap-2 p-1 bg-brand-cream rounded-xl border border-brand-sand/60 w-fit">
-            <button
-              type="button"
-              onClick={() => {
-                setInputMode("upload");
-                setErrorMessage(null);
-                setUrlValidationError(null);
-              }}
-              className={`px-3.5 py-1.5 rounded-lg font-sans text-xs font-extrabold transition flex items-center gap-1.5 ${
-                inputMode === "upload"
-                  ? "bg-brand-pink text-white shadow-xs"
-                  : "text-brand-navy hover:bg-brand-pink-light/50"
-              }`}
-            >
-              <UploadCloud className="w-3.5 h-3.5" />
-              Upload Image File
-            </button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 p-1 bg-brand-cream rounded-xl border border-brand-sand/60 w-fit">
+              <button
+                type="button"
+                onClick={() => {
+                  setInputMode("upload");
+                  setErrorMessage(null);
+                  setUrlValidationError(null);
+                }}
+                className={`px-3 py-1.5 rounded-lg font-sans text-xs font-extrabold transition flex items-center gap-1.5 ${
+                  inputMode === "upload"
+                    ? "bg-brand-pink text-white shadow-xs"
+                    : "text-brand-navy hover:bg-brand-pink-light/50"
+                }`}
+              >
+                <UploadCloud className="w-3.5 h-3.5" />
+                Upload Image File
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setInputMode("url");
-                setErrorMessage(null);
-                setUrlValidationError(null);
-              }}
-              className={`px-3.5 py-1.5 rounded-lg font-sans text-xs font-extrabold transition flex items-center gap-1.5 ${
-                inputMode === "url"
-                  ? "bg-brand-pink text-white shadow-xs"
-                  : "text-brand-navy hover:bg-brand-pink-light/50"
-              }`}
-            >
-              <LinkIcon className="w-3.5 h-3.5" />
-              Paste Image URL
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setInputMode("url");
+                  setErrorMessage(null);
+                  setUrlValidationError(null);
+                }}
+                className={`px-3 py-1.5 rounded-lg font-sans text-xs font-extrabold transition flex items-center gap-1.5 ${
+                  inputMode === "url"
+                    ? "bg-brand-pink text-white shadow-xs"
+                    : "text-brand-navy hover:bg-brand-pink-light/50"
+                }`}
+              >
+                <LinkIcon className="w-3.5 h-3.5" />
+                Paste Image URL
+              </button>
+            </div>
+
+            {currentImageUrl && isReplacing && (
+              <button
+                type="button"
+                onClick={() => setIsReplacing(false)}
+                className="text-xs font-bold text-cocoa-600 hover:text-cocoa-900 underline"
+              >
+                Cancel Replace
+              </button>
+            )}
           </div>
 
           {/* TAB 1: File Upload */}
           {inputMode === "upload" && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-7 text-center cursor-pointer transition-colors ${
+                className={`relative flex flex-col items-center justify-center min-h-[160px] sm:min-h-[190px] rounded-2xl border-2 border-dashed p-4 sm:p-5 text-center cursor-pointer transition-colors ${
                   isDragging
                     ? "border-brand-pink bg-brand-pink-light/40"
                     : "border-brand-sand/80 bg-brand-cream/30 hover:border-brand-pink hover:bg-brand-pink-light/20"
@@ -424,20 +463,20 @@ export default function ProductSingleImageUploader({
                   className="hidden"
                 />
 
-                <div className="w-12 h-12 rounded-full bg-brand-pink-light/60 border border-brand-pink/20 flex items-center justify-center text-brand-pink mb-3">
-                  <UploadCloud className="w-6 h-6 text-brand-pink" />
+                <div className="w-10 h-10 rounded-full bg-brand-pink-light/60 border border-brand-pink/20 flex items-center justify-center text-brand-pink mb-2">
+                  <UploadCloud className="w-5 h-5 text-brand-pink" />
                 </div>
 
-                <p className="font-sans text-base font-bold text-brand-navy">
-                  Click or Drag &amp; Drop product photo
+                <p className="font-sans text-sm font-bold text-brand-navy">
+                  {dropzoneText}
                 </p>
-                <p className="font-sans text-xs text-brand-muted mt-1 font-medium">
+                <p className="font-sans text-[11px] text-brand-muted mt-0.5 font-medium">
                   Supports JPG, PNG, WebP, GIF (Max 10 MB per image)
                 </p>
 
-                <div className="mt-4">
-                  <span className="px-5 py-2.5 rounded-full bg-brand-pink text-white hover:bg-brand-pink-hover text-xs font-extrabold shadow-sm transition inline-flex items-center gap-2">
-                    <UploadCloud className="w-4 h-4 text-white" />
+                <div className="mt-3">
+                  <span className="px-4 py-2 rounded-full bg-brand-pink text-white hover:bg-brand-pink-hover text-xs font-extrabold shadow-sm transition inline-flex items-center gap-2">
+                    <UploadCloud className="w-3.5 h-3.5 text-white" />
                     Select Image File
                   </span>
                 </div>

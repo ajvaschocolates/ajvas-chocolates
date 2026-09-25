@@ -65,7 +65,7 @@ export async function createCategoryAction(
     revalidatePath("/admin/categories");
     revalidatePath("/admin/products");
     revalidatePath("/shop");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
 
     return { success: true, categoryId: newCategory.id };
   } catch (err) {
@@ -135,7 +135,7 @@ export async function updateCategoryAction(
     revalidatePath("/admin/categories");
     revalidatePath("/admin/products");
     revalidatePath("/shop");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
 
     return { success: true, categoryId };
   } catch (err) {

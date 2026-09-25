@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Heart, Sparkles, Diamond, Smile } from "lucide-react";
 import { HomepageSection } from "@/types/cms";
 import { Container } from "@/components/ui/container";
@@ -11,7 +14,10 @@ export function GiftingExperienceSection({ section }: GiftingExperienceSectionPr
   const description =
     section?.description ||
     "More than chocolates, we create moments of joy. Crafted with care, premium ingredients, and a belief in the power of thoughtful gifting.";
-  const imageUrl = section?.image_url;
+  const imageUrl = section?.image_url?.trim() || null;
+  const [imageError, setImageError] = useState(false);
+
+  const showImage = imageUrl && !imageError;
 
   const defaultPillars = [
     { icon: Heart, title: "Gifting", sub: "Made Meaningful" },
@@ -53,12 +59,20 @@ export function GiftingExperienceSection({ section }: GiftingExperienceSectionPr
           {/* Right Box Image */}
           <div className="lg:col-span-5">
             <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-elevated border border-brand-sand/80 bg-brand-pink-light/20">
-              {imageUrl ? (
+              {showImage ? (
                 <img
                   src={imageUrl}
                   alt={title}
                   className="w-full h-full object-cover"
                   loading="lazy"
+                  onError={() => {
+                    console.error("GIFTING EXPERIENCE IMAGE DEBUG", {
+                      imageUrl,
+                      imagePublicId: section?.image_public_id,
+                      sectionData: section,
+                    });
+                    setImageError(true);
+                  }}
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-[#fdf2f6] via-[#f7e4eb] to-[#eed2de] flex flex-col items-center justify-center p-8 text-center border border-brand-pink/20">
