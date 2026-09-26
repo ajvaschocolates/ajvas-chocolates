@@ -1,5 +1,6 @@
 export type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed";
+export type RefundStatus = "none" | "partial" | "full";
 
 export interface OrderItem {
   id: string;
@@ -55,6 +56,12 @@ export interface Order {
   razorpay_order_id: string | null;
   razorpay_payment_id: string | null;
   razorpay_signature: string | null;
+  payment_method?: string | null;
+  payment_error_code?: string | null;
+  payment_error_description?: string | null;
+  refund_status?: RefundStatus;
+  refunded_amount?: number;
+  refund_notes?: string | null;
   package_weight_grams: number | null;
   package_length_cm?: number | null;
   package_width_cm?: number | null;
@@ -67,3 +74,18 @@ export interface Order {
   items?: OrderItem[];
   status_history?: OrderStatusHistory[];
 }
+
+export type WebhookEventStatus = "received" | "processed" | "failed";
+
+export interface RazorpayWebhookEvent {
+  id: string;
+  event_id: string;
+  event_type: string;
+  payload: Record<string, unknown>;
+  status: WebhookEventStatus;
+  error_message?: string | null;
+  processed_at?: string | null;
+  created_at: string;
+}
+
+
