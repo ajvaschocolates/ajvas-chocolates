@@ -25,7 +25,6 @@ import {
   CheckCircle2,
   Tag,
   ArrowRight,
-  HelpCircle,
 } from "lucide-react";
 
 interface HomepageCmsClientProps {
@@ -37,7 +36,7 @@ export default function HomepageCmsClient({
   initialBanners,
   initialSections,
 }: HomepageCmsClientProps) {
-  const [activeTab, setActiveTab] = useState<"hero" | "brand_story" | "gifting_experience">("hero");
+  const [activeTab, setActiveTab] = useState<"hero" | "brand_story" | "gifting_experience" | "gifting_cta">("hero");
   const [isPending, startTransition] = useTransition();
 
   // Banners State
@@ -65,9 +64,10 @@ export default function HomepageCmsClient({
   // Editorial Sections State
   const brandStorySection = initialSections.find((s) => s.section_key === "brand_story") || null;
   const giftingExpSection = initialSections.find((s) => s.section_key === "gifting_experience") || null;
+  const giftingCtaSection = initialSections.find((s) => s.section_key === "gifting_cta") || null;
 
   // Brand Story Form State
-  const [bsEyebrow, setBsEyebrow] = useState(brandStorySection?.eyebrow || "The Ajvas Philosophy");
+  const [bsEyebrow, setBsEyebrow] = useState(brandStorySection?.eyebrow || "THE AJVAS STORY");
   const [bsTitle, setBsTitle] = useState(brandStorySection?.title || "Chocolates made for human moments.");
   const [bsDescription, setBsDescription] = useState(brandStorySection?.description || "Ajvas was founded on a simple premise: a box of chocolates should feel like a celebration before it's even opened.");
   const [bsImageUrl, setBsImageUrl] = useState(brandStorySection?.image_url || "");
@@ -77,13 +77,24 @@ export default function HomepageCmsClient({
   const [isBsSubmitting, setIsBsSubmitting] = useState(false);
 
   // Gifting Experience Form State
-  const [geTitle, setGeTitle] = useState(giftingExpSection?.title || "Chocolates made for human moments.");
-  const [geDescription, setGeDescription] = useState(giftingExpSection?.description || "More than chocolates, we create moments of joy. Crafted with care, premium ingredients, and a belief in the power of thoughtful gifting.");
+  const [geTitle, setGeTitle] = useState(giftingExpSection?.title || "A Thoughtfully Curated Gifting Experience");
+  const [geDescription, setGeDescription] = useState(giftingExpSection?.description || "From handcrafted truffles to assorted nuts and fruit chocolates, discover collections designed to make every occasion memorable.");
   const [geImageUrl, setGeImageUrl] = useState(giftingExpSection?.image_url || "");
   const [geImagePublicId, setGeImagePublicId] = useState(giftingExpSection?.image_public_id || "");
   const [geStatus, setGeStatus] = useState<"active" | "inactive">(giftingExpSection?.status || "active");
   const [geFeedback, setGeFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [isGeSubmitting, setIsGeSubmitting] = useState(false);
+
+  // Gifting CTA Form State
+  const [ctaTitle, setCtaTitle] = useState(giftingCtaSection?.title || "Find something worth gifting.");
+  const [ctaDescription, setCtaDescription] = useState(giftingCtaSection?.description || "Browse our curated collection or reach out for a custom, personalized hamper.");
+  const [ctaImageUrl, setCtaImageUrl] = useState(giftingCtaSection?.image_url || "");
+  const [ctaImagePublicId, setCtaImagePublicId] = useState(giftingCtaSection?.image_public_id || "");
+  const [ctaPrimaryText, setCtaPrimaryText] = useState(giftingCtaSection?.primary_cta_text || "SHOP ALL GIFTS");
+  const [ctaPrimaryLink, setCtaPrimaryLink] = useState(giftingCtaSection?.primary_cta_link || "/shop");
+  const [ctaStatus, setCtaStatus] = useState<"active" | "inactive">(giftingCtaSection?.status || "active");
+  const [ctaFeedback, setCtaFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [isCtaSubmitting, setIsCtaSubmitting] = useState(false);
 
   // Prevent background page scrolling when modal is open
   useEffect(() => {
@@ -101,14 +112,14 @@ export default function HomepageCmsClient({
   function handleOpenCreateHero() {
     setEditingBanner(null);
     setHeroTitle("");
-    setHeroEyebrow("Celebration & Gifting");
+    setHeroEyebrow("PREMIUM CHOCOLATES & GIFTING");
     setHeroDescription("");
     setHeroImageUrl("");
     setHeroImagePublicId("");
-    setHeroPrimaryCtaText("Shop Gifts");
-    setHeroPrimaryCtaLink("#collections");
-    setHeroSecondaryCtaText("Explore Chocolates");
-    setHeroSecondaryCtaLink("#gifts");
+    setHeroPrimaryCtaText("SHOP GIFTS");
+    setHeroPrimaryCtaLink("/shop");
+    setHeroSecondaryCtaText("EXPLORE COLLECTIONS");
+    setHeroSecondaryCtaLink("/shop");
     setHeroStatus("active");
     setHeroDisplayOrder(banners.length);
     setHeroError(null);
@@ -270,6 +281,35 @@ export default function HomepageCmsClient({
     });
   }
 
+  // Submit Final CTA Form
+  async function handleSubmitGiftingCta(e: React.FormEvent) {
+    e.preventDefault();
+    setCtaFeedback(null);
+    setIsCtaSubmitting(true);
+
+    const formData = new FormData();
+    formData.append("title", ctaTitle.trim());
+    formData.append("description", ctaDescription.trim());
+    formData.append("image_url", ctaImageUrl.trim());
+    formData.append("image_public_id", ctaImagePublicId.trim());
+    formData.append("primary_cta_text", ctaPrimaryText.trim());
+    formData.append("primary_cta_link", ctaPrimaryLink.trim());
+    formData.append("status", ctaStatus);
+
+    startTransition(async () => {
+      const res = await updateHomepageSectionAction("gifting_cta", formData);
+      setIsCtaSubmitting(false);
+      if (res.success) {
+        setCtaFeedback({ type: "success", msg: "Final CTA section & background image updated successfully!" });
+        setTimeout(() => {
+          window.location.reload();
+        }, 800);
+      } else {
+        setCtaFeedback({ type: "error", msg: res.error || "Failed to update Final CTA section." });
+      }
+    });
+  }
+
   return (
     <div className="space-y-8 pb-12">
       {/* Header Banner */}
@@ -282,7 +322,7 @@ export default function HomepageCmsClient({
             <div>
               <h1 className="font-serif text-2xl font-bold text-cocoa-950">Homepage CMS</h1>
               <p className="font-sans text-xs text-cocoa-600 mt-0.5">
-                Manage live homepage content, promotional sections and occasion imagery.
+                Manage live homepage content, promotional sections, and CTA background images.
               </p>
             </div>
           </div>
@@ -307,7 +347,7 @@ export default function HomepageCmsClient({
                 : "bg-parchment-surface text-cocoa-700 hover:bg-parchment-hover border border-cocoa-200/60"
             }`}
           >
-            Hero Showcase ({banners.length})
+            Hero Canvas ({banners.length})
           </button>
           <button
             onClick={() => setActiveTab("brand_story")}
@@ -328,6 +368,16 @@ export default function HomepageCmsClient({
             }`}
           >
             Gifting Experience
+          </button>
+          <button
+            onClick={() => setActiveTab("gifting_cta")}
+            className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all ${
+              activeTab === "gifting_cta"
+                ? "bg-brand-pink text-white shadow-xs"
+                : "bg-parchment-surface text-cocoa-700 hover:bg-parchment-hover border border-cocoa-200/60"
+            }`}
+          >
+            Final CTA Banner Image
           </button>
         </div>
       </div>
@@ -472,7 +522,7 @@ export default function HomepageCmsClient({
                 type="text"
                 value={bsEyebrow}
                 onChange={(e) => setBsEyebrow(e.target.value)}
-                placeholder="e.g. The Ajvas Philosophy"
+                placeholder="e.g. THE AJVAS STORY"
                 className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
               />
             </div>
@@ -564,7 +614,7 @@ export default function HomepageCmsClient({
                 type="text"
                 value={geTitle}
                 onChange={(e) => setGeTitle(e.target.value)}
-                placeholder="e.g. Chocolates made for human moments."
+                placeholder="e.g. A Thoughtfully Curated Gifting Experience"
                 className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
               />
             </div>
@@ -620,11 +670,118 @@ export default function HomepageCmsClient({
         </form>
       )}
 
+      {/* TAB 4: FINAL GIFTING CTA BANNER */}
+      {activeTab === "gifting_cta" && (
+        <form onSubmit={handleSubmitGiftingCta} className="rounded-2xl border border-cocoa-200 bg-parchment-card p-6 shadow-sm space-y-6 max-w-3xl">
+          <h2 className="font-serif text-xl font-bold text-cocoa-950">Final CTA Banner &amp; Background Image</h2>
+
+          {ctaFeedback && (
+            <div className={`p-4 rounded-xl flex items-center gap-3 text-xs font-sans font-medium ${
+              ctaFeedback.type === "success" ? "bg-emerald-50 text-emerald-900 border border-emerald-200" : "bg-rose-50 text-rose-900 border border-rose-200"
+            }`}>
+              {ctaFeedback.type === "success" ? <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" /> : <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />}
+              <span>{ctaFeedback.msg}</span>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
+                Headline Title
+              </label>
+              <input
+                type="text"
+                value={ctaTitle}
+                onChange={(e) => setCtaTitle(e.target.value)}
+                placeholder="e.g. Find something worth gifting."
+                className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs font-bold text-cocoa-900 focus:border-gold-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
+                Description Paragraph
+              </label>
+              <textarea
+                rows={3}
+                value={ctaDescription}
+                onChange={(e) => setCtaDescription(e.target.value)}
+                placeholder="Browse our curated collection or reach out for a custom, personalized hamper."
+                className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
+                  Primary CTA Button Text
+                </label>
+                <input
+                  type="text"
+                  value={ctaPrimaryText}
+                  onChange={(e) => setCtaPrimaryText(e.target.value)}
+                  placeholder="SHOP ALL GIFTS"
+                  className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
+                  Primary CTA Button Link
+                </label>
+                <input
+                  type="text"
+                  value={ctaPrimaryLink}
+                  onChange={(e) => setCtaPrimaryLink(e.target.value)}
+                  placeholder="/shop"
+                  className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs font-mono text-cocoa-900 focus:border-gold-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
+                Section Background Image (Cloudinary Upload)
+              </label>
+              <ProductSingleImageUploader
+                currentImageUrl={ctaImageUrl}
+                currentPublicId={ctaImagePublicId}
+                productId="gifting_cta"
+                getSignatureAction={getCloudinaryCmsUploadSignatureAction}
+                onImageChange={(url, publicId) => {
+                  setCtaImageUrl(url);
+                  setCtaImagePublicId(publicId || "");
+                }}
+                title="CTA Section Background Image"
+                description="Upload a full-width background photo for your 'Find something worth gifting' section."
+                dropzoneText="Click or Drag & Drop background image"
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-cocoa-100 flex justify-end">
+            <button
+              type="submit"
+              disabled={isCtaSubmitting || isPending}
+              className="inline-flex items-center gap-2 rounded-xl bg-gold-600 px-6 py-2.5 text-xs font-bold text-cocoa-950 shadow-sm hover:bg-gold-500 disabled:opacity-50"
+            >
+              {isCtaSubmitting || isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save CTA Background & Content"
+              )}
+            </button>
+          </div>
+        </form>
+      )}
+
       {/* HERO BANNER MODAL */}
       {isBannerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-sm">
           <div className="flex flex-col w-[calc(100vw-24px)] md:w-full md:max-w-[760px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-24px)] md:max-h-[calc(100vh-40px)] rounded-2xl border border-cocoa-200 bg-parchment-card shadow-2xl overflow-hidden">
-            {/* Modal Header (Fixed) */}
+            {/* Modal Header */}
             <div className="shrink-0 flex items-center justify-between p-4 md:p-5 border-b border-cocoa-100 bg-parchment-card">
               <div>
                 <h3 className="font-serif text-lg font-bold text-cocoa-950">
@@ -647,7 +804,6 @@ export default function HomepageCmsClient({
 
             {/* Modal Form Architecture */}
             <form onSubmit={handleSubmitHero} className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              {/* Scrollable Form Body */}
               <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-3.5">
                 {heroError && (
                   <div className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
@@ -673,7 +829,7 @@ export default function HomepageCmsClient({
                       type="text"
                       value={heroEyebrow}
                       onChange={(e) => setHeroEyebrow(e.target.value)}
-                      placeholder="e.g. Celebration & Gifting"
+                      placeholder="e.g. PREMIUM CHOCOLATES & GIFTING"
                       className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
                     />
                   </div>
@@ -686,7 +842,7 @@ export default function HomepageCmsClient({
                       type="text"
                       value={heroTitle}
                       onChange={(e) => setHeroTitle(e.target.value)}
-                      placeholder="e.g. Gifts worth opening slowly."
+                      placeholder="e.g. Small Bites Big Emotions"
                       required
                       className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs font-bold text-cocoa-900 focus:border-gold-500 focus:outline-none"
                     />
@@ -702,7 +858,7 @@ export default function HomepageCmsClient({
                     rows={2}
                     value={heroDescription}
                     onChange={(e) => setHeroDescription(e.target.value)}
-                    placeholder="Chocolates crafted for life's celebrations..."
+                    placeholder="Handcrafted chocolates made with premium ingredients..."
                     className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
                   />
                 </div>
@@ -718,14 +874,14 @@ export default function HomepageCmsClient({
                         type="text"
                         value={heroPrimaryCtaText}
                         onChange={(e) => setHeroPrimaryCtaText(e.target.value)}
-                        placeholder="Shop Gifts"
+                        placeholder="SHOP GIFTS"
                         className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
                       />
                       <input
                         type="text"
                         value={heroPrimaryCtaLink}
                         onChange={(e) => setHeroPrimaryCtaLink(e.target.value)}
-                        placeholder="#collections"
+                        placeholder="/shop"
                         className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 font-mono focus:border-gold-500 focus:outline-none"
                       />
                     </div>
@@ -740,14 +896,14 @@ export default function HomepageCmsClient({
                         type="text"
                         value={heroSecondaryCtaText}
                         onChange={(e) => setHeroSecondaryCtaText(e.target.value)}
-                        placeholder="Explore Chocolates"
+                        placeholder="EXPLORE COLLECTIONS"
                         className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
                       />
                       <input
                         type="text"
                         value={heroSecondaryCtaLink}
                         onChange={(e) => setHeroSecondaryCtaLink(e.target.value)}
-                        placeholder="#gifts"
+                        placeholder="/shop"
                         className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 font-mono focus:border-gold-500 focus:outline-none"
                       />
                     </div>
@@ -757,7 +913,7 @@ export default function HomepageCmsClient({
                 {/* Hero Showcase Image */}
                 <div>
                   <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-bold">
-                    Hero Showcase Image <span className="text-rose-600">*</span>
+                    Hero Showcase Background Image <span className="text-rose-600">*</span>
                   </label>
                   <ProductSingleImageUploader
                     currentImageUrl={heroImageUrl}
@@ -768,9 +924,9 @@ export default function HomepageCmsClient({
                       setHeroImageUrl(url);
                       setHeroImagePublicId(publicId || "");
                     }}
-                    title="Hero Showcase Image"
-                    description="Upload a high-resolution image for your homepage hero banner."
-                    dropzoneText="Click or Drag & Drop image"
+                    title="Hero Background Image"
+                    description="Upload a high-resolution full-bleed image for your hero background canvas."
+                    dropzoneText="Click or Drag & Drop hero background image"
                   />
                 </div>
 
@@ -804,30 +960,28 @@ export default function HomepageCmsClient({
                 </div>
               </div>
 
-              {/* Modal Footer (Fixed) */}
-              <div className="shrink-0 flex items-center justify-end gap-3 p-4 md:p-5 border-t border-cocoa-100 bg-parchment-card">
+              {/* Modal Footer */}
+              <div className="shrink-0 flex items-center justify-end gap-3 p-4 border-t border-cocoa-100 bg-parchment-card">
                 <button
                   type="button"
                   onClick={() => setIsBannerModalOpen(false)}
                   disabled={isHeroSubmitting}
-                  className="rounded-lg border border-cocoa-200 px-4 py-2 font-mono text-xs text-cocoa-700 hover:bg-parchment-hover transition-colors"
+                  className="rounded-xl border border-cocoa-200 bg-parchment-surface px-4 py-2 text-xs font-semibold text-cocoa-700 hover:bg-parchment-hover"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isHeroSubmitting || isPending}
-                  className="inline-flex items-center gap-2 rounded-lg bg-gold-600 px-5 py-2 text-xs font-bold text-cocoa-950 shadow-sm hover:bg-gold-500 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gold-600 px-5 py-2 text-xs font-bold text-cocoa-950 shadow-sm hover:bg-gold-500 disabled:opacity-50"
                 >
                   {isHeroSubmitting || isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Saving...
+                      Saving Banner...
                     </>
-                  ) : editingBanner ? (
-                    "Save Changes"
                   ) : (
-                    "Create Hero Banner"
+                    "Save Banner"
                   )}
                 </button>
               </div>

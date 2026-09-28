@@ -15,7 +15,14 @@ export const metadata: Metadata = {
     "Explore chocolate gift hampers, keepsake boxes, and curated confections for celebrations and memorable moments. Pan-India courier delivery.",
 };
 
-export default async function ShopPage() {
+export default async function ShopPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ category?: string }> | { category?: string };
+}) {
+  const resolvedParams = searchParams ? await searchParams : {};
+  const initialCategory = resolvedParams?.category || null;
+
   const [categoriesRes, productsRes] = await Promise.all([
     getActiveCategoriesResult(),
     getActiveProductsResult(100),
@@ -32,6 +39,7 @@ export default async function ShopPage() {
         <ShopCollectionsClient
           initialCategories={categoriesRes.data}
           initialProducts={productsRes.data}
+          initialCategory={initialCategory}
           error={queryError}
         />
       </main>

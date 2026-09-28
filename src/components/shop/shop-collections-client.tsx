@@ -21,19 +21,57 @@ import { formatINR } from "@/lib/utils";
 export interface ShopCollectionsClientProps {
   initialCategories: Category[];
   initialProducts: Product[];
+  initialCategory?: string | null;
   error?: string | null;
 }
 
 export function ShopCollectionsClient({
   initialCategories,
   initialProducts,
+  initialCategory,
   error,
 }: ShopCollectionsClientProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const resolveCatId = useCallback(
+    (param?: string | null) => {
+      if (!param || param === "all") return "all";
+      const match = initialCategories.find(
+        (c) =>
+          c.id === param ||
+          c.name.toLowerCase() === param.toLowerCase() ||
+          c.name.toLowerCase().replace(/\s+/g, "-") === param.toLowerCase()
+      );
+      return match ? match.id : param;
+    },
+    [initialCategories]
+  );
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(() =>
+    resolveCatId(initialCategory)
+  );
+
+  useEffect(() => {
+    if (initialCategory) {
+      setSelectedCategory(resolveCatId(initialCategory));
+    }
+  }, [initialCategory, resolveCatId]);
+
   const [priceRange, setPriceRange] = useState<string>("all");
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>("featured");
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+
+  const handleCategorySelect = useCallback((catId: string) => {
+    setSelectedCategory(catId);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (catId === "all") {
+        url.searchParams.delete("category");
+      } else {
+        url.searchParams.set("category", catId);
+      }
+      window.history.replaceState(null, "", url.toString());
+    }
+  }, []);
 
   // Close modal on Escape key
   const handleKeyDown = useCallback(
@@ -58,7 +96,7 @@ export function ShopCollectionsClient({
     sortBy !== "featured";
 
   const handleResetFilters = () => {
-    setSelectedCategory("all");
+    handleCategorySelect("all");
     setPriceRange("all");
     setInStockOnly(false);
     setSortBy("featured");
@@ -189,7 +227,7 @@ export function ShopCollectionsClient({
                 >
                   <button
                     type="button"
-                    onClick={() => setSelectedCategory("all")}
+                    onClick={() => handleCategorySelect("all")}
                     className={`min-h-[44px] px-5 py-2 rounded-full font-sans text-xs uppercase tracking-wider font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink ${
                       selectedCategory === "all"
                         ? "bg-brand-pink text-white shadow-md"
@@ -203,7 +241,7 @@ export function ShopCollectionsClient({
                     <button
                       key={cat.id}
                       type="button"
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => handleCategorySelect(cat.id)}
                       className={`min-h-[44px] px-5 py-2 rounded-full font-sans text-xs uppercase tracking-wider font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink ${
                         selectedCategory === cat.id
                           ? "bg-brand-pink text-white shadow-md"
