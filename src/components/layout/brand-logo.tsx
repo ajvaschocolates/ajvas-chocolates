@@ -13,10 +13,10 @@ export function BrandLogo({
   size = "md",
 }: BrandLogoProps) {
   const heightClasses = {
-    sm: "h-10 sm:h-12",
-    md: "h-14 sm:h-16 lg:h-18",
-    lg: "h-16 sm:h-20 lg:h-[84px]",
-    xl: "h-20 sm:h-24 lg:h-28",
+    sm: "h-8 sm:h-12",
+    md: "h-10 sm:h-14 lg:h-15",
+    lg: "h-14 sm:h-20 lg:h-[84px]",
+    xl: "h-16 sm:h-24 lg:h-28",
   };
 
   return (

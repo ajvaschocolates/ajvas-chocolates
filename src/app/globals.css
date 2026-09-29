@@ -1,3 +1,5 @@
+@import url('https://api.fontshare.com/v2/css?f[]=pally@400,500,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,10 +27,42 @@
     outline: 2px solid #fb0b88;
     outline-offset: 2px;
   }
+
+  /* Custom Luxury Y-Axis Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #3d2017 #120805;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #120805;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #3d2017;
+    border-radius: 9999px;
+    border: 2px solid #120805;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #fb0b88;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .font-subtitle {
+    font-family: var(--font-dancing-script), "Dancing Script", cursive;
+    font-weight: 400;
+  }
+  .font-heading {
+    font-family: 'Pally', '_Pally_Variable', sans-serif;
   }
 }
