@@ -13,6 +13,7 @@ import {
   Receipt,
   X,
   UserCheck,
+  MessageSquareQuote,
 } from "lucide-react";
 import SignOutButton from "./SignOutButton";
 import { BrandLogo } from "@/components/layout/brand-logo";
@@ -50,6 +51,11 @@ export default function AdminSidebar({
       href: "/admin/homepage",
       icon: Sparkles,
       badge: "CMS",
+    },
+    {
+      name: "Testimonials",
+      href: "/admin/testimonials",
+      icon: MessageSquareQuote,
     },
     {
       name: "Orders",

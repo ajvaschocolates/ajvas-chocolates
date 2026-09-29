@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Cormorant_Garamond, Inter, Dancing_Script } from "next/font/google";
 import { CartProvider } from "@/context/cart-context";
 import "./globals.css";
 
@@ -13,6 +13,12 @@ const cormorant = Cormorant_Garamond({
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+const dancingScript = Dancing_Script({
+  subsets: ["latin"],
+  variable: "--font-dancing-script",
   display: "swap",
 });
 
@@ -33,9 +39,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${cormorant.variable} ${inter.variable}`}
+      suppressHydrationWarning
+      className={`${cormorant.variable} ${inter.variable} ${dancingScript.variable}`}
     >
-      <body className="min-h-screen bg-[#120805] text-[#faf4f0] font-sans antialiased selection:bg-[#fb0b88] selection:text-white">
+      <body
+        suppressHydrationWarning
+        className="min-h-screen bg-[#120805] text-[#faf4f0] font-sans antialiased selection:bg-[#fb0b88] selection:text-white"
+      >
         <CartProvider>
           {children}
         </CartProvider>
