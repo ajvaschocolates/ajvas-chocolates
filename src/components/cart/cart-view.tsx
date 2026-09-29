@@ -16,14 +16,14 @@ export function CartView() {
       <div className="w-full py-10 sm:py-16">
         <Container>
           <div className="max-w-5xl mx-auto animate-pulse">
-            <div className="h-8 w-48 bg-brand-sand/60 rounded mb-8" />
+            <div className="h-8 w-48 bg-[#1f110c] rounded mb-8 border border-[#3d1c12]" />
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               <div className="lg:col-span-8 space-y-6">
-                <div className="h-28 bg-brand-sand/40 rounded-2xl" />
-                <div className="h-28 bg-brand-sand/40 rounded-2xl" />
+                <div className="h-28 bg-[#1f110c] rounded-2xl border border-[#3d1c12]" />
+                <div className="h-28 bg-[#1f110c] rounded-2xl border border-[#3d1c12]" />
               </div>
               <div className="lg:col-span-4">
-                <div className="h-72 bg-brand-sand/40 rounded-2xl" />
+                <div className="h-72 bg-[#1f110c] rounded-2xl border border-[#3d1c12]" />
               </div>
             </div>
           </div>
@@ -37,26 +37,26 @@ export function CartView() {
     return (
       <div className="w-full py-16 sm:py-24">
         <Container>
-          <div className="max-w-md mx-auto text-center flex flex-col items-center gap-5">
-            <div className="w-20 h-20 rounded-2xl bg-brand-surface border border-brand-sand/80 flex items-center justify-center text-brand-muted shadow-subtle">
-              <ShoppingBag className="w-9 h-9 text-brand-espresso" />
+          <div className="max-w-md mx-auto text-center flex flex-col items-center gap-5 bg-[#1f110c] p-8 sm:p-10 rounded-2xl border border-[#3d1c12] shadow-2xl">
+            <div className="w-20 h-20 rounded-2xl bg-[#140b07] border border-[#3d1c12] flex items-center justify-center text-[#c99d52] shadow-inner">
+              <ShoppingBag className="w-9 h-9 text-[#c99d52]" />
             </div>
 
             <div className="space-y-2">
-              <span className="font-sans text-xs uppercase tracking-widest font-bold text-brand-pink">
+              <span className="font-sans text-xs uppercase tracking-widest font-bold text-[#fb0b88]">
                 YOUR BAG
               </span>
-              <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-brand-navy tracking-tight">
+              <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-[#faf4f0] tracking-tight">
                 Your bag is empty.
               </h1>
-              <p className="font-sans text-sm text-brand-muted leading-relaxed max-w-sm mx-auto font-medium">
-                Explore our chocolate gifts and curated collections to find something worth gifting.
+              <p className="font-sans text-sm text-[#d1c2b9] leading-relaxed max-w-sm mx-auto font-medium">
+                Explore our artisanal chocolate confections and luxury gift hampers to find something worth gifting.
               </p>
             </div>
 
             <Link
               href="/shop"
-              className="mt-3 inline-flex items-center justify-center gap-2 font-sans text-xs uppercase tracking-widest font-bold min-h-[50px] px-8 rounded-full bg-brand-pink text-white hover:bg-brand-pink-hover transition-all shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink"
+              className="mt-3 inline-flex items-center justify-center gap-2 font-sans text-xs uppercase tracking-widest font-bold min-h-[50px] px-8 rounded-full bg-[#fb0b88] text-white hover:bg-[#d90974] transition-all shadow-md shadow-[#fb0b88]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
             >
               <span>Shop Chocolates</span>
               <ArrowRight className="w-4 h-4" />
@@ -73,19 +73,19 @@ export function CartView() {
       <Container>
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           {/* Header Title Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-brand-sand/70 pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-[#3d1c12] pb-5">
             <div className="flex items-baseline gap-3">
-              <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-brand-navy tracking-tight">
+              <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#faf4f0] tracking-tight">
                 Shopping Bag
               </h1>
-              <span className="font-sans text-sm text-brand-muted font-semibold">
+              <span className="font-sans text-sm text-[#c99d52] font-semibold">
                 ({totalItemsCount} {totalItemsCount === 1 ? "item" : "items"})
               </span>
             </div>
 
             <Link
               href="/shop"
-              className="inline-flex items-center gap-1.5 font-sans text-xs font-bold text-brand-navy hover:text-brand-pink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink rounded-sm"
+              className="inline-flex items-center gap-1.5 font-sans text-xs font-bold text-[#c99d52] hover:text-[#fb0b88] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] rounded-sm"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Shop</span>
@@ -105,9 +105,9 @@ export function CartView() {
               <div className="pt-6">
                 <Link
                   href="/shop"
-                  className="inline-flex items-center gap-2 font-sans text-xs font-semibold text-brand-espresso hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded"
+                  className="inline-flex items-center gap-2 font-sans text-xs font-semibold text-[#c99d52] hover:text-[#fb0b88] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] rounded"
                 >
-                  <ArrowLeft className="w-4 h-4 text-brand-gold" />
+                  <ArrowLeft className="w-4 h-4 text-[#c99d52]" />
                   <span>Continue Shopping</span>
                 </Link>
               </div>

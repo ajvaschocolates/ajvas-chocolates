@@ -32,7 +32,7 @@ export default async function HomePage() {
   const giftingCtaSection = sections["gifting_cta"] || null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#faf4f0] selection:bg-[#fb0b88] selection:text-white">
+    <div className="flex flex-col min-h-screen bg-[#120805] text-[#faf4f0] selection:bg-[#fb0b88] selection:text-white">
       {/* Header with Navigation & Announcement Bar */}
       <Header />
 

@@ -31,19 +31,24 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
     { icon: Headphones, title: "Dedicated Support" },
   ];
 
-  // Helper to format title with italic accent
+  // Helper to format title with italic accent dynamically from title string
   const renderFormattedTitle = (titleText: string) => {
-    if (titleText.toLowerCase().includes("worth gifting")) {
+    if (!titleText) return null;
+    const lower = titleText.toLowerCase();
+    if (lower.includes("worth gifting")) {
+      const idx = lower.indexOf("worth gifting");
+      const firstPart = titleText.substring(0, idx);
+      const accentPart = titleText.substring(idx);
       return (
         <>
-          Find something{" "}
+          {firstPart}
           <span className="font-serif italic font-normal text-amber-200">
-            worth gifting.
+            {accentPart}
           </span>
         </>
       );
     }
-    const words = titleText.split(" ");
+    const words = titleText.trim().split(/\s+/);
     if (words.length >= 2) {
       const firstPart = words.slice(0, words.length - 2).join(" ");
       const lastPart = words.slice(words.length - 2).join(" ");
@@ -60,9 +65,9 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
   };
 
   return (
-    <section className="relative w-full bg-[#1c0d15] text-white py-14 sm:py-16 lg:py-20 overflow-hidden border-t border-[#3b1c2b]">
+    <section className="relative w-full bg-[#160c08] text-white py-16 sm:py-20 lg:py-24 overflow-hidden border-t border-[#2d1810]">
       {/* CMS Admin-Controlled Background Image Canvas */}
-      {showBgImage && (
+      {showBgImage ? (
         <img
           src={imageUrl!}
           alt={rawTitle}
@@ -70,30 +75,37 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
           loading="lazy"
           onError={() => setImageError(true)}
         />
+      ) : (
+        <img
+          src="https://images.unsplash.com/photo-1548848221-0c2e497ed557?q=80&w=1600&auto=format&fit=crop"
+          alt="AJVAS Gifting Confections"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="lazy"
+        />
       )}
 
       {/* Moderate Dark Chocolate Overlay Tint — Keeps Photograph Details Clearly Visible */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1c0d15]/50 via-[#1c0d15]/40 to-[#1c0d15]/55 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#160c08]/80 via-[#160c08]/70 to-[#160c08]/85 pointer-events-none" />
 
       <Container className="relative z-10">
         <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
           {/* Main Title Heading with drop shadow for legibility over photograph */}
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 leading-tight [text-shadow:_0_2px_12px_rgba(0,0,0,0.8)]">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight [text-shadow:_0_2px_16px_rgba(0,0,0,0.9)]">
             {renderFormattedTitle(rawTitle)}
           </h2>
 
           {/* Subtitle */}
-          <p className="font-sans text-sm sm:text-base text-white/95 max-w-xl mx-auto mb-8 font-medium leading-relaxed [text-shadow:_0_1px_8px_rgba(0,0,0,0.8)]">
+          <p className="font-sans text-sm sm:text-base text-white/90 max-w-xl mx-auto mb-9 font-normal leading-relaxed [text-shadow:_0_1px_8px_rgba(0,0,0,0.8)]">
             {description}
           </p>
 
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto mb-12">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-14">
             <Link href={primaryCtaLink} className="w-full sm:w-auto">
               <Button
                 variant="primary"
                 size="lg"
-                className="w-full sm:w-auto gap-2 bg-[#fb0b88] hover:bg-[#d90974] text-white font-sans text-xs uppercase tracking-wider font-bold rounded-full px-8 py-3.5 shadow-xl transition-transform active:scale-95"
+                className="w-full sm:w-auto gap-2.5 bg-[#fb0b88] hover:bg-[#d90974] text-white font-sans text-xs uppercase tracking-wider font-bold rounded-full px-8 py-4 shadow-xl transition-all hover:scale-105 active:scale-95"
               >
                 <span>{primaryCtaText}</span>
                 <ArrowRight className="w-4 h-4 text-white" />
@@ -103,7 +115,7 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto rounded-full border-white/50 text-white bg-black/30 backdrop-blur-md hover:bg-white/20 hover:border-white/80 font-sans text-xs uppercase tracking-wider font-semibold px-7 py-3.5 shadow-md"
+                className="w-full sm:w-auto rounded-full border-amber-200/50 text-white bg-black/40 backdrop-blur-md hover:bg-amber-200/20 hover:border-amber-200/80 font-sans text-xs uppercase tracking-wider font-semibold px-8 py-4 shadow-md transition-all"
               >
                 OUR STORY
               </Button>
@@ -111,11 +123,11 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
           </div>
 
           {/* Bottom Features Strip inside CTA Banner */}
-          <div className="w-full pt-8 border-t border-white/20 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-sans font-semibold text-white/95 [text-shadow:_0_1px_6px_rgba(0,0,0,0.8)]">
+          <div className="w-full pt-8 border-t border-white/20 grid grid-cols-2 md:grid-cols-4 gap-6 text-xs sm:text-sm font-sans font-medium text-white/95 [text-shadow:_0_1px_6px_rgba(0,0,0,0.8)]">
             {ctaPillars.map((item) => {
               const IconComp = item.icon;
               return (
-                <div key={item.title} className="flex items-center justify-center gap-2">
+                <div key={item.title} className="flex items-center justify-center gap-2.5">
                   <IconComp className="w-4 h-4 text-[#fb0b88] shrink-0" />
                   <span>{item.title}</span>
                 </div>

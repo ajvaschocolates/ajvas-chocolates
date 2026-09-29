@@ -19,20 +19,20 @@ export default function ProductError({ error, reset }: ProductErrorProps) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-brand-cream text-brand-espresso">
+    <div className="flex min-h-screen flex-col bg-[#120805] text-[#faf4f0]">
       <Header />
       <main id="main-content" className="flex-1 flex items-center justify-center py-16 sm:py-24">
         <Container>
-          <div className="max-w-md mx-auto text-center flex flex-col items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+          <div className="max-w-md mx-auto text-center flex flex-col items-center gap-5 bg-[#1f110c] p-8 rounded-2xl border border-[#3d1c12] shadow-2xl">
+            <div className="w-16 h-16 rounded-2xl bg-[#3d101e] border border-[#fb0b88]/30 flex items-center justify-center text-[#fb0b88]">
               <AlertTriangle className="w-8 h-8" />
             </div>
 
             <div className="space-y-2">
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-brand-espresso">
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#faf4f0]">
                 Unable to Load Product
               </h1>
-              <p className="font-sans text-sm text-brand-muted leading-relaxed">
+              <p className="font-sans text-sm text-[#d1c2b9] leading-relaxed">
                 We encountered an issue loading this product information. Please try again or explore our full catalog.
               </p>
             </div>
@@ -43,7 +43,7 @@ export default function ProductError({ error, reset }: ProductErrorProps) {
                 variant="primary"
                 size="md"
                 onClick={reset}
-                className="w-full sm:w-auto min-h-[44px] px-6 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2"
+                className="w-full sm:w-auto min-h-[44px] px-6 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 bg-[#fb0b88] hover:bg-[#d90974] text-white"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Try Again</span>
@@ -51,7 +51,7 @@ export default function ProductError({ error, reset }: ProductErrorProps) {
 
               <Link
                 href="/shop"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 font-sans text-xs uppercase tracking-wider font-semibold min-h-[44px] px-6 rounded bg-brand-burgundy text-brand-cream hover:bg-brand-wine active:bg-brand-espresso transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 font-sans text-xs uppercase tracking-wider font-semibold min-h-[44px] px-6 rounded-md border border-[#c99d52]/50 text-[#c99d52] hover:bg-[#c99d52]/10 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c99d52]"
               >
                 <span>Browse Shop</span>
                 <ArrowRight className="w-4 h-4" />

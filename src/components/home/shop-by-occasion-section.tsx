@@ -20,14 +20,14 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
   const fallbackCategories = [
     {
       id: "cat-1",
-      name: "Gift Hampers",
+      name: "Box Hampers",
       subtitle: "Perfect for loved ones",
       image_url: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?q=80&w=600&auto=format&fit=crop",
     },
     {
       id: "cat-2",
-      name: "Truffle Collections",
-      subtitle: "Rich, smooth, indulgent",
+      name: "Trolly Hampers",
+      subtitle: "Travel in sweetness",
       image_url: "https://images.unsplash.com/photo-1582293041079-7814c2f12063?q=80&w=600&auto=format&fit=crop",
     },
     {
@@ -41,12 +41,6 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
       name: "Assorted Boxes",
       subtitle: "A treat for every taste",
       image_url: "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?q=80&w=600&auto=format&fit=crop",
-    },
-    {
-      id: "cat-5",
-      name: "Occasion Gifts",
-      subtitle: "Birthdays, Anniversaries & more",
-      image_url: "https://images.unsplash.com/photo-1511381939415-e44015466834?q=80&w=600&auto=format&fit=crop",
     },
   ];
 
@@ -98,29 +92,29 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
 
   const handleScrollLeft = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -300, behavior: "smooth" });
+      scrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
     }
   };
 
   const handleScrollRight = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 300, behavior: "smooth" });
+      scrollRef.current.scrollBy({ left: 320, behavior: "smooth" });
     }
   };
 
   return (
-    <section className="w-full bg-[#fdf8f5] py-14 sm:py-16 lg:py-20 border-b border-[#ebdcd3]" id="occasions">
+    <section className="w-full bg-[#120805] py-14 sm:py-16 lg:py-20 border-b border-[#2d1810]" id="occasions">
       <Container>
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 gap-4">
           <div>
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-brand-espresso">
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#faf4f0]">
               Shop by{" "}
-              <span className="font-serif italic font-normal text-[#c99d52]">
+              <span className="font-serif italic font-normal text-amber-200">
                 Occasion
               </span>
             </h2>
-            <p className="font-sans text-xs sm:text-sm text-brand-muted mt-1 font-medium">
+            <p className="font-sans text-xs sm:text-sm text-[#d0c4b8]/80 mt-1 font-normal">
               Because every moment deserves something sweeter.
             </p>
           </div>
@@ -131,7 +125,7 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
                   type="button"
                   onClick={handleScrollLeft}
                   aria-label="Scroll categories left"
-                  className="w-9 h-9 rounded-full bg-white border border-[#ebdcd3] shadow-xs hover:border-[#c99d52] hover:text-[#c99d52] text-brand-espresso flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink"
+                  className="w-9 h-9 rounded-full bg-[#20100a] border border-[#3d1c12] text-[#faf4f0] hover:border-amber-200 hover:text-amber-200 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -139,7 +133,7 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
                   type="button"
                   onClick={handleScrollRight}
                   aria-label="Scroll categories right"
-                  className="w-9 h-9 rounded-full bg-white border border-[#ebdcd3] shadow-xs hover:border-[#c99d52] hover:text-[#c99d52] text-brand-espresso flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink"
+                  className="w-9 h-9 rounded-full bg-[#20100a] border border-[#3d1c12] text-[#faf4f0] hover:border-amber-200 hover:text-amber-200 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -147,10 +141,10 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
             )}
             <Link
               href="/shop"
-              className="inline-flex items-center gap-1.5 font-sans text-xs uppercase tracking-widest font-bold text-brand-espresso hover:text-brand-pink transition-colors min-h-[44px] px-3 py-2 rounded-lg hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink"
+              className="inline-flex items-center gap-1.5 font-sans text-xs uppercase tracking-widest font-bold text-amber-200 hover:text-[#fb0b88] transition-colors min-h-[44px] px-3 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
             >
               <span>VIEW ALL</span>
-              <ArrowRight className="w-4 h-4 text-brand-pink" />
+              <ArrowRight className="w-4 h-4 text-[#fb0b88]" />
             </Link>
           </div>
         </div>
@@ -176,42 +170,43 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
                 <Link
                   key={item.id}
                   href={`/shop?category=${encodeURIComponent(item.id)}`}
-                  className="group flex flex-col bg-white border border-[#ebdcd3] rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 w-[240px] sm:w-[270px] lg:w-[280px] shrink-0 snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink"
+                  className="group flex flex-col bg-[#1b0e0a] border border-[#3d1c12] hover:border-amber-200/50 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-[260px] sm:w-[320px] lg:w-[360px] shrink-0 snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
                 >
-                  {/* Category Image */}
-                  <div className="relative w-full aspect-[4/3] bg-[#faf4f0] overflow-hidden">
+                  {/* Category Image Container */}
+                  <div className="relative w-full aspect-[16/10] bg-[#140b07] overflow-hidden">
                     {hasValidImage ? (
                       <img
                         src={imageUrl!}
                         alt={item.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         loading="lazy"
                         onError={() =>
                           setFailedImageIds((prev) => ({ ...prev, [item.id]: true }))
                         }
                       />
                     ) : (
-                      <div className="w-full h-full bg-[#faf4f0] flex flex-col items-center justify-center p-4 text-center">
-                        <Sparkles className="w-6 h-6 text-brand-pink mb-1" />
-                        <span className="font-serif text-xs text-brand-muted">AJVAS Confections</span>
+                      <div className="w-full h-full bg-[#1e0c13] flex flex-col items-center justify-center p-4 text-center">
+                        <Sparkles className="w-6 h-6 text-[#fb0b88] mb-1" />
+                        <span className="font-serif text-xs text-amber-200">AJVAS Confections</span>
                       </div>
                     )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1b0e0a] via-transparent to-transparent opacity-80" />
                   </div>
 
                   {/* Card Content Footer */}
-                  <div className="p-4 sm:p-5 flex items-center justify-between gap-3 bg-white flex-1 border-t border-[#f5eae3]">
+                  <div className="p-5 flex items-center justify-between gap-3 bg-[#1b0e0a] flex-1 border-t border-[#2d1810]">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-serif text-base sm:text-lg font-bold text-brand-espresso group-hover:text-brand-pink transition-colors leading-snug truncate">
+                      <h3 className="font-serif text-lg sm:text-xl font-bold text-[#faf4f0] group-hover:text-amber-200 transition-colors leading-snug truncate">
                         {item.name}
                       </h3>
                       {item.subtitle && (
-                        <p className="font-sans text-xs text-brand-muted mt-0.5 line-clamp-1">
+                        <p className="font-sans text-xs text-[#d0c4b8]/75 mt-0.5 line-clamp-1">
                           {item.subtitle}
                         </p>
                       )}
                     </div>
-                    <span className="w-8 h-8 rounded-full bg-[#faf4f0] group-hover:bg-[#fb0b88] text-brand-espresso group-hover:text-white flex items-center justify-center shrink-0 transition-colors duration-300 shadow-xs group-hover:translate-x-0.5 transform">
-                      <ArrowRight className="w-4 h-4" />
+                    <span className="w-9 h-9 rounded-full bg-[#2a140d] border border-[#3d1c12] group-hover:bg-[#fb0b88] group-hover:border-[#fb0b88] text-amber-200 group-hover:text-white flex items-center justify-center shrink-0 transition-colors duration-300 shadow-sm group-hover:translate-x-0.5 transform">
+                      <ArrowRight className="w-4.5 h-4.5" />
                     </span>
                   </div>
                 </Link>

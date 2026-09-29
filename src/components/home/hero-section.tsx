@@ -18,20 +18,20 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
 
   const currentBanner = allBanners[activeIndex] || banner || null;
 
-  const eyebrow = currentBanner ? currentBanner.eyebrow : "PREMIUM CHOCOLATES & GIFTING";
+  const eyebrow = currentBanner ? currentBanner.eyebrow : "PREMIUM CHOCOLATES";
   const rawTitle = currentBanner ? currentBanner.title : "Small Bites Big Emotions";
   const description = currentBanner
     ? currentBanner.description
-    : "Handcrafted chocolates made with premium ingredients, thoughtfully created for your special moments.";
-  const primaryCtaText = currentBanner ? currentBanner.primary_cta_text : "SHOP GIFTS";
+    : "Handcrafted chocolates for every celebration, every milestone and every moment that matters.";
+  const primaryCtaText = currentBanner ? currentBanner.primary_cta_text : "SHOP NOW";
   const primaryCtaLink = currentBanner ? currentBanner.primary_cta_link : "/shop";
-  const secondaryCtaText = currentBanner ? currentBanner.secondary_cta_text : "EXPLORE COLLECTIONS";
-  const secondaryCtaLink = currentBanner ? currentBanner.secondary_cta_link : "/shop";
+  const secondaryCtaText = currentBanner ? currentBanner.secondary_cta_text : "OUR STORY";
+  const secondaryCtaLink = currentBanner ? currentBanner.secondary_cta_link : "/#story";
   const imageUrl = currentBanner?.image_url?.trim() || null;
 
   const showImage = imageUrl && !imageError;
 
-  // Render formatted title with italic accent dynamically from titleText without hardcoded words
+  // Render formatted title with italic accent dynamically from titleText without hardcoding
   const renderFormattedTitle = (titleText: string) => {
     if (!titleText) return null;
     const words = titleText.trim().split(/\s+/);
@@ -40,8 +40,8 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
       const lastPart = words.slice(words.length - 2).join(" ");
       return (
         <>
-          {firstPart}{" "}
-          <span className="font-serif italic font-normal text-amber-200">
+          {firstPart}
+          <span className="block font-serif italic font-normal text-amber-200">
             {lastPart}
           </span>
         </>
@@ -77,13 +77,13 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
   };
 
   return (
-    <section className="relative w-full min-h-[480px] sm:min-h-[540px] lg:min-h-[600px] bg-[#1c0d15] text-white overflow-hidden flex items-center border-b border-[#3b1c2b]">
+    <section className="relative w-full min-h-[520px] sm:min-h-[580px] lg:min-h-[640px] bg-[#160c08] text-white overflow-hidden flex items-center border-b border-[#2d1810]">
       {/* Edge-to-Edge Full-Bleed Bright Photographic Background Image Canvas */}
       {showImage ? (
         <img
           src={imageUrl}
           alt={rawTitle || "AJVAS Hero Banner"}
-          className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700"
+          className="absolute inset-0 w-full h-full object-cover object-right sm:object-center transition-opacity duration-700"
           loading="eager"
           onError={() => setImageError(true)}
         />
@@ -91,50 +91,50 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
         <img
           src="https://images.unsplash.com/photo-1549007994-cb92caebd54b?q=80&w=1600&auto=format&fit=crop"
           alt="AJVAS Artisanal Confections"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-right sm:object-center"
           loading="eager"
         />
       )}
 
-      {/* Light & Subtle Overlay Gradient to Keep Imagery Visually Dominant */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#1c0d15]/55 via-[#1c0d15]/25 to-transparent sm:from-[#1c0d15]/50 sm:via-[#1c0d15]/20 sm:to-transparent pointer-events-none" />
+      {/* Light & Subtle Localized Overlay Gradient - Leaves right side product imagery visually bright & un-muddled */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#160c08]/85 via-[#160c08]/50 to-transparent sm:from-[#160c08]/80 sm:via-[#160c08]/40 sm:to-transparent pointer-events-none" />
 
       {/* Hero Content Overlay */}
-      <Container className="relative z-10 py-12 sm:py-16 lg:py-20">
+      <Container className="relative z-10 py-14 sm:py-20 lg:py-24">
         <div className="max-w-xl lg:max-w-2xl flex flex-col items-start text-left">
           {/* Eyebrow Tag */}
           {eyebrow && (
-            <div className="inline-flex items-center gap-2 mb-4 px-3.5 py-1 bg-[#4a1525]/85 rounded-full border border-[#fbcfe8]/30 backdrop-blur-md shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#fb0b88] animate-pulse" />
-              <span className="font-sans text-[11px] sm:text-xs uppercase tracking-widest text-amber-200/95 font-semibold">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <span className="w-5 h-[1.5px] bg-amber-300/80" />
+              <span className="font-sans text-xs uppercase tracking-widest text-amber-200/95 font-bold">
                 {eyebrow}
               </span>
             </div>
           )}
 
-          {/* H1 Headline with local text drop-shadow for contrast over bright photography */}
+          {/* H1 Headline with local text drop-shadow for contrast over photography */}
           {rawTitle && (
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08] mb-4 [text-shadow:_0_2px_12px_rgba(0,0,0,0.7)]">
+            <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05] mb-5 [text-shadow:_0_2px_16px_rgba(0,0,0,0.8)]">
               {renderFormattedTitle(rawTitle)}
             </h1>
           )}
 
           {/* Description */}
           {description && (
-            <p className="font-sans text-sm sm:text-base text-white/95 leading-relaxed mb-8 max-w-lg font-medium [text-shadow:_0_1px_8px_rgba(0,0,0,0.7)]">
+            <p className="font-sans text-sm sm:text-base text-white/90 leading-relaxed mb-8 max-w-md font-normal [text-shadow:_0_1px_8px_rgba(0,0,0,0.8)]">
               {description}
             </p>
           )}
 
           {/* CTA Buttons */}
           {(primaryCtaText || secondaryCtaText) && (
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full sm:w-auto mb-8">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto mb-10">
               {primaryCtaText && (
                 <a href={primaryCtaLink || "#"} className="w-full sm:w-auto">
                   <Button
                     variant="primary"
                     size="lg"
-                    className="w-full sm:w-auto gap-2 bg-[#fb0b88] hover:bg-[#d90974] text-white font-sans text-xs uppercase tracking-wider font-bold rounded-full px-8 py-3.5 shadow-xl transition-transform active:scale-95"
+                    className="w-full sm:w-auto gap-2.5 bg-[#fb0b88] hover:bg-[#d90974] text-white font-sans text-xs uppercase tracking-wider font-bold rounded-full px-8 py-4 shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
                   >
                     <span>{primaryCtaText}</span>
                     <ArrowRight className="w-4 h-4 text-white" />
@@ -147,7 +147,7 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="w-full sm:w-auto rounded-full border-white/50 text-white bg-black/30 backdrop-blur-md hover:bg-white/20 hover:border-white/80 font-sans text-xs uppercase tracking-wider font-semibold px-7 py-3.5 shadow-md"
+                    className="w-full sm:w-auto rounded-full border-amber-200/40 text-white bg-black/40 backdrop-blur-md hover:bg-amber-200/20 hover:border-amber-200/80 font-sans text-xs uppercase tracking-wider font-semibold px-7 py-4 shadow-md transition-all duration-300"
                   >
                     {secondaryCtaText}
                   </Button>
@@ -157,7 +157,7 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
           )}
 
           {/* Carousel Slide Indicators */}
-          <div className="flex items-center gap-4 pt-4 border-t border-white/20 w-full max-w-md">
+          <div className="flex items-center gap-4 pt-4 border-t border-white/20 w-full max-w-sm">
             <div className="flex items-center gap-2">
               {(allBanners.length > 0 ? allBanners : [1]).map((_, idx) => (
                 <button
@@ -173,7 +173,7 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
                   className={`h-1.5 rounded-full transition-all duration-300 ${
                     idx === activeIndex
                       ? "w-8 bg-[#fb0b88]"
-                      : "w-2 bg-white/50 hover:bg-white/80"
+                      : "w-2.5 bg-white/40 hover:bg-white/70"
                   }`}
                 />
               ))}
@@ -185,7 +185,7 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
                   type="button"
                   onClick={handlePrev}
                   aria-label="Previous slide"
-                  className="w-8 h-8 rounded-full border border-white/40 bg-black/40 backdrop-blur-md hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full border border-white/30 bg-black/40 backdrop-blur-md hover:bg-white/20 text-white flex items-center justify-center transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -193,7 +193,7 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
                   type="button"
                   onClick={handleNext}
                   aria-label="Next slide"
-                  className="w-8 h-8 rounded-full border border-white/40 bg-black/40 backdrop-blur-md hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full border border-white/30 bg-black/40 backdrop-blur-md hover:bg-white/20 text-white flex items-center justify-center transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ category?: string }> | { category?: string };
+  searchParams?: Promise<{ category?: string }>;
 }) {
   const resolvedParams = searchParams ? await searchParams : {};
   const initialCategory = resolvedParams?.category || null;
@@ -33,7 +33,7 @@ export default async function ShopPage({
     : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-brand-cream text-brand-espresso">
+    <div className="flex min-h-screen flex-col bg-[#120805] text-[#faf4f0]">
       <Header />
       <main id="main-content" className="flex-1">
         <ShopCollectionsClient

@@ -45,11 +45,11 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {/* Category Eyebrow & Availability */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         {product.category?.name ? (
-          <span className="font-sans text-xs uppercase tracking-widest font-semibold text-brand-burgundy">
+          <span className="font-sans text-xs uppercase tracking-widest font-semibold text-[#c99d52]">
             {product.category.name}
           </span>
         ) : (
-          <span className="font-sans text-xs uppercase tracking-widest font-semibold text-brand-muted">
+          <span className="font-sans text-xs uppercase tracking-widest font-semibold text-[#a39085]">
             AJVAS Confection
           </span>
         )}
@@ -57,7 +57,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       </div>
 
       {/* Main Title */}
-      <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-brand-espresso tracking-tight leading-tight">
+      <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#faf4f0] tracking-tight leading-tight">
         {product.name}
       </h1>
 
@@ -65,31 +65,31 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <div className="flex items-baseline gap-3 pt-1 pb-2">
         {discountedPrice !== undefined ? (
           <>
-            <span className="font-sans text-2xl sm:text-3xl font-bold text-brand-espresso">
+            <span className="font-sans text-2xl sm:text-3xl font-bold text-[#faf4f0]">
               ₹{discountedPrice.toLocaleString("en-IN")}
             </span>
-            <span className="font-sans text-base sm:text-lg text-brand-muted line-through">
+            <span className="font-sans text-base sm:text-lg text-[#a39085] line-through">
               ₹{product.price.toLocaleString("en-IN")}
             </span>
-            <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded bg-brand-burgundy/10 text-brand-burgundy">
+            <span className="font-sans text-xs font-semibold px-2.5 py-1 rounded-full bg-[#3d101e] border border-[#fb0b88]/30 text-[#fb0b88]">
               {product.discount_type === "percentage"
                 ? `${product.discount_value}% OFF`
                 : `₹${product.discount_value} OFF`}
             </span>
           </>
         ) : (
-          <span className="font-sans text-2xl sm:text-3xl font-bold text-brand-espresso">
+          <span className="font-sans text-2xl sm:text-3xl font-bold text-[#faf4f0]">
             ₹{product.price.toLocaleString("en-IN")}
           </span>
         )}
       </div>
 
       {/* Divider */}
-      <div className="w-full h-px bg-brand-sand/80" />
+      <div className="w-full h-px bg-[#3d1c12]" />
 
       {/* Product Description */}
       {product.description && product.description.trim().length > 0 && (
-        <div className="text-brand-muted font-sans text-sm sm:text-base leading-relaxed whitespace-pre-line">
+        <div className="text-[#d1c2b9] font-sans text-sm sm:text-base leading-relaxed whitespace-pre-line">
           {product.description}
         </div>
       )}

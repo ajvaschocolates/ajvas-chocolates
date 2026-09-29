@@ -9,22 +9,22 @@ export function TestimonialsSection() {
     {
       id: 1,
       stars: 5,
-      quote: "Beautifully packed and the taste was amazing! Perfect gift for my family!",
-      author: "Fatima",
+      quote: "Absolutely delicious! The packaging was beautiful and perfect for gifting.",
+      author: "Sree M.",
       location: "Kochi",
     },
     {
       id: 2,
       stars: 5,
-      quote: "The truffles are simply heavenly. Highly recommended!",
-      author: "Anju",
+      quote: "Rich taste and premium quality. Ajvas never disappoints!",
+      author: "Rohit R.",
       location: "Bengaluru",
     },
     {
       id: 3,
       stars: 5,
-      quote: "Excellent quality and presentation. Will definitely order again!",
-      author: "Sameera",
+      quote: "The best chocolates for every occasion. Highly recommended!",
+      author: "Fathima R.",
       location: "Calicut",
     },
   ];
@@ -40,17 +40,17 @@ export function TestimonialsSection() {
   };
 
   return (
-    <section className="w-full bg-[#faf4f0] py-12 lg:py-18 border-b border-[#ebdcd3]" id="reviews">
+    <section className="w-full bg-[#120805] py-14 sm:py-16 lg:py-20 border-b border-[#2d1810]" id="reviews">
       <Container>
         {/* Section Header */}
         <div className="flex items-end justify-between mb-8 sm:mb-10">
           <div>
-            <span className="font-sans text-xs uppercase tracking-widest text-brand-pink font-bold block mb-1">
-              OUR CUSTOMERS —
+            <span className="font-sans text-xs uppercase tracking-widest text-[#fb0b88] font-bold block mb-1">
+              HAPPY CUSTOMERS —
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-brand-espresso">
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#faf4f0]">
               Loved by{" "}
-              <span className="font-serif italic font-normal text-brand-pink">
+              <span className="font-serif italic font-normal text-[#fb0b88]">
                 Chocolate Lovers
               </span>
             </h2>
@@ -62,7 +62,7 @@ export function TestimonialsSection() {
               type="button"
               onClick={handlePrev}
               aria-label="Previous customer review"
-              className="w-8 h-8 rounded-full border border-[#ebdcd3] bg-white flex items-center justify-center text-brand-espresso hover:border-brand-pink hover:text-brand-pink transition-colors shadow-xs"
+              className="w-9 h-9 rounded-full border border-[#3d1c12] bg-[#20100a] text-[#faf4f0] hover:border-[#fb0b88] hover:text-[#fb0b88] flex items-center justify-center transition-colors shadow-sm"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -70,7 +70,7 @@ export function TestimonialsSection() {
               type="button"
               onClick={handleNext}
               aria-label="Next customer review"
-              className="w-8 h-8 rounded-full border border-[#ebdcd3] bg-white flex items-center justify-center text-brand-espresso hover:border-brand-pink hover:text-brand-pink transition-colors shadow-xs"
+              className="w-9 h-9 rounded-full border border-[#3d1c12] bg-[#20100a] text-[#faf4f0] hover:border-[#fb0b88] hover:text-[#fb0b88] flex items-center justify-center transition-colors shadow-sm"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -82,25 +82,25 @@ export function TestimonialsSection() {
           {reviews.map((rev) => (
             <div
               key={rev.id}
-              className="bg-white border border-[#ebdcd3] rounded-2xl p-6 shadow-xs flex flex-col justify-between"
+              className="bg-[#1b0e0a] border border-[#3d1c12] hover:border-amber-200/40 rounded-2xl p-6 shadow-md flex flex-col justify-between transition-colors duration-300"
             >
               <div>
                 {/* 5 Star Rating */}
-                <div className="flex items-center gap-1 text-amber-400 mb-3">
+                <div className="flex items-center gap-1 text-amber-400 mb-3.5">
                   {[...Array(rev.stars)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-amber-400 stroke-amber-400" />
                   ))}
                 </div>
 
                 {/* Review Quote */}
-                <p className="font-serif italic text-base text-brand-espresso leading-relaxed mb-4">
+                <p className="font-serif italic text-base text-[#faf4f0] leading-relaxed mb-6 font-normal">
                   &quot;{rev.quote}&quot;
                 </p>
               </div>
 
               {/* Author & Location */}
-              <div className="pt-3 border-t border-[#ebdcd3]/50 font-sans text-xs font-semibold text-brand-muted">
-                {rev.author} • <span className="font-normal text-brand-muted/80">{rev.location}</span>
+              <div className="pt-3.5 border-t border-[#2d1810] font-sans text-xs font-semibold text-[#d0c4b8]">
+                {rev.author} • <span className="font-normal text-[#d0c4b8]/70">{rev.location}</span>
               </div>
             </div>
           ))}
