@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function CheckoutPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-brand-cream text-brand-espresso">
+    <div className="flex min-h-screen flex-col bg-[#120805] text-[#faf4f0]">
       <Header />
       <main id="main-content" className="flex-1">
         <Suspense fallback={<CheckoutLoading />}>

@@ -159,14 +159,14 @@ export function CheckoutView() {
       <div className="w-full py-10 sm:py-16">
         <Container>
           <div className="max-w-6xl mx-auto animate-pulse">
-            <div className="h-8 w-48 bg-brand-sand/60 rounded mb-8" />
+            <div className="h-8 w-48 bg-[#1f110c] rounded mb-8 border border-[#3d1c12]" />
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               <div className="lg:col-span-7 space-y-6">
-                <div className="h-44 bg-brand-sand/40 rounded-2xl" />
-                <div className="h-64 bg-brand-sand/40 rounded-2xl" />
+                <div className="h-44 bg-[#1f110c] rounded-2xl border border-[#3d1c12]" />
+                <div className="h-64 bg-[#1f110c] rounded-2xl border border-[#3d1c12]" />
               </div>
               <div className="lg:col-span-5">
-                <div className="h-80 bg-brand-sand/40 rounded-2xl" />
+                <div className="h-80 bg-[#1f110c] rounded-2xl border border-[#3d1c12]" />
               </div>
             </div>
           </div>
@@ -180,26 +180,26 @@ export function CheckoutView() {
     return (
       <div className="w-full py-16 sm:py-24">
         <Container>
-          <div className="max-w-md mx-auto text-center flex flex-col items-center gap-5">
-            <div className="w-20 h-20 rounded-2xl bg-brand-surface border border-brand-sand/80 flex items-center justify-center text-brand-muted shadow-subtle">
-              <ShoppingBag className="w-9 h-9 text-brand-espresso" />
+          <div className="max-w-md mx-auto text-center flex flex-col items-center gap-5 bg-[#1f110c] p-8 sm:p-10 rounded-2xl border border-[#3d1c12] shadow-2xl">
+            <div className="w-20 h-20 rounded-2xl bg-[#140b07] border border-[#3d1c12] flex items-center justify-center text-[#c99d52] shadow-inner">
+              <ShoppingBag className="w-9 h-9 text-[#c99d52]" />
             </div>
 
             <div className="space-y-2">
-              <span className="font-sans text-xs uppercase tracking-widest font-semibold text-brand-burgundy">
+              <span className="font-sans text-xs uppercase tracking-widest font-semibold text-[#fb0b88]">
                 CHECKOUT
               </span>
-              <h1 className="font-serif text-3xl sm:text-4xl font-bold text-brand-espresso tracking-tight">
+              <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#faf4f0] tracking-tight">
                 No items to checkout.
               </h1>
-              <p className="font-sans text-sm text-brand-muted leading-relaxed max-w-sm mx-auto">
+              <p className="font-sans text-sm text-[#d1c2b9] leading-relaxed max-w-sm mx-auto">
                 Your shopping bag is empty. Please add confections or gift hampers before proceeding to checkout.
               </p>
             </div>
 
             <Link
               href="/cart"
-              className="mt-3 inline-flex items-center justify-center gap-2 font-sans text-xs uppercase tracking-widest font-semibold min-h-[50px] px-8 rounded-lg bg-brand-cocoa text-brand-cream hover:bg-brand-espresso active:bg-black transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy"
+              className="mt-3 inline-flex items-center justify-center gap-2 font-sans text-xs uppercase tracking-widest font-semibold min-h-[50px] px-8 rounded-full bg-[#fb0b88] text-white hover:bg-[#d90974] transition-all shadow-md shadow-[#fb0b88]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
             >
               <span>Return to Bag</span>
               <ArrowLeft className="w-4 h-4" />
@@ -215,19 +215,19 @@ export function CheckoutView() {
       <Container>
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           {/* Header Title Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-brand-sand/70 pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-[#3d1c12] pb-5">
             <div>
-              <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-brand-espresso tracking-tight">
+              <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#faf4f0] tracking-tight">
                 Guest Checkout
               </h1>
-              <p className="font-sans text-xs text-brand-muted mt-1">
+              <p className="font-sans text-xs text-[#a39085] mt-1">
                 Direct order dispatch. No customer account required. State-based shipping calculation.
               </p>
             </div>
 
             <Link
               href="/cart"
-              className="inline-flex items-center gap-1.5 font-sans text-xs text-brand-muted hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded-sm"
+              className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-[#c99d52] hover:text-[#fb0b88] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] rounded-sm"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Bag</span>

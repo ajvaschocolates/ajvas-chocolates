@@ -30,17 +30,17 @@ export function CustomerAddressStep({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-brand-sand/80 p-6 sm:p-7 shadow-subtle flex flex-col gap-6">
+    <div className="bg-[#1f110c] rounded-2xl border border-[#3d1c12] p-6 sm:p-7 shadow-2xl flex flex-col gap-6">
       {/* Step Heading */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-brand-pink text-white font-sans text-xs font-extrabold flex items-center justify-center shrink-0 shadow-xs">
+        <div className="w-8 h-8 rounded-full bg-[#fb0b88] text-white font-sans text-xs font-extrabold flex items-center justify-center shrink-0 shadow-xs">
           1
         </div>
         <div>
-          <h2 className="font-serif text-lg sm:text-xl font-extrabold text-brand-navy">
+          <h2 className="font-serif text-lg sm:text-xl font-extrabold text-[#faf4f0]">
             Contact &amp; Delivery Address
           </h2>
-          <p className="font-sans text-xs text-brand-muted mt-0.5 font-medium">
+          <p className="font-sans text-xs text-[#a39085] mt-0.5 font-medium">
             Guest checkout. Select your delivery State &amp; District to determine shipping rates.
           </p>
         </div>
@@ -49,8 +49,8 @@ export function CustomerAddressStep({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-sans text-xs">
         {/* Full Name */}
         <div className="sm:col-span-2 space-y-1.5">
-          <label htmlFor="full-name" className="font-bold uppercase tracking-wider text-brand-navy block">
-            Full Name <span className="text-brand-pink">*</span>
+          <label htmlFor="full-name" className="font-bold uppercase tracking-wider text-[#faf4f0] block">
+            Full Name <span className="text-[#fb0b88]">*</span>
           </label>
           <input
             id="full-name"
@@ -58,17 +58,17 @@ export function CustomerAddressStep({
             value={formData.fullName}
             onChange={(e) => onChange("fullName", e.target.value)}
             placeholder="e.g. Ananya Sharma"
-            className={`w-full px-4 py-3 min-h-[44px] bg-white border rounded-xl text-sm font-sans text-brand-navy placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink ${
-              errors.fullName ? "border-brand-pink ring-1 ring-brand-pink" : "border-brand-sand/80"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+              errors.fullName ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
             }`}
           />
-          {errors.fullName && <p className="text-accent-rose text-[11px]">{errors.fullName}</p>}
+          {errors.fullName && <p className="text-[#fb0b88] text-[11px]">{errors.fullName}</p>}
         </div>
 
         {/* Mobile Phone */}
         <div className="space-y-1.5">
-          <label htmlFor="phone" className="font-semibold uppercase tracking-wider text-brand-espresso block">
-            Mobile Phone <span className="text-brand-burgundy">*</span>
+          <label htmlFor="phone" className="font-semibold uppercase tracking-wider text-[#faf4f0] block">
+            Mobile Phone <span className="text-[#fb0b88]">*</span>
           </label>
           <input
             id="phone"
@@ -77,17 +77,17 @@ export function CustomerAddressStep({
             value={formData.phone}
             onChange={(e) => onChange("phone", e.target.value.replace(/\D/g, ""))}
             placeholder="10-digit mobile number"
-            className={`w-full px-4 py-3 min-h-[44px] bg-brand-surface border rounded-xl text-sm font-sans text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy ${
-              errors.phone ? "border-accent-rose ring-1 ring-accent-rose" : "border-brand-sand/80"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+              errors.phone ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
             }`}
           />
-          {errors.phone && <p className="text-accent-rose text-[11px]">{errors.phone}</p>}
+          {errors.phone && <p className="text-[#fb0b88] text-[11px]">{errors.phone}</p>}
         </div>
 
         {/* Email Address */}
         <div className="space-y-1.5">
-          <label htmlFor="email" className="font-semibold uppercase tracking-wider text-brand-espresso block">
-            Email Address <span className="text-brand-muted font-normal">(Optional)</span>
+          <label htmlFor="email" className="font-semibold uppercase tracking-wider text-[#faf4f0] block">
+            Email Address <span className="text-[#a39085] font-normal">(Optional)</span>
           </label>
           <input
             id="email"
@@ -96,17 +96,17 @@ export function CustomerAddressStep({
             onChange={(e) => onChange("email", e.target.value)}
             placeholder="For order receipt"
             aria-invalid={!!errors.email}
-            className={`w-full px-4 py-3 min-h-[44px] bg-brand-surface border rounded-xl text-sm font-sans text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy ${
-              errors.email ? "border-accent-rose ring-1 ring-accent-rose" : "border-brand-sand/80"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+              errors.email ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
             }`}
           />
-          {errors.email && <p className="text-accent-rose text-[11px]">{errors.email}</p>}
+          {errors.email && <p className="text-[#fb0b88] text-[11px]">{errors.email}</p>}
         </div>
 
         {/* Address Line 1 */}
         <div className="sm:col-span-2 space-y-1.5">
-          <label htmlFor="address1" className="font-semibold uppercase tracking-wider text-brand-espresso block">
-            Flat, House No., Building, Street <span className="text-brand-burgundy">*</span>
+          <label htmlFor="address1" className="font-semibold uppercase tracking-wider text-[#faf4f0] block">
+            Flat, House No., Building, Street <span className="text-[#fb0b88]">*</span>
           </label>
           <input
             id="address1"
@@ -114,17 +114,17 @@ export function CustomerAddressStep({
             value={formData.addressLine1}
             onChange={(e) => onChange("addressLine1", e.target.value)}
             placeholder="House / Flat No., Apartment / Wing, Street Name"
-            className={`w-full px-4 py-3 min-h-[44px] bg-brand-surface border rounded-xl text-sm font-sans text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy ${
-              errors.addressLine1 ? "border-accent-rose ring-1 ring-accent-rose" : "border-brand-sand/80"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+              errors.addressLine1 ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
             }`}
           />
-          {errors.addressLine1 && <p className="text-accent-rose text-[11px]">{errors.addressLine1}</p>}
+          {errors.addressLine1 && <p className="text-[#fb0b88] text-[11px]">{errors.addressLine1}</p>}
         </div>
 
         {/* Address Line 2 */}
         <div className="sm:col-span-2 space-y-1.5">
-          <label htmlFor="address2" className="font-semibold uppercase tracking-wider text-brand-espresso block">
-            Area, Landmark <span className="text-brand-muted font-normal">(Optional)</span>
+          <label htmlFor="address2" className="font-semibold uppercase tracking-wider text-[#faf4f0] block">
+            Area, Landmark <span className="text-[#a39085] font-normal">(Optional)</span>
           </label>
           <input
             id="address2"
@@ -132,63 +132,63 @@ export function CustomerAddressStep({
             value={formData.addressLine2}
             onChange={(e) => onChange("addressLine2", e.target.value)}
             placeholder="Nearby landmark or colony"
-            className="w-full px-4 py-3 min-h-[44px] bg-brand-surface border border-brand-sand/80 rounded-xl text-sm font-sans text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy"
+            className="w-full px-4 py-3 min-h-[44px] bg-[#140b07] border border-[#3d1c12] rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
           />
         </div>
 
         {/* State Selection Dropdown (Pricing & Zone Input) */}
         <div className="space-y-1.5">
-          <label htmlFor="state-select" className="font-bold uppercase tracking-wider text-brand-navy block">
-            State / UT <span className="text-brand-pink">*</span>
+          <label htmlFor="state-select" className="font-bold uppercase tracking-wider text-[#faf4f0] block">
+            State / UT <span className="text-[#fb0b88]">*</span>
           </label>
           <select
             id="state-select"
             value={formData.state}
             onChange={(e) => handleStateChange(e.target.value)}
-            className={`w-full px-4 py-3 min-h-[44px] bg-white border rounded-xl text-sm font-sans text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink ${
-              errors.state ? "border-brand-pink ring-1 ring-brand-pink" : "border-brand-sand/80"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+              errors.state ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
             }`}
           >
-            <option value="">-- Select State --</option>
+            <option value="" className="bg-[#140b07] text-[#a39085]">-- Select State --</option>
             {INDIA_STATES_DISTRICTS.map((item) => (
-              <option key={item.state} value={item.state}>
+              <option key={item.state} value={item.state} className="bg-[#140b07] text-[#faf4f0]">
                 {item.state}
               </option>
             ))}
           </select>
-          {errors.state && <p className="text-accent-rose text-[11px]">{errors.state}</p>}
+          {errors.state && <p className="text-[#fb0b88] text-[11px]">{errors.state}</p>}
         </div>
 
         {/* District Selection Dropdown (Dependent on State) */}
         <div className="space-y-1.5">
-          <label htmlFor="district-select" className="font-bold uppercase tracking-wider text-brand-navy block">
-            District <span className="text-brand-pink">*</span>
+          <label htmlFor="district-select" className="font-bold uppercase tracking-wider text-[#faf4f0] block">
+            District <span className="text-[#fb0b88]">*</span>
           </label>
           <select
             id="district-select"
             disabled={!formData.state}
             value={formData.district}
             onChange={(e) => onChange("district", e.target.value)}
-            className={`w-full px-4 py-3 min-h-[44px] bg-white border rounded-xl text-sm font-sans text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink disabled:bg-gray-100 disabled:text-gray-400 ${
-              errors.district ? "border-brand-pink ring-1 ring-brand-pink" : "border-brand-sand/80"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] disabled:bg-[#120805] disabled:text-[#a39085]/50 ${
+              errors.district ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
             }`}
           >
-            <option value="">
+            <option value="" className="bg-[#140b07] text-[#a39085]">
               {!formData.state ? "-- Select State First --" : "-- Select District --"}
             </option>
             {availableDistricts.map((district) => (
-              <option key={district} value={district}>
+              <option key={district} value={district} className="bg-[#140b07] text-[#faf4f0]">
                 {district}
               </option>
             ))}
           </select>
-          {errors.district && <p className="text-accent-rose text-[11px]">{errors.district}</p>}
+          {errors.district && <p className="text-[#fb0b88] text-[11px]">{errors.district}</p>}
         </div>
 
         {/* Town / City */}
         <div className="space-y-1.5">
-          <label htmlFor="city" className="font-semibold uppercase tracking-wider text-brand-espresso block">
-            Town / City <span className="text-brand-muted font-normal">(Optional)</span>
+          <label htmlFor="city" className="font-semibold uppercase tracking-wider text-[#faf4f0] block">
+            Town / City <span className="text-[#a39085] font-normal">(Optional)</span>
           </label>
           <input
             id="city"
@@ -196,14 +196,14 @@ export function CustomerAddressStep({
             value={formData.city}
             onChange={(e) => onChange("city", e.target.value)}
             placeholder="Town or City Name"
-            className="w-full px-4 py-3 min-h-[44px] bg-brand-surface border border-brand-sand/80 rounded-xl text-sm font-sans text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy"
+            className="w-full px-4 py-3 min-h-[44px] bg-[#140b07] border border-[#3d1c12] rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
           />
         </div>
 
         {/* Pincode Input (Address & Carrier Fulfillment Only) */}
         <div className="space-y-1.5">
-          <label htmlFor="pincode-input" className="font-bold uppercase tracking-wider text-brand-navy block">
-            Pincode <span className="text-brand-pink">*</span>
+          <label htmlFor="pincode-input" className="font-bold uppercase tracking-wider text-[#faf4f0] block">
+            Pincode <span className="text-[#fb0b88]">*</span>
           </label>
           <input
             id="pincode-input"
@@ -213,14 +213,14 @@ export function CustomerAddressStep({
             value={formData.pincode}
             onChange={(e) => onChange("pincode", e.target.value.replace(/\D/g, ""))}
             placeholder="6-digit Pincode"
-            className={`w-full px-4 py-3 min-h-[44px] bg-white border rounded-xl text-sm font-sans text-brand-navy placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink tracking-wider ${
-              errors.pincode ? "border-brand-pink ring-1 ring-brand-pink" : "border-brand-sand/80"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] tracking-wider ${
+              errors.pincode ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
             }`}
           />
           {errors.pincode ? (
-            <p className="text-accent-rose text-[11px]">{errors.pincode}</p>
+            <p className="text-[#fb0b88] text-[11px]">{errors.pincode}</p>
           ) : (
-            <p className="text-[11px] text-brand-muted">Required for shipping label &amp; parcel dispatch.</p>
+            <p className="text-[11px] text-[#a39085]">Required for shipping label &amp; parcel dispatch.</p>
           )}
         </div>
       </div>

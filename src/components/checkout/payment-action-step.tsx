@@ -36,33 +36,33 @@ export function PaymentActionStep({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-brand-sand/80 p-6 sm:p-7 shadow-subtle flex flex-col gap-6">
+    <div className="bg-[#1f110c] rounded-2xl border border-[#3d1c12] p-6 sm:p-7 shadow-2xl flex flex-col gap-6">
       {/* Step Heading */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-brand-pink text-white font-sans text-xs font-extrabold flex items-center justify-center shrink-0 shadow-xs">
-          3
+        <div className="w-8 h-8 rounded-full bg-[#fb0b88] text-white font-sans text-xs font-extrabold flex items-center justify-center shrink-0 shadow-xs">
+          2
         </div>
         <div>
-          <h2 className="font-serif text-lg sm:text-xl font-extrabold text-brand-navy">
+          <h2 className="font-serif text-lg sm:text-xl font-extrabold text-[#faf4f0]">
             Payment
           </h2>
-          <p className="font-sans text-xs text-brand-muted mt-0.5 font-medium">
+          <p className="font-sans text-xs text-[#a39085] mt-0.5 font-medium">
             Cards, Net Banking, UPI, and Wallets via Razorpay.
           </p>
         </div>
       </div>
 
       {/* Payment Method Card */}
-      <div className="p-4 bg-white rounded-xl border border-brand-sand/70 flex items-center justify-between gap-4">
+      <div className="p-4 bg-[#140b07] rounded-xl border border-[#3d1c12] flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-brand-pink-light/50 border border-brand-pink/20 flex items-center justify-center text-brand-pink shrink-0">
-            <CreditCard className="w-5 h-5 text-brand-pink" />
+          <div className="w-10 h-10 rounded-lg bg-[#3d101e] border border-[#fb0b88]/30 flex items-center justify-center text-[#fb0b88] shrink-0">
+            <CreditCard className="w-5 h-5 text-[#fb0b88]" />
           </div>
           <div>
-            <span className="font-sans text-xs font-bold text-brand-navy block">
+            <span className="font-sans text-xs font-bold text-[#faf4f0] block">
               Online Payment
             </span>
-            <span className="font-sans text-[11px] text-brand-muted font-medium">
+            <span className="font-sans text-[11px] text-[#a39085] font-medium">
               Payment will be completed through Razorpay.
             </span>
           </div>
@@ -74,10 +74,10 @@ export function PaymentActionStep({
         <div
           role="status"
           aria-live="polite"
-          className="p-4 rounded-xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs font-sans flex items-start gap-2.5"
+          className="p-4 rounded-xl bg-[#3d101e] border border-[#fb0b88]/40 text-[#faf4f0] text-xs font-sans flex items-start gap-2.5"
         >
-          <AlertCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-          <p className="font-medium text-amber-900">{notice}</p>
+          <AlertCircle className="w-4 h-4 text-[#fb0b88] shrink-0 mt-0.5" />
+          <p className="font-medium text-[#faf4f0]">{notice}</p>
         </div>
       )}
 
@@ -88,7 +88,7 @@ export function PaymentActionStep({
         size="lg"
         disabled={!canProceed || totalAmount === null || paymentState === "processing"}
         onClick={handlePayClick}
-        className="w-full min-h-[52px] py-3.5 text-xs font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 bg-brand-pink text-white hover:bg-brand-pink-hover rounded-full shadow-md transition-all"
+        className="w-full min-h-[52px] py-3.5 text-xs font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 bg-[#fb0b88] text-white hover:bg-[#d90974] rounded-full shadow-md shadow-[#fb0b88]/20 transition-all border-none"
       >
         <CreditCard className="w-4 h-4 text-white" />
         <span>
