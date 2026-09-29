@@ -1,108 +1,123 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Sparkles, Flame, Heart, Gift } from "lucide-react";
 import { HomepageSection } from "@/types/cms";
 import { Container } from "@/components/ui/container";
+import { Button } from "@/components/ui/button";
 
 export interface BrandStorySectionProps {
   section?: HomepageSection | null;
 }
 
 export function BrandStorySection({ section }: BrandStorySectionProps) {
-  const eyebrow = section?.eyebrow || "The Ajvas Philosophy";
-  const title = section?.title || "Chocolates made for human moments.";
+  const eyebrow = section?.eyebrow || "THE AJVAS STORY";
+  const rawTitle = section?.title || "Chocolates made for sweeter moments.";
   const description =
     section?.description ||
-    "Ajvas was founded on a simple premise: a box of chocolates should feel like a celebration before it's even opened. We make chocolate confections presented with woven ribbons and personalized notes.";
-  const imageUrl = section?.image_url?.trim() || null;
-  const [imageError, setImageError] = useState(false);
+    "At Ajvas Chocolates, we believe in crafting more than just chocolates — we create moments of joy. Each bite is a blend of premium ingredients, thoughtful craftsmanship and a passion for spreading happiness.";
+  const imageUrl =
+    section?.image_url?.trim() ||
+    "https://images.unsplash.com/photo-1548848221-0c2e497ed557?q=80&w=1000&auto=format&fit=crop";
 
+  const [imageError, setImageError] = useState(false);
   const showImage = imageUrl && !imageError;
 
+  const defaultPillars = [
+    { icon: Sparkles, title: "Fine Ingredients", sub: "Finest cocoa & butter" },
+    { icon: Flame, title: "Rich Flavours", sub: "Artisanal recipes" },
+    { icon: Heart, title: "Crafted with Care", sub: "Handmade confections" },
+    { icon: Gift, title: "Perfect for Every Occasion", sub: "Thoughtful gifting" },
+  ];
+
+  // Dynamic title renderer highlighting "moments."
+  const renderFormattedTitle = (titleText: string) => {
+    if (!titleText) return null;
+    const words = titleText.trim().split(/\s+/);
+    if (words.length >= 2) {
+      const firstPart = words.slice(0, words.length - 1).join(" ");
+      const lastPart = words[words.length - 1];
+      return (
+        <>
+          {firstPart}{" "}
+          <span className="font-serif italic font-normal text-amber-200">
+            {lastPart}
+          </span>
+        </>
+      );
+    }
+    return titleText;
+  };
+
   return (
-    <section className="w-full bg-brand-surface py-16 lg:py-24 border-b border-brand-sand/60" id="story">
+    <section className="w-full bg-[#160c08] py-14 sm:py-16 lg:py-24 border-b border-[#2d1810]" id="story">
       <Container>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-          {/* Story Text */}
-          <div className="lg:col-span-6 flex flex-col items-start">
-            <span className="font-sans text-xs uppercase tracking-widest text-brand-gold font-bold">
-              {eyebrow}
-            </span>
-
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-brand-espresso mt-2 mb-5 leading-tight">
-              {title}
-            </h2>
-
-            <p className="font-sans text-base text-brand-muted mb-4 leading-relaxed">
-              {description}
-            </p>
-
-            <p className="font-sans text-base text-brand-muted mb-8 leading-relaxed">
-              Each box is prepared with transit protection, ribbon tying, and your personalized greeting printed on heavy textured cardstock.
-            </p>
-
-            {/* 3 Pillars */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-brand-sand w-full">
-              <div className="flex flex-col">
-                <span className="font-serif text-xl sm:text-2xl font-bold text-brand-burgundy">
-                  Gifting
-                </span>
-                <span className="font-sans text-xs text-brand-muted mt-0.5">
-                  Keepsake packaging
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-serif text-xl sm:text-2xl font-bold text-brand-burgundy">
-                  Pan-India
-                </span>
-                <span className="font-sans text-xs text-brand-muted mt-0.5">
-                  Courier dispatch
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-serif text-xl sm:text-2xl font-bold text-brand-burgundy">
-                  Checkout
-                </span>
-                <span className="font-sans text-xs text-brand-muted mt-0.5">
-                  Guest checkout
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Lifestyle / Packaging Image */}
-          <div className="lg:col-span-6">
-            <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-elevated bg-white border border-brand-border/60">
+          {/* Left Side Showcase Pure Editorial Image */}
+          <div className="lg:col-span-6 relative">
+            <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-[#3d1c12] bg-[#1a0c07]">
               {showImage ? (
                 <img
                   src={imageUrl}
-                  alt={title}
+                  alt={rawTitle}
                   className="w-full h-full object-cover"
                   loading="lazy"
-                  onError={() => {
-                    console.error("BRAND STORY IMAGE DEBUG", {
-                      imageUrl,
-                      imagePublicId: section?.image_public_id,
-                      sectionData: section,
-                    });
-                    setImageError(true);
-                  }}
+                  onError={() => setImageError(true)}
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-[#f8ece9] via-[#f2deda] to-[#e6cbc5] flex flex-col items-center justify-center p-8 text-center border border-brand-sand">
-                  <div className="w-14 h-14 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-brand-burgundy mb-3 shadow-xs">
-                    <Sparkles className="w-7 h-7" />
-                  </div>
-                  <h3 className="font-serif text-xl font-bold text-brand-espresso max-w-sm">
-                    {title}
-                  </h3>
-                  <p className="font-sans text-xs text-brand-muted mt-1 max-w-xs">
-                    Keepsake Box &amp; Personalized Note Presentation
-                  </p>
+                <div className="w-full h-full bg-[#1e0c13] flex flex-col items-center justify-center p-8 text-center text-white">
+                  <Sparkles className="w-8 h-8 text-[#fb0b88] mb-2" />
+                  <h3 className="font-serif text-2xl font-bold text-amber-200">AJVAS Craftsmanship</h3>
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Right Side Text & 4 Pillars */}
+          <div className="lg:col-span-6 flex flex-col items-start">
+            <div className="inline-flex items-center gap-2 mb-3">
+              <span className="w-4 h-[1.5px] bg-[#fb0b88]" />
+              <span className="font-sans text-xs uppercase tracking-widest text-[#fb0b88] font-bold">
+                {eyebrow}
+              </span>
+            </div>
+
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#faf4f0] leading-tight mb-4">
+              {renderFormattedTitle(rawTitle)}
+            </h2>
+
+            <p className="font-sans text-sm sm:text-base text-[#d0c4b8]/85 leading-relaxed mb-8 font-normal">
+              {description}
+            </p>
+
+            {/* 4 Icon Pillars */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[#2d1810] w-full mb-8">
+              {defaultPillars.map((p) => {
+                const IconComp = p.icon;
+                return (
+                  <div key={p.title} className="flex flex-col items-center text-center p-2">
+                    <div className="w-10 h-10 rounded-full bg-[#2a121a] border border-[#4a1c26] flex items-center justify-center text-[#fb0b88] mb-2.5 shadow-sm">
+                      <IconComp className="w-4 h-4 stroke-[2]" />
+                    </div>
+                    <span className="font-serif text-xs font-bold text-[#faf4f0] leading-tight">
+                      {p.title}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Button */}
+            <Link href="/#story">
+              <Button
+                variant="outline"
+                size="lg"
+                className="rounded-full border-amber-200/50 text-[#faf4f0] bg-black/40 backdrop-blur-md hover:bg-amber-200/20 hover:border-amber-200/80 font-sans text-xs uppercase tracking-wider font-semibold px-8 py-3.5 shadow-md"
+              >
+                OUR STORY
+              </Button>
+            </Link>
           </div>
         </div>
       </Container>

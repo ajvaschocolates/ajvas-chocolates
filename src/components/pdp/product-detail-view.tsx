@@ -20,22 +20,22 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
       <Container>
         {/* Breadcrumbs */}
         <nav aria-label="Breadcrumb" className="mb-6 sm:mb-8">
-          <ol className="flex items-center gap-1.5 sm:gap-2 text-xs font-sans text-brand-muted flex-wrap">
+          <ol className="flex items-center gap-1.5 sm:gap-2 text-xs font-sans text-[#a39085] flex-wrap">
             <li>
               <Link
                 href="/"
-                className="hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded-sm"
+                className="hover:text-[#c99d52] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c99d52] rounded-sm"
               >
                 Home
               </Link>
             </li>
             <li aria-hidden="true">
-              <ChevronRight className="w-3.5 h-3.5 text-brand-sand" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#5c4035]" />
             </li>
             <li>
               <Link
                 href="/shop"
-                className="hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded-sm"
+                className="hover:text-[#c99d52] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c99d52] rounded-sm"
               >
                 Shop
               </Link>
@@ -43,12 +43,12 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
             {product.category && (
               <>
                 <li aria-hidden="true">
-                  <ChevronRight className="w-3.5 h-3.5 text-brand-sand" />
+                  <ChevronRight className="w-3.5 h-3.5 text-[#5c4035]" />
                 </li>
                 <li>
                   <Link
                     href={`/shop?category=${encodeURIComponent(product.category.id)}`}
-                    className="hover:text-brand-burgundy transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy rounded-sm"
+                    className="hover:text-[#c99d52] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c99d52] rounded-sm"
                   >
                     {product.category.name}
                   </Link>
@@ -56,9 +56,9 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
               </>
             )}
             <li aria-hidden="true">
-              <ChevronRight className="w-3.5 h-3.5 text-brand-sand" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#5c4035]" />
             </li>
-            <li className="text-brand-espresso font-medium truncate max-w-[200px] sm:max-w-xs" aria-current="page">
+            <li className="text-[#c99d52] font-medium truncate max-w-[200px] sm:max-w-xs" aria-current="page">
               {product.name}
             </li>
           </ol>

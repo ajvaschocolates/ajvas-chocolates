@@ -27,8 +27,9 @@ export async function getActiveCategoriesResult(): Promise<CatalogQueryResult<Ca
     const supabase = getPublicCatalogClient();
     const { data, error } = await supabase
       .from("categories")
-      .select("id, name, status, created_at, updated_at")
+      .select("id, name, status, image_url, image_public_id, display_order, created_at, updated_at")
       .eq("status", "active")
+      .order("display_order", { ascending: true })
       .order("name", { ascending: true });
 
     if (error) {

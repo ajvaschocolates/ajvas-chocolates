@@ -19,14 +19,14 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   // Zero-image fallback state
   if (validImages.length === 0) {
     return (
-      <div className="w-full flex flex-col items-center justify-center aspect-square sm:aspect-[4/3] lg:aspect-square bg-brand-surface rounded-2xl border border-brand-sand/80 p-8 text-center shadow-subtle">
-        <div className="w-24 h-24 mb-4 flex items-center justify-center rounded-2xl bg-brand-cream/80 border border-brand-sand/60">
+      <div className="w-full flex flex-col items-center justify-center aspect-square sm:aspect-[4/3] lg:aspect-square bg-[#1f110c] rounded-2xl border border-[#3d1c12] p-8 text-center shadow-2xl">
+        <div className="w-24 h-24 mb-4 flex items-center justify-center rounded-2xl bg-[#140b07] border border-[#3d1c12]">
           <BrandLogo size="md" />
         </div>
-        <p className="font-serif text-lg text-brand-espresso font-semibold">
+        <p className="font-serif text-lg text-[#faf4f0] font-semibold">
           {productName}
         </p>
-        <p className="font-sans text-xs text-brand-muted mt-1">
+        <p className="font-sans text-xs text-[#a39085] mt-1">
           Product image unavailable
         </p>
       </div>
@@ -44,7 +44,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   return (
     <div className="w-full flex flex-col gap-4">
       {/* Main Showcase Viewport */}
-      <div className="relative w-full aspect-square bg-brand-surface rounded-2xl border border-brand-sand/80 overflow-hidden shadow-subtle group">
+      <div className="relative w-full aspect-square bg-[#1f110c] rounded-2xl border border-[#3d1c12] overflow-hidden shadow-2xl group">
         <img
           src={currentImage.image_url}
           alt={currentImage.alt_text || productName}
@@ -53,7 +53,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
 
         {/* Floating Counter Badge */}
         {validImages.length > 1 && (
-          <div className="absolute top-4 right-4 bg-brand-espresso/80 backdrop-blur-md text-brand-cream text-[11px] font-sans font-medium px-2.5 py-1 rounded-full shadow-sm">
+          <div className="absolute top-4 right-4 bg-[#120805]/90 border border-[#3d1c12] backdrop-blur-md text-[#c99d52] text-[11px] font-sans font-semibold px-3 py-1 rounded-full shadow-sm">
             {selectedIndex + 1} / {validImages.length}
           </div>
         )}
@@ -65,7 +65,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               type="button"
               onClick={handlePrev}
               aria-label="Previous image"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-white/90 text-brand-espresso hover:text-brand-burgundy shadow-card flex items-center justify-center transition-opacity opacity-90 sm:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#1b0e0a]/90 text-[#faf4f0] hover:text-[#fb0b88] border border-[#3d1c12] shadow-xl flex items-center justify-center transition-opacity opacity-90 sm:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -73,7 +73,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               type="button"
               onClick={handleNext}
               aria-label="Next image"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-white/90 text-brand-espresso hover:text-brand-burgundy shadow-card flex items-center justify-center transition-opacity opacity-90 sm:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#1b0e0a]/90 text-[#faf4f0] hover:text-[#fb0b88] border border-[#3d1c12] shadow-xl flex items-center justify-center transition-opacity opacity-90 sm:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -97,10 +97,10 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 onClick={() => setSelectedIndex(idx)}
                 aria-label={`View product image ${idx + 1} of ${validImages.length}`}
                 aria-current={isSelected ? "true" : undefined}
-                className={`relative w-20 h-20 min-w-[44px] min-h-[44px] rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-brand-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy ${
+                className={`relative w-20 h-20 min-w-[44px] min-h-[44px] rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-[#1f110c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c99d52] ${
                   isSelected
-                    ? "border-brand-burgundy ring-2 ring-brand-burgundy/20 shadow-sm"
-                    : "border-brand-sand/80 opacity-70 hover:opacity-100 hover:border-brand-muted"
+                    ? "border-[#c99d52] ring-2 ring-[#c99d52]/30 shadow-md"
+                    : "border-[#3d1c12] opacity-60 hover:opacity-100 hover:border-[#a39085]"
                 }`}
               >
                 <img
