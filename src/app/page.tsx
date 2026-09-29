@@ -11,7 +11,6 @@ import { UspStrip } from "@/components/home/usp-strip";
 import { ShopByOccasionSection } from "@/components/home/shop-by-occasion-section";
 import { CuratedCollectionsSection } from "@/components/home/curated-collections-section";
 import { GiftingExperienceSection } from "@/components/home/gifting-experience-section";
-import { BrandStorySection } from "@/components/home/brand-story-section";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { GiftingCtaSection } from "@/components/home/gifting-cta-section";
 
@@ -30,6 +29,7 @@ export default async function HomePage() {
   const brandStorySection = sections["brand_story"] || null;
   const giftingExpSection = sections["gifting_experience"] || null;
   const giftingCtaSection = sections["gifting_cta"] || null;
+  const testimonialsSection = sections["testimonials"] || null;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#120805] text-[#faf4f0] selection:bg-[#fb0b88] selection:text-white">
@@ -50,14 +50,14 @@ export default async function HomePage() {
         {/* 4. Best Selling Products */}
         <CuratedCollectionsSection products={products} />
 
-        {/* 5. Gifting Experience Section */}
-        <GiftingExperienceSection section={giftingExpSection} />
+        {/* 5. Gifting & Brand Editorial Duo (Merged) */}
+        <GiftingExperienceSection
+          giftingSection={giftingExpSection}
+          storySection={brandStorySection}
+        />
 
-        {/* 6. Brand Story Section */}
-        <BrandStorySection section={brandStorySection} />
-
-        {/* 7. Loved by Chocolate Lovers (Testimonials) */}
-        <TestimonialsSection />
+        {/* 6. Loved by Chocolate Lovers (Testimonials) */}
+        <TestimonialsSection section={testimonialsSection} />
 
         {/* 8. Final Gifting CTA Banner */}
         <GiftingCtaSection section={giftingCtaSection} />

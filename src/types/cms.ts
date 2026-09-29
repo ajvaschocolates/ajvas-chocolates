@@ -37,10 +37,29 @@ export interface HomepageSection {
   secondary_cta_link?: string | null;
   content_json?: {
     pillars?: FeaturePillar[];
+    left_image_url?: string;
+    right_image_url?: string;
+    testimonials?: TestimonialItem[];
     [key: string]: unknown;
   } | null;
   status: RecordStatus;
   display_order: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface TestimonialItem {
+  id: string;
+  author: string;
+  location?: string;
+  quote: string;
+  stars: number;
+  avatar_url?: string;
+  status: "active" | "inactive";
+}
+
+export interface TestimonialsSectionData {
+  left_image_url?: string;
+  right_image_url?: string;
+  testimonials?: TestimonialItem[];
 }

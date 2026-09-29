@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Gift, Sparkles, PackageCheck, Headphones } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { HomepageSection } from "@/types/cms";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
@@ -24,13 +24,6 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
 
   const showBgImage = Boolean(imageUrl) && !imageError;
 
-  const ctaPillars = [
-    { icon: Gift, title: "Unique Collections" },
-    { icon: Sparkles, title: "Custom Gifting" },
-    { icon: PackageCheck, title: "Bulk Orders" },
-    { icon: Headphones, title: "Dedicated Support" },
-  ];
-
   // Helper to format title with italic accent dynamically from title string
   const renderFormattedTitle = (titleText: string) => {
     if (!titleText) return null;
@@ -42,7 +35,7 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
       return (
         <>
           {firstPart}
-          <span className="font-serif italic font-normal text-amber-200">
+          <span className="font-pally font-normal text-amber-200">
             {accentPart}
           </span>
         </>
@@ -55,7 +48,7 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
       return (
         <>
           {firstPart ? `${firstPart} ` : ""}
-          <span className="font-serif italic font-normal text-amber-200">
+          <span className="font-pally italic font-normal text-amber-200">
             {lastPart}
           </span>
         </>
@@ -89,53 +82,32 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
 
       <Container className="relative z-10">
         <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
-          {/* Main Title Heading with drop shadow for legibility over photograph */}
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight [text-shadow:_0_2px_16px_rgba(0,0,0,0.9)]">
+          {/* Main Title Heading with font-pally and drop shadow */}
+          <h2 className="font-pally text-3xl sm:text-4xl text-white mb-4 leading-tight [text-shadow:_0_2px_16px_rgba(0,0,0,0.9)]">
             {renderFormattedTitle(rawTitle)}
           </h2>
 
           {/* Subtitle */}
-          <p className="font-sans text-sm sm:text-base text-white/90 max-w-xl mx-auto mb-9 font-normal leading-relaxed [text-shadow:_0_1px_8px_rgba(0,0,0,0.8)]">
+          <p className="font-subtitle text-xs sm:text-xl text-[#ffffe3] max-w-xl mx-auto mb-9 font-normal leading-relaxed [text-shadow:_0_1px_8px_rgba(0,0,0,0.8)]">
             {description}
           </p>
 
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-14">
+          {/* Primary CTA Button */}
+          <div className="flex items-center justify-center w-full sm:w-auto">
             <Link href={primaryCtaLink} className="w-full sm:w-auto">
               <Button
                 variant="primary"
                 size="lg"
-                className="w-full sm:w-auto gap-2.5 bg-[#fb0b88] hover:bg-[#d90974] text-white font-sans text-xs uppercase tracking-wider font-bold rounded-full px-8 py-4 shadow-xl transition-all hover:scale-105 active:scale-95"
+                className="w-full sm:w-auto gap-2.5 bg-[#fb0b88] hover:bg-[#d90974] text-white font-pally text-xs uppercase tracking-wider !text-sm rounded-full px-8 py-3 shadow-xl transition-all hover:scale-105 active:scale-95"
               >
                 <span>{primaryCtaText}</span>
-                <ArrowRight className="w-4 h-4 text-white" />
+              
               </Button>
             </Link>
-            <Link href="/#story" className="w-full sm:w-auto">
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto rounded-full border-amber-200/50 text-white bg-black/40 backdrop-blur-md hover:bg-amber-200/20 hover:border-amber-200/80 font-sans text-xs uppercase tracking-wider font-semibold px-8 py-4 shadow-md transition-all"
-              >
-                OUR STORY
-              </Button>
-            </Link>
-          </div>
-
-          {/* Bottom Features Strip inside CTA Banner */}
-          <div className="w-full pt-8 border-t border-white/20 grid grid-cols-2 md:grid-cols-4 gap-6 text-xs sm:text-sm font-sans font-medium text-white/95 [text-shadow:_0_1px_6px_rgba(0,0,0,0.8)]">
-            {ctaPillars.map((item) => {
-              const IconComp = item.icon;
-              return (
-                <div key={item.title} className="flex items-center justify-center gap-2.5">
-                  <IconComp className="w-4 h-4 text-[#fb0b88] shrink-0" />
-                  <span>{item.title}</span>
-                </div>
-              );
-            })}
           </div>
         </div>
       </Container>
     </section>
   );
 }
+

@@ -12,6 +12,10 @@ const config: Config = {
       fontFamily: {
         serif: ["var(--font-cormorant)", "Cormorant Garamond", "Georgia", "serif"],
         sans: ["var(--font-inter)", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        subtitle: ["var(--font-dancing-script)", "Dancing Script", "cursive"],
+        script: ["var(--font-dancing-script)", "Dancing Script", "cursive"],
+        heading: ["'Pally'", "'_Pally_Variable'", "sans-serif"],
+        pally: ["'Pally'", "'_Pally_Variable'", "sans-serif"],
       },
       colors: {
         cocoa: {
