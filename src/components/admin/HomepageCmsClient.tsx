@@ -23,8 +23,7 @@ import {
   X,
   AlertTriangle,
   CheckCircle2,
-  Tag,
-  ArrowRight,
+  ExternalLink,
 } from "lucide-react";
 
 interface HomepageCmsClientProps {
@@ -36,7 +35,7 @@ export default function HomepageCmsClient({
   initialBanners,
   initialSections,
 }: HomepageCmsClientProps) {
-  const [activeTab, setActiveTab] = useState<"hero" | "brand_story" | "gifting_experience" | "gifting_cta">("hero");
+  const [activeTab, setActiveTab] = useState<"hero" | "editorial" | "gifting_cta">("hero");
   const [isPending, startTransition] = useTransition();
 
   // Banners State
@@ -61,33 +60,45 @@ export default function HomepageCmsClient({
   const [isHeroSubmitting, setIsHeroSubmitting] = useState(false);
   const [togglingBannerId, setTogglingBannerId] = useState<string | null>(null);
 
-  // Editorial Sections State
+  // Editorial Sections State (Gifting Experience & Brand Story)
   const brandStorySection = initialSections.find((s) => s.section_key === "brand_story") || null;
   const giftingExpSection = initialSections.find((s) => s.section_key === "gifting_experience") || null;
   const giftingCtaSection = initialSections.find((s) => s.section_key === "gifting_cta") || null;
 
-  // Brand Story Form State
-  const [bsEyebrow, setBsEyebrow] = useState(brandStorySection?.eyebrow || "THE AJVAS STORY");
-  const [bsTitle, setBsTitle] = useState(brandStorySection?.title || "Chocolates made for human moments.");
-  const [bsDescription, setBsDescription] = useState(brandStorySection?.description || "Ajvas was founded on a simple premise: a box of chocolates should feel like a celebration before it's even opened.");
-  const [bsImageUrl, setBsImageUrl] = useState(brandStorySection?.image_url || "");
-  const [bsImagePublicId, setBsImagePublicId] = useState(brandStorySection?.image_public_id || "");
-  const [bsStatus, setBsStatus] = useState<"active" | "inactive">(brandStorySection?.status || "active");
-  const [bsFeedback, setBsFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
-  const [isBsSubmitting, setIsBsSubmitting] = useState(false);
-
-  // Gifting Experience Form State
+  // Gifting Experience Form State (Card 1: Truffles)
+  const [geEyebrow, setGeEyebrow] = useState(giftingExpSection?.eyebrow || "TRUFFLES");
   const [geTitle, setGeTitle] = useState(giftingExpSection?.title || "A Thoughtfully Curated Gifting Experience");
-  const [geDescription, setGeDescription] = useState(giftingExpSection?.description || "From handcrafted truffles to assorted nuts and fruit chocolates, discover collections designed to make every occasion memorable.");
+  const [geDescription, setGeDescription] = useState(
+    giftingExpSection?.description ||
+      "Velvety single-origin cocoa truffles handcrafted for your sweetest celebrations."
+  );
   const [geImageUrl, setGeImageUrl] = useState(giftingExpSection?.image_url || "");
   const [geImagePublicId, setGeImagePublicId] = useState(giftingExpSection?.image_public_id || "");
+  const [gePrimaryLink, setGePrimaryLink] = useState(giftingExpSection?.primary_cta_link || "/shop");
   const [geStatus, setGeStatus] = useState<"active" | "inactive">(giftingExpSection?.status || "active");
   const [geFeedback, setGeFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [isGeSubmitting, setIsGeSubmitting] = useState(false);
 
-  // Gifting CTA Form State
+  // Brand Story Form State (Card 2: Choco Bites / Artisanal Confections)
+  const [bsEyebrow, setBsEyebrow] = useState(brandStorySection?.eyebrow || "CHOCO BITES");
+  const [bsTitle, setBsTitle] = useState(brandStorySection?.title || "Chocolates made for human moments.");
+  const [bsDescription, setBsDescription] = useState(
+    brandStorySection?.description ||
+      "Artisanal barks, crunchy cookies and assorted confections baked to golden perfection."
+  );
+  const [bsImageUrl, setBsImageUrl] = useState(brandStorySection?.image_url || "");
+  const [bsImagePublicId, setBsImagePublicId] = useState(brandStorySection?.image_public_id || "");
+  const [bsPrimaryLink, setBsPrimaryLink] = useState(brandStorySection?.primary_cta_link || "/shop");
+  const [bsStatus, setBsStatus] = useState<"active" | "inactive">(brandStorySection?.status || "active");
+  const [bsFeedback, setBsFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [isBsSubmitting, setIsBsSubmitting] = useState(false);
+
+  // Gifting CTA Form State (Final CTA Banner)
   const [ctaTitle, setCtaTitle] = useState(giftingCtaSection?.title || "Find something worth gifting.");
-  const [ctaDescription, setCtaDescription] = useState(giftingCtaSection?.description || "Browse our curated collection or reach out for a custom, personalized hamper.");
+  const [ctaDescription, setCtaDescription] = useState(
+    giftingCtaSection?.description ||
+      "Browse our curated collection or reach out for a custom, personalized hamper."
+  );
   const [ctaImageUrl, setCtaImageUrl] = useState(giftingCtaSection?.image_url || "");
   const [ctaImagePublicId, setCtaImagePublicId] = useState(giftingCtaSection?.image_public_id || "");
   const [ctaPrimaryText, setCtaPrimaryText] = useState(giftingCtaSection?.primary_cta_text || "SHOP ALL GIFTS");
@@ -118,7 +129,7 @@ export default function HomepageCmsClient({
     setHeroImagePublicId("");
     setHeroPrimaryCtaText("SHOP GIFTS");
     setHeroPrimaryCtaLink("/shop");
-    setHeroSecondaryCtaText("EXPLORE COLLECTIONS");
+    setHeroSecondaryCtaText("EXPLORE CHOCOLATES");
     setHeroSecondaryCtaLink("/shop");
     setHeroStatus("active");
     setHeroDisplayOrder(banners.length);
@@ -226,7 +237,36 @@ export default function HomepageCmsClient({
     });
   }
 
-  // Submit Brand Story Form
+  // Submit Gifting Experience Form (Card 1: Truffles)
+  async function handleSubmitGiftingExperience(e: React.FormEvent) {
+    e.preventDefault();
+    setGeFeedback(null);
+    setIsGeSubmitting(true);
+
+    const formData = new FormData();
+    formData.append("eyebrow", geEyebrow.trim());
+    formData.append("title", geTitle.trim());
+    formData.append("description", geDescription.trim());
+    formData.append("image_url", geImageUrl.trim());
+    formData.append("image_public_id", geImagePublicId.trim());
+    formData.append("primary_cta_link", gePrimaryLink.trim());
+    formData.append("status", geStatus);
+
+    startTransition(async () => {
+      const res = await updateHomepageSectionAction("gifting_experience", formData);
+      setIsGeSubmitting(false);
+      if (res.success) {
+        setGeFeedback({ type: "success", msg: "Gifting Experience card updated successfully!" });
+        setTimeout(() => {
+          window.location.reload();
+        }, 800);
+      } else {
+        setGeFeedback({ type: "error", msg: res.error || "Failed to update Gifting Experience card." });
+      }
+    });
+  }
+
+  // Submit Brand Story Form (Card 2: Choco Bites)
   async function handleSubmitBrandStory(e: React.FormEvent) {
     e.preventDefault();
     setBsFeedback(null);
@@ -238,45 +278,19 @@ export default function HomepageCmsClient({
     formData.append("description", bsDescription.trim());
     formData.append("image_url", bsImageUrl.trim());
     formData.append("image_public_id", bsImagePublicId.trim());
+    formData.append("primary_cta_link", bsPrimaryLink.trim());
     formData.append("status", bsStatus);
 
     startTransition(async () => {
       const res = await updateHomepageSectionAction("brand_story", formData);
       setIsBsSubmitting(false);
       if (res.success) {
-        setBsFeedback({ type: "success", msg: "Brand Story section updated successfully!" });
+        setBsFeedback({ type: "success", msg: "Brand Story card updated successfully!" });
         setTimeout(() => {
           window.location.reload();
         }, 800);
       } else {
-        setBsFeedback({ type: "error", msg: res.error || "Failed to update Brand Story section." });
-      }
-    });
-  }
-
-  // Submit Gifting Experience Form
-  async function handleSubmitGiftingExperience(e: React.FormEvent) {
-    e.preventDefault();
-    setGeFeedback(null);
-    setIsGeSubmitting(true);
-
-    const formData = new FormData();
-    formData.append("title", geTitle.trim());
-    formData.append("description", geDescription.trim());
-    formData.append("image_url", geImageUrl.trim());
-    formData.append("image_public_id", geImagePublicId.trim());
-    formData.append("status", geStatus);
-
-    startTransition(async () => {
-      const res = await updateHomepageSectionAction("gifting_experience", formData);
-      setIsGeSubmitting(false);
-      if (res.success) {
-        setGeFeedback({ type: "success", msg: "Gifting Experience section updated successfully!" });
-        setTimeout(() => {
-          window.location.reload();
-        }, 800);
-      } else {
-        setGeFeedback({ type: "error", msg: res.error || "Failed to update Gifting Experience section." });
+        setBsFeedback({ type: "error", msg: res.error || "Failed to update Brand Story card." });
       }
     });
   }
@@ -300,7 +314,7 @@ export default function HomepageCmsClient({
       const res = await updateHomepageSectionAction("gifting_cta", formData);
       setIsCtaSubmitting(false);
       if (res.success) {
-        setCtaFeedback({ type: "success", msg: "Final CTA section & background image updated successfully!" });
+        setCtaFeedback({ type: "success", msg: "Final CTA section updated successfully!" });
         setTimeout(() => {
           window.location.reload();
         }, 800);
@@ -311,92 +325,82 @@ export default function HomepageCmsClient({
   }
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* Header Banner */}
-      <div className="rounded-2xl border border-cocoa-200 bg-parchment-card p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-pink/10 text-brand-pink border border-brand-pink/20 shrink-0">
-              <Sparkles className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="font-serif text-2xl font-bold text-cocoa-950">Homepage CMS</h1>
-              <p className="font-sans text-xs text-cocoa-600 mt-0.5">
-                Manage live homepage content, promotional sections, and CTA background images.
-              </p>
-            </div>
-          </div>
-
-          <Link
-            href="/admin/categories"
-            className="inline-flex items-center gap-2 rounded-xl bg-cocoa-900 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-cocoa-800 transition-colors shrink-0"
-          >
-            <Tag className="h-4 w-4 text-brand-pink" />
-            <span>Manage Occasion Images</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+    <div className="space-y-6 sm:space-y-8">
+      {/* Header matching Admin Dashboard */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-serif font-bold text-cocoa-950">
+            Homepage CMS
+          </h1>
+          <p className="text-xs text-cocoa-600 mt-1">
+            Manage live homepage sections, promotional banners, and editorial showcase content
+          </p>
         </div>
 
-        {/* Tab Selector */}
-        <div className="mt-6 flex flex-wrap gap-2 border-t border-cocoa-100 pt-4">
-          <button
-            onClick={() => setActiveTab("hero")}
-            className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all ${
-              activeTab === "hero"
-                ? "bg-brand-pink text-white shadow-xs"
-                : "bg-parchment-surface text-cocoa-700 hover:bg-parchment-hover border border-cocoa-200/60"
-            }`}
-          >
-            Hero Canvas ({banners.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("brand_story")}
-            className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all ${
-              activeTab === "brand_story"
-                ? "bg-brand-pink text-white shadow-xs"
-                : "bg-parchment-surface text-cocoa-700 hover:bg-parchment-hover border border-cocoa-200/60"
-            }`}
-          >
-            Brand Story
-          </button>
-          <button
-            onClick={() => setActiveTab("gifting_experience")}
-            className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all ${
-              activeTab === "gifting_experience"
-                ? "bg-brand-pink text-white shadow-xs"
-                : "bg-parchment-surface text-cocoa-700 hover:bg-parchment-hover border border-cocoa-200/60"
-            }`}
-          >
-            Gifting Experience
-          </button>
-          <button
-            onClick={() => setActiveTab("gifting_cta")}
-            className={`px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all ${
-              activeTab === "gifting_cta"
-                ? "bg-brand-pink text-white shadow-xs"
-                : "bg-parchment-surface text-cocoa-700 hover:bg-parchment-hover border border-cocoa-200/60"
-            }`}
-          >
-            Final CTA Banner Image
-          </button>
+        <div className="flex items-center gap-2">
           <Link
-            href="/admin/testimonials"
-            className="px-4 py-2 rounded-xl font-mono text-xs font-bold transition-all bg-parchment-surface text-cocoa-700 hover:bg-parchment-hover border border-cocoa-200/60 inline-flex items-center gap-1.5"
+            href="/"
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded border border-parchment-border bg-parchment-surface text-cocoa-700 hover:bg-parchment-muted text-xs font-semibold shadow-2xs transition-colors"
           >
-            <span>Customer Testimonials</span>
-            <ArrowRight className="w-3 h-3 text-cocoa-500" />
+            <Eye className="w-3.5 h-3.5" />
+            <span>View Live Homepage</span>
+            <ExternalLink className="w-3 h-3 ml-0.5 text-cocoa-400" />
           </Link>
         </div>
+      </div>
+
+      {/* Tabs Navigation */}
+      <div className="flex flex-wrap gap-2 border-b border-parchment-border pb-3">
+        <button
+          onClick={() => setActiveTab("hero")}
+          className={`px-3.5 py-2 rounded text-xs font-medium transition-colors ${
+            activeTab === "hero"
+              ? "bg-cocoa-950 text-white shadow-2xs"
+              : "bg-parchment-surface hover:bg-parchment-muted text-cocoa-700 border border-parchment-border"
+          }`}
+        >
+          Hero Banners ({banners.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab("editorial")}
+          className={`px-3.5 py-2 rounded text-xs font-medium transition-colors ${
+            activeTab === "editorial"
+              ? "bg-cocoa-950 text-white shadow-2xs"
+              : "bg-parchment-surface hover:bg-parchment-muted text-cocoa-700 border border-parchment-border"
+          }`}
+        >
+          Gifting &amp; Brand Story
+        </button>
+
+        <button
+          onClick={() => setActiveTab("gifting_cta")}
+          className={`px-3.5 py-2 rounded text-xs font-medium transition-colors ${
+            activeTab === "gifting_cta"
+              ? "bg-cocoa-950 text-white shadow-2xs"
+              : "bg-parchment-surface hover:bg-parchment-muted text-cocoa-700 border border-parchment-border"
+          }`}
+        >
+          Final CTA Banner
+        </button>
       </div>
 
       {/* TAB 1: HERO BANNERS */}
       {activeTab === "hero" && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif text-xl font-bold text-cocoa-950">Hero Banners</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h2 className="font-serif text-lg sm:text-xl font-bold text-cocoa-950">
+                Hero Canvas Banners
+              </h2>
+              <p className="text-xs text-cocoa-600 mt-0.5">
+                Displays full-screen at the very top of the homepage with responsive image, title accent, and action button.
+              </p>
+            </div>
             <button
               onClick={handleOpenCreateHero}
-              className="inline-flex items-center gap-2 rounded-xl bg-gold-600 px-4 py-2 text-xs font-bold text-cocoa-950 shadow-sm hover:bg-gold-500"
+              className="inline-flex items-center gap-2 rounded bg-cocoa-950 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-cocoa-800 transition-colors self-start sm:self-auto"
             >
               <Plus className="h-4 w-4" />
               Add Hero Banner
@@ -404,25 +408,25 @@ export default function HomepageCmsClient({
           </div>
 
           {banners.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-cocoa-300 p-8 text-center bg-parchment-card">
-              <p className="font-serif text-lg font-bold text-cocoa-800">No active hero banners found</p>
+            <div className="rounded-lg border border-dashed border-parchment-border p-8 text-center bg-parchment-surface">
+              <p className="font-serif text-base font-bold text-cocoa-800">No hero banners created</p>
               <p className="font-sans text-xs text-cocoa-600 mt-1 max-w-md mx-auto">
-                Create your first hero banner to customize the top section of the homepage with Cloudinary images and custom CTAs.
+                Add your first banner to configure the homepage headline, subtext, background image, and CTA button.
               </p>
               <button
                 onClick={handleOpenCreateHero}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-pink px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-brand-pink-hover"
+                className="mt-4 inline-flex items-center gap-2 rounded bg-cocoa-950 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-cocoa-800"
               >
                 <Plus className="h-4 w-4" />
                 Create Hero Banner
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {banners.map((banner) => (
                 <div
                   key={banner.id}
-                  className="rounded-2xl border border-cocoa-200 bg-parchment-card overflow-hidden shadow-sm flex flex-col justify-between"
+                  className="rounded-lg border border-parchment-border bg-parchment-surface overflow-hidden shadow-2xs flex flex-col justify-between"
                 >
                   <div className="relative aspect-[16/9] w-full bg-cocoa-100 overflow-hidden">
                     {banner.image_url ? (
@@ -436,7 +440,7 @@ export default function HomepageCmsClient({
                         No image uploaded
                       </div>
                     )}
-                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-black/60 text-white backdrop-blur-md">
+                    <div className="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase tracking-wider bg-black/75 text-white backdrop-blur-xs">
                       Status: {banner.status}
                     </div>
                   </div>
@@ -444,11 +448,11 @@ export default function HomepageCmsClient({
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div>
                       {banner.eyebrow && (
-                        <span className="font-mono text-[10px] uppercase tracking-widest font-bold text-brand-pink block mb-1">
+                        <span className="font-mono text-[10px] uppercase tracking-widest font-bold text-cocoa-600 block mb-1">
                           {banner.eyebrow}
                         </span>
                       )}
-                      <h3 className="font-serif text-lg font-bold text-cocoa-950 leading-snug">
+                      <h3 className="font-serif text-base sm:text-lg font-bold text-cocoa-950 leading-snug">
                         {banner.title}
                       </h3>
                       {banner.description && (
@@ -458,15 +462,21 @@ export default function HomepageCmsClient({
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-cocoa-500 pt-3 border-t border-cocoa-100">
-                      <span>Primary: {banner.primary_cta_text || "Shop"} ({banner.primary_cta_link || "#"})</span>
+                    <div className="space-y-1 text-[11px] font-mono text-cocoa-600 pt-3 border-t border-parchment-border">
+                      <div>
+                        Button CTA: <span className="font-semibold text-cocoa-900">{banner.secondary_cta_text || banner.primary_cta_text || "EXPLORE CHOCOLATES"}</span>
+                        {" "}→ <span className="text-cocoa-700">{banner.secondary_cta_link || banner.primary_cta_link || "/shop"}</span>
+                      </div>
+                      <div>
+                        Order: {banner.display_order ?? 0}
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-end gap-2 pt-2">
                       <button
                         onClick={() => handleToggleBannerStatus(banner)}
                         disabled={togglingBannerId === banner.id}
-                        className="px-3 py-1.5 rounded-lg border border-cocoa-200 text-xs font-semibold text-cocoa-700 hover:bg-parchment-hover inline-flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded border border-parchment-border text-xs font-medium text-cocoa-700 hover:bg-parchment-muted inline-flex items-center gap-1.5 transition-colors"
                       >
                         {togglingBannerId === banner.id ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -485,7 +495,7 @@ export default function HomepageCmsClient({
 
                       <button
                         onClick={() => handleOpenEditHero(banner)}
-                        className="px-3 py-1.5 rounded-lg bg-cocoa-900 text-white text-xs font-semibold hover:bg-cocoa-800 inline-flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded bg-cocoa-950 text-white text-xs font-semibold hover:bg-cocoa-800 inline-flex items-center gap-1.5 transition-colors"
                       >
                         <Edit2 className="h-3.5 w-3.5" />
                         Edit
@@ -493,7 +503,7 @@ export default function HomepageCmsClient({
 
                       <button
                         onClick={() => handleDeleteBanner(banner.id)}
-                        className="px-2.5 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-semibold inline-flex items-center"
+                        className="px-2.5 py-1.5 rounded text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 text-xs font-medium inline-flex items-center transition-colors"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -506,207 +516,360 @@ export default function HomepageCmsClient({
         </div>
       )}
 
-      {/* TAB 2: BRAND STORY */}
-      {activeTab === "brand_story" && (
-        <form onSubmit={handleSubmitBrandStory} className="rounded-2xl border border-cocoa-200 bg-parchment-card p-6 shadow-sm space-y-6 max-w-3xl">
-          <h2 className="font-serif text-xl font-bold text-cocoa-950">Brand Story Section</h2>
-
-          {bsFeedback && (
-            <div className={`p-4 rounded-xl flex items-center gap-3 text-xs font-sans font-medium ${
-              bsFeedback.type === "success" ? "bg-emerald-50 text-emerald-900 border border-emerald-200" : "bg-rose-50 text-rose-900 border border-rose-200"
-            }`}>
-              {bsFeedback.type === "success" ? <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" /> : <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />}
-              <span>{bsFeedback.msg}</span>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                Eyebrow Badge Tag
-              </label>
-              <input
-                type="text"
-                value={bsEyebrow}
-                onChange={(e) => setBsEyebrow(e.target.value)}
-                placeholder="e.g. THE AJVAS STORY"
-                className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                Headline Title
-              </label>
-              <input
-                type="text"
-                value={bsTitle}
-                onChange={(e) => setBsTitle(e.target.value)}
-                placeholder="e.g. Chocolates made for human moments."
-                className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                Description Paragraph
-              </label>
-              <textarea
-                rows={4}
-                value={bsDescription}
-                onChange={(e) => setBsDescription(e.target.value)}
-                className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                Section Image (Cloudinary Upload)
-              </label>
-              <ProductSingleImageUploader
-                currentImageUrl={bsImageUrl}
-                currentPublicId={bsImagePublicId}
-                productId="brand_story"
-                getSignatureAction={getCloudinaryCmsUploadSignatureAction}
-                onImageChange={(url, publicId) => {
-                  setBsImageUrl(url);
-                  setBsImagePublicId(publicId || "");
-                }}
-                title="Brand Story Image"
-                description="Upload a high-resolution photo for your brand story section."
-                dropzoneText="Click or Drag & Drop image"
-              />
-            </div>
+      {/* TAB 2: COMBINED GIFTING & BRAND STORY (DUO CARDS) */}
+      {activeTab === "editorial" && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="font-serif text-lg sm:text-xl font-bold text-cocoa-950">
+              Gifting &amp; Brand Story Showcase
+            </h2>
+            <p className="text-xs text-cocoa-600 mt-0.5">
+              Configures the editorial duo cards displayed together on the homepage: Card 1 (Truffles) on the left, Card 2 (Choco Bites) on the right.
+            </p>
           </div>
 
-          <div className="pt-4 border-t border-cocoa-100 flex justify-end">
-            <button
-              type="submit"
-              disabled={isBsSubmitting || isPending}
-              className="inline-flex items-center gap-2 rounded-xl bg-gold-600 px-6 py-2.5 text-xs font-bold text-cocoa-950 shadow-sm hover:bg-gold-500 disabled:opacity-50"
-            >
-              {isBsSubmitting || isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Brand Story"
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            {/* Card 1: Gifting Experience (Truffles) */}
+            <form onSubmit={handleSubmitGiftingExperience} className="rounded-lg border border-parchment-border bg-parchment-surface p-5 sm:p-6 shadow-2xs space-y-5">
+              <div>
+                <div className="inline-flex items-center gap-2 mb-1">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-cocoa-500 font-bold">
+                    Card 1 • Left Showcase
+                  </span>
+                </div>
+                <h3 className="font-serif text-base sm:text-lg font-bold text-cocoa-950">
+                  Gifting Experience (Truffles)
+                </h3>
+                <p className="text-xs text-cocoa-600 mt-0.5">
+                  Handcrafted truffles showcase card with image on left and text on right.
+                </p>
+              </div>
+
+              {geFeedback && (
+                <div className={`p-3.5 rounded text-xs font-medium flex items-center gap-2.5 ${
+                  geFeedback.type === "success"
+                    ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
+                    : "bg-rose-50 text-rose-900 border border-rose-200"
+                }`}>
+                  {geFeedback.type === "success" ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+                  )}
+                  <span>{geFeedback.msg}</span>
+                </div>
               )}
-            </button>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                      Card Title (e.g. TRUFFLES)
+                    </label>
+                    <input
+                      type="text"
+                      value={geEyebrow}
+                      onChange={(e) => setGeEyebrow(e.target.value)}
+                      placeholder="TRUFFLES"
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                      Status
+                    </label>
+                    <select
+                      value={geStatus}
+                      onChange={(e) => setGeStatus(e.target.value as "active" | "inactive")}
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                    >
+                      <option value="active">Active (Visible)</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                    Secondary Headline Title
+                  </label>
+                  <input
+                    type="text"
+                    value={geTitle}
+                    onChange={(e) => setGeTitle(e.target.value)}
+                    placeholder="A Thoughtfully Curated Gifting Experience"
+                    className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                    Description Paragraph
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={geDescription}
+                    onChange={(e) => setGeDescription(e.target.value)}
+                    className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                    &quot;Read More&quot; Button Link
+                  </label>
+                  <input
+                    type="text"
+                    value={gePrimaryLink}
+                    onChange={(e) => setGePrimaryLink(e.target.value)}
+                    placeholder="/shop"
+                    className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs font-mono text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                    Card Image (Cloudinary Upload)
+                  </label>
+                  <ProductSingleImageUploader
+                    currentImageUrl={geImageUrl}
+                    currentPublicId={geImagePublicId}
+                    productId="gifting_experience"
+                    getSignatureAction={getCloudinaryCmsUploadSignatureAction}
+                    onImageChange={(url, publicId) => {
+                      setGeImageUrl(url);
+                      setGeImagePublicId(publicId || "");
+                    }}
+                    title="Gifting Experience Photo"
+                    description="Upload a photo for the left half of Card 1."
+                    dropzoneText="Click or Drag & Drop image"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-parchment-border flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isGeSubmitting || isPending}
+                  className="inline-flex items-center gap-2 rounded bg-cocoa-950 px-5 py-2.5 text-xs font-semibold text-white shadow-2xs hover:bg-cocoa-800 disabled:opacity-50 transition-colors"
+                >
+                  {isGeSubmitting || isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Gifting Card"
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {/* Card 2: Brand Story (Choco Bites) */}
+            <form onSubmit={handleSubmitBrandStory} className="rounded-lg border border-parchment-border bg-parchment-surface p-5 sm:p-6 shadow-2xs space-y-5">
+              <div>
+                <div className="inline-flex items-center gap-2 mb-1">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-cocoa-500 font-bold">
+                    Card 2 • Right Showcase
+                  </span>
+                </div>
+                <h3 className="font-serif text-base sm:text-lg font-bold text-cocoa-950">
+                  Brand Story (Choco Bites)
+                </h3>
+                <p className="text-xs text-cocoa-600 mt-0.5">
+                  Artisanal confections showcase card with text on left and image on right.
+                </p>
+              </div>
+
+              {bsFeedback && (
+                <div className={`p-3.5 rounded text-xs font-medium flex items-center gap-2.5 ${
+                  bsFeedback.type === "success"
+                    ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
+                    : "bg-rose-50 text-rose-900 border border-rose-200"
+                }`}>
+                  {bsFeedback.type === "success" ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+                  )}
+                  <span>{bsFeedback.msg}</span>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                      Card Title (e.g. CHOCO BITES)
+                    </label>
+                    <input
+                      type="text"
+                      value={bsEyebrow}
+                      onChange={(e) => setBsEyebrow(e.target.value)}
+                      placeholder="CHOCO BITES"
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                      Status
+                    </label>
+                    <select
+                      value={bsStatus}
+                      onChange={(e) => setBsStatus(e.target.value as "active" | "inactive")}
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                    >
+                      <option value="active">Active (Visible)</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                    Secondary Headline Title
+                  </label>
+                  <input
+                    type="text"
+                    value={bsTitle}
+                    onChange={(e) => setBsTitle(e.target.value)}
+                    placeholder="Chocolates made for human moments."
+                    className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                    Description Paragraph
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={bsDescription}
+                    onChange={(e) => setBsDescription(e.target.value)}
+                    className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                    &quot;Read More&quot; Button Link
+                  </label>
+                  <input
+                    type="text"
+                    value={bsPrimaryLink}
+                    onChange={(e) => setBsPrimaryLink(e.target.value)}
+                    placeholder="/shop"
+                    className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs font-mono text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                    Card Image (Cloudinary Upload)
+                  </label>
+                  <ProductSingleImageUploader
+                    currentImageUrl={bsImageUrl}
+                    currentPublicId={bsImagePublicId}
+                    productId="brand_story"
+                    getSignatureAction={getCloudinaryCmsUploadSignatureAction}
+                    onImageChange={(url, publicId) => {
+                      setBsImageUrl(url);
+                      setBsImagePublicId(publicId || "");
+                    }}
+                    title="Brand Story Photo"
+                    description="Upload a photo for the right half of Card 2."
+                    dropzoneText="Click or Drag & Drop image"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-parchment-border flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isBsSubmitting || isPending}
+                  className="inline-flex items-center gap-2 rounded bg-cocoa-950 px-5 py-2.5 text-xs font-semibold text-white shadow-2xs hover:bg-cocoa-800 disabled:opacity-50 transition-colors"
+                >
+                  {isBsSubmitting || isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Story Card"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       )}
 
-      {/* TAB 3: GIFTING EXPERIENCE */}
-      {activeTab === "gifting_experience" && (
-        <form onSubmit={handleSubmitGiftingExperience} className="rounded-2xl border border-cocoa-200 bg-parchment-card p-6 shadow-sm space-y-6 max-w-3xl">
-          <h2 className="font-serif text-xl font-bold text-cocoa-950">Gifting Experience Section</h2>
-
-          {geFeedback && (
-            <div className={`p-4 rounded-xl flex items-center gap-3 text-xs font-sans font-medium ${
-              geFeedback.type === "success" ? "bg-emerald-50 text-emerald-900 border border-emerald-200" : "bg-rose-50 text-rose-900 border border-rose-200"
-            }`}>
-              {geFeedback.type === "success" ? <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" /> : <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />}
-              <span>{geFeedback.msg}</span>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                Headline Title
-              </label>
-              <input
-                type="text"
-                value={geTitle}
-                onChange={(e) => setGeTitle(e.target.value)}
-                placeholder="e.g. A Thoughtfully Curated Gifting Experience"
-                className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                Description Paragraph
-              </label>
-              <textarea
-                rows={4}
-                value={geDescription}
-                onChange={(e) => setGeDescription(e.target.value)}
-                className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                Section Image (Cloudinary Upload)
-              </label>
-              <ProductSingleImageUploader
-                currentImageUrl={geImageUrl}
-                currentPublicId={geImagePublicId}
-                productId="gifting_experience"
-                getSignatureAction={getCloudinaryCmsUploadSignatureAction}
-                onImageChange={(url, publicId) => {
-                  setGeImageUrl(url);
-                  setGeImagePublicId(publicId || "");
-                }}
-                title="Gifting Experience Image"
-                description="Upload a high-resolution photo for your gifting experience section."
-                dropzoneText="Click or Drag & Drop image"
-              />
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-cocoa-100 flex justify-end">
-            <button
-              type="submit"
-              disabled={isGeSubmitting || isPending}
-              className="inline-flex items-center gap-2 rounded-xl bg-gold-600 px-6 py-2.5 text-xs font-bold text-cocoa-950 shadow-sm hover:bg-gold-500 disabled:opacity-50"
-            >
-              {isGeSubmitting || isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Gifting Experience"
-              )}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* TAB 4: FINAL GIFTING CTA BANNER */}
+      {/* TAB 3: FINAL GIFTING CTA BANNER */}
       {activeTab === "gifting_cta" && (
-        <form onSubmit={handleSubmitGiftingCta} className="rounded-2xl border border-cocoa-200 bg-parchment-card p-6 shadow-sm space-y-6 max-w-3xl">
-          <h2 className="font-serif text-xl font-bold text-cocoa-950">Final CTA Banner &amp; Background Image</h2>
+        <form onSubmit={handleSubmitGiftingCta} className="rounded-lg border border-parchment-border bg-parchment-surface p-5 sm:p-6 shadow-2xs space-y-5 max-w-3xl">
+          <div>
+            <div className="inline-flex items-center gap-2 mb-1">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-cocoa-500 font-bold">
+                Bottom Homepage Section
+              </span>
+            </div>
+            <h2 className="font-serif text-lg sm:text-xl font-bold text-cocoa-950">
+              Final Gifting CTA Banner
+            </h2>
+            <p className="text-xs text-cocoa-600 mt-0.5">
+              Displays right above the footer with full-width background photo, accent title, and gift shopping button.
+            </p>
+          </div>
 
           {ctaFeedback && (
-            <div className={`p-4 rounded-xl flex items-center gap-3 text-xs font-sans font-medium ${
-              ctaFeedback.type === "success" ? "bg-emerald-50 text-emerald-900 border border-emerald-200" : "bg-rose-50 text-rose-900 border border-rose-200"
+            <div className={`p-3.5 rounded text-xs font-medium flex items-center gap-2.5 ${
+              ctaFeedback.type === "success"
+                ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
+                : "bg-rose-50 text-rose-900 border border-rose-200"
             }`}>
-              {ctaFeedback.type === "success" ? <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" /> : <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />}
+              {ctaFeedback.type === "success" ? (
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+              ) : (
+                <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+              )}
               <span>{ctaFeedback.msg}</span>
             </div>
           )}
 
           <div className="space-y-4">
-            <div>
-              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                Headline Title
-              </label>
-              <input
-                type="text"
-                value={ctaTitle}
-                onChange={(e) => setCtaTitle(e.target.value)}
-                placeholder="e.g. Find something worth gifting."
-                className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs font-bold text-cocoa-900 focus:border-gold-500 focus:outline-none"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                  Headline Title
+                </label>
+                <input
+                  type="text"
+                  value={ctaTitle}
+                  onChange={(e) => setCtaTitle(e.target.value)}
+                  placeholder="Find something worth gifting."
+                  className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs font-bold text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                  Status
+                </label>
+                <select
+                  value={ctaStatus}
+                  onChange={(e) => setCtaStatus(e.target.value as "active" | "inactive")}
+                  className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                >
+                  <option value="active">Active (Visible)</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
             </div>
 
             <div>
-              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
+              <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
                 Description Paragraph
               </label>
               <textarea
@@ -714,13 +877,13 @@ export default function HomepageCmsClient({
                 value={ctaDescription}
                 onChange={(e) => setCtaDescription(e.target.value)}
                 placeholder="Browse our curated collection or reach out for a custom, personalized hamper."
-                className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
+                className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
                   Primary CTA Button Text
                 </label>
                 <input
@@ -728,11 +891,11 @@ export default function HomepageCmsClient({
                   value={ctaPrimaryText}
                   onChange={(e) => setCtaPrimaryText(e.target.value)}
                   placeholder="SHOP ALL GIFTS"
-                  className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
+                  className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
                 />
               </div>
               <div>
-                <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
                   Primary CTA Button Link
                 </label>
                 <input
@@ -740,14 +903,14 @@ export default function HomepageCmsClient({
                   value={ctaPrimaryLink}
                   onChange={(e) => setCtaPrimaryLink(e.target.value)}
                   placeholder="/shop"
-                  className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3.5 py-2 text-xs font-mono text-cocoa-900 focus:border-gold-500 focus:outline-none"
+                  className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs font-mono text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                Section Background Image (Cloudinary Upload)
+              <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                Full-Width Background Image (Cloudinary Upload)
               </label>
               <ProductSingleImageUploader
                 currentImageUrl={ctaImageUrl}
@@ -759,17 +922,17 @@ export default function HomepageCmsClient({
                   setCtaImagePublicId(publicId || "");
                 }}
                 title="CTA Section Background Image"
-                description="Upload a full-width background photo for your 'Find something worth gifting' section."
+                description="Upload a high-resolution background photo for your 'Find something worth gifting' section."
                 dropzoneText="Click or Drag & Drop background image"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-cocoa-100 flex justify-end">
+          <div className="pt-4 border-t border-parchment-border flex justify-end">
             <button
               type="submit"
               disabled={isCtaSubmitting || isPending}
-              className="inline-flex items-center gap-2 rounded-xl bg-gold-600 px-6 py-2.5 text-xs font-bold text-cocoa-950 shadow-sm hover:bg-gold-500 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded bg-cocoa-950 px-5 py-2.5 text-xs font-semibold text-white shadow-2xs hover:bg-cocoa-800 disabled:opacity-50 transition-colors"
             >
               {isCtaSubmitting || isPending ? (
                 <>
@@ -777,7 +940,7 @@ export default function HomepageCmsClient({
                   Saving...
                 </>
               ) : (
-                "Save CTA Background & Content"
+                "Save Final CTA Banner"
               )}
             </button>
           </div>
@@ -786,10 +949,10 @@ export default function HomepageCmsClient({
 
       {/* HERO BANNER MODAL */}
       {isBannerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-sm">
-          <div className="flex flex-col w-[calc(100vw-24px)] md:w-full md:max-w-[760px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-24px)] md:max-h-[calc(100vh-40px)] rounded-2xl border border-cocoa-200 bg-parchment-card shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="flex flex-col w-[calc(100vw-24px)] md:w-full md:max-w-[760px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-24px)] md:max-h-[calc(100vh-40px)] rounded-lg border border-parchment-border bg-parchment-surface shadow-2xl overflow-hidden">
             {/* Modal Header */}
-            <div className="shrink-0 flex items-center justify-between p-4 md:p-5 border-b border-cocoa-100 bg-parchment-card">
+            <div className="shrink-0 flex items-center justify-between p-4 md:p-5 border-b border-parchment-border bg-parchment-surface">
               <div>
                 <h3 className="font-serif text-lg font-bold text-cocoa-950">
                   {editingBanner ? "Edit Hero Banner" : "Add Hero Banner"}
@@ -802,25 +965,25 @@ export default function HomepageCmsClient({
                 type="button"
                 onClick={() => setIsBannerModalOpen(false)}
                 disabled={isHeroSubmitting}
-                className="rounded-lg p-1.5 text-cocoa-400 hover:bg-parchment-hover hover:text-cocoa-700 transition-colors"
+                className="rounded p-1.5 text-cocoa-400 hover:bg-parchment-muted hover:text-cocoa-700 transition-colors"
                 aria-label="Close modal"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Modal Form Architecture */}
+            {/* Modal Form */}
             <form onSubmit={handleSubmitHero} className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-3.5">
+              <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-3.5 custom-scrollbar">
                 {heroError && (
-                  <div className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+                  <div className="flex items-start gap-2 rounded border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
                     <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
                     <span>{heroError}</span>
                   </div>
                 )}
 
                 {heroSuccess && (
-                  <div className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
+                  <div className="flex items-start gap-2 rounded border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
                     <span>{heroSuccess}</span>
                   </div>
@@ -829,7 +992,7 @@ export default function HomepageCmsClient({
                 {/* Eyebrow Tag & Title */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-bold">
+                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
                       Tag / Eyebrow Text
                     </label>
                     <input
@@ -837,12 +1000,12 @@ export default function HomepageCmsClient({
                       value={heroEyebrow}
                       onChange={(e) => setHeroEyebrow(e.target.value)}
                       placeholder="e.g. PREMIUM CHOCOLATES & GIFTING"
-                      className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-bold">
+                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
                       Headline Title <span className="text-rose-600">*</span>
                     </label>
                     <input
@@ -851,76 +1014,78 @@ export default function HomepageCmsClient({
                       onChange={(e) => setHeroTitle(e.target.value)}
                       placeholder="e.g. Small Bites Big Emotions"
                       required
-                      className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs font-bold text-cocoa-900 focus:border-gold-500 focus:outline-none"
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs font-bold text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
                     />
                   </div>
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-bold">
-                    Description
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                    Description Paragraph
                   </label>
                   <textarea
                     rows={2}
                     value={heroDescription}
                     onChange={(e) => setHeroDescription(e.target.value)}
                     placeholder="Handcrafted chocolates made with premium ingredients..."
-                    className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
+                    className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
                   />
                 </div>
 
-                {/* Primary & Secondary CTAs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-bold">
-                      Primary CTA (Text &amp; Link)
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="text"
-                        value={heroPrimaryCtaText}
-                        onChange={(e) => setHeroPrimaryCtaText(e.target.value)}
-                        placeholder="SHOP GIFTS"
-                        className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
-                      />
-                      <input
-                        type="text"
-                        value={heroPrimaryCtaLink}
-                        onChange={(e) => setHeroPrimaryCtaLink(e.target.value)}
-                        placeholder="/shop"
-                        className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 font-mono focus:border-gold-500 focus:outline-none"
-                      />
-                    </div>
+                {/* Homepage Hero Action Button */}
+                <div className="space-y-1">
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 font-semibold">
+                    Homepage Action Button (Text &amp; Link)
+                  </label>
+                  <p className="text-[11px] text-cocoa-500 mb-1">
+                    Displayed on the main hero overlay banner.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={heroSecondaryCtaText}
+                      onChange={(e) => setHeroSecondaryCtaText(e.target.value)}
+                      placeholder="EXPLORE CHOCOLATES"
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                    />
+                    <input
+                      type="text"
+                      value={heroSecondaryCtaLink}
+                      onChange={(e) => setHeroSecondaryCtaLink(e.target.value)}
+                      placeholder="/shop"
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 font-mono focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                    />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-bold">
-                      Secondary CTA (Text &amp; Link)
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="text"
-                        value={heroSecondaryCtaText}
-                        onChange={(e) => setHeroSecondaryCtaText(e.target.value)}
-                        placeholder="EXPLORE COLLECTIONS"
-                        className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
-                      />
-                      <input
-                        type="text"
-                        value={heroSecondaryCtaLink}
-                        onChange={(e) => setHeroSecondaryCtaLink(e.target.value)}
-                        placeholder="/shop"
-                        className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 font-mono focus:border-gold-500 focus:outline-none"
-                      />
-                    </div>
+                {/* Optional Secondary Action Button */}
+                <div className="space-y-1">
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 font-semibold">
+                    Alternate Button (Text &amp; Link)
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={heroPrimaryCtaText}
+                      onChange={(e) => setHeroPrimaryCtaText(e.target.value)}
+                      placeholder="SHOP GIFTS"
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                    />
+                    <input
+                      type="text"
+                      value={heroPrimaryCtaLink}
+                      onChange={(e) => setHeroPrimaryCtaLink(e.target.value)}
+                      placeholder="/shop"
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 font-mono focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
+                    />
                   </div>
                 </div>
 
                 {/* Hero Showcase Image */}
                 <div>
-                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-bold">
-                    Hero Showcase Background Image <span className="text-rose-600">*</span>
+                  <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
+                    Hero Background Image <span className="text-rose-600">*</span>
                   </label>
                   <ProductSingleImageUploader
                     currentImageUrl={heroImageUrl}
@@ -940,20 +1105,20 @@ export default function HomepageCmsClient({
                 {/* Status & Display Order */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-bold">
+                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
                       Status
                     </label>
                     <select
                       value={heroStatus}
                       onChange={(e) => setHeroStatus(e.target.value as "active" | "inactive")}
-                      className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-bold">
+                    <label className="block font-mono text-[11px] uppercase tracking-wider text-cocoa-700 mb-1 font-semibold">
                       Display Order
                     </label>
                     <input
@@ -961,26 +1126,26 @@ export default function HomepageCmsClient({
                       value={heroDisplayOrder}
                       onChange={(e) => setHeroDisplayOrder(parseInt(e.target.value || "0", 10))}
                       min={0}
-                      className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs text-cocoa-900 focus:border-gold-500 focus:outline-none"
+                      className="w-full rounded border border-parchment-border bg-white px-3 py-2 text-xs text-cocoa-950 focus:border-cocoa-800 focus:outline-none focus:ring-1 focus:ring-cocoa-800"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Modal Footer */}
-              <div className="shrink-0 flex items-center justify-end gap-3 p-4 border-t border-cocoa-100 bg-parchment-card">
+              <div className="shrink-0 flex items-center justify-end gap-3 p-4 border-t border-parchment-border bg-parchment-surface">
                 <button
                   type="button"
                   onClick={() => setIsBannerModalOpen(false)}
                   disabled={isHeroSubmitting}
-                  className="rounded-xl border border-cocoa-200 bg-parchment-surface px-4 py-2 text-xs font-semibold text-cocoa-700 hover:bg-parchment-hover"
+                  className="rounded border border-parchment-border bg-white px-4 py-2 text-xs font-semibold text-cocoa-700 hover:bg-parchment-muted transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isHeroSubmitting || isPending}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gold-600 px-5 py-2 text-xs font-bold text-cocoa-950 shadow-sm hover:bg-gold-500 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded bg-cocoa-950 px-5 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-cocoa-800 disabled:opacity-50 transition-colors"
                 >
                   {isHeroSubmitting || isPending ? (
                     <>

@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Sparkles,
+  UploadCloud,
 } from "lucide-react";
 import { TestimonialItem, TestimonialsSectionData } from "@/types/cms";
 import {
@@ -19,9 +20,16 @@ import {
   deleteTestimonialAction,
   updateDecorativeImagesAction,
 } from "@/app/admin/testimonials/actions";
+import { getCloudinaryCmsUploadSignatureAction } from "@/app/admin/homepage/actions";
+import { deleteCloudinaryMediaAction } from "@/app/admin/products/actions";
+import {
+  validateMediaFile,
+  prepareMediaFileForUpload,
+} from "@/lib/utils/image-compression";
 import {
   DEFAULT_LEFT_IMAGE,
   DEFAULT_RIGHT_IMAGE,
+  DEFAULT_TESTIMONIALS,
 } from "@/lib/constants/testimonials";
 
 interface TestimonialsManagerProps {
@@ -56,6 +64,8 @@ export default function TestimonialsManager({
   const [formStars, setFormStars] = useState(5);
   const [formStatus, setFormStatus] = useState<"active" | "inactive">("active");
   const [modalError, setModalError] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null);
 
   // Delete State
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -69,6 +79,7 @@ export default function TestimonialsManager({
     setFormStars(5);
     setFormStatus("active");
     setModalError(null);
+    setAvatarUploadError(null);
     setIsModalOpen(true);
   };
 
@@ -81,7 +92,87 @@ export default function TestimonialsManager({
     setFormStars(item.stars || 5);
     setFormStatus(item.status || "active");
     setModalError(null);
+    setAvatarUploadError(null);
     setIsModalOpen(true);
+  };
+
+  const handleAvatarFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset value so user can re-select same file if needed
+    e.target.value = "";
+
+    const validationError = validateMediaFile(file);
+    if (validationError) {
+      setAvatarUploadError(validationError);
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    setAvatarUploadError(null);
+
+    try {
+      // Automatically compress file if > 2 MB (files <= 2 MB stay untouched)
+      const fileToUpload = await prepareMediaFileForUpload(file);
+
+      const sigRes = await getCloudinaryCmsUploadSignatureAction("avatar");
+      if (!sigRes.success || !sigRes.params) {
+        throw new Error(
+          sigRes.error || "Failed to obtain upload authorization."
+        );
+      }
+
+      const {
+        signature,
+        timestamp,
+        apiKey,
+        cloudName,
+        folder,
+        publicId,
+        tags,
+      } = sigRes.params;
+
+      const formData = new FormData();
+      formData.append("file", fileToUpload);
+      formData.append("api_key", apiKey);
+      formData.append("timestamp", String(timestamp));
+      formData.append("signature", signature);
+      formData.append("folder", folder);
+      formData.append("public_id", publicId);
+      if (tags) formData.append("tags", tags);
+
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+      const res = await fetch(uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+          errorData.error?.message || "Failed to upload image to Cloudinary."
+        );
+      }
+
+      const data = await res.json();
+      if (data.secure_url) {
+        if (formAvatar && formAvatar.includes("cloudinary.com")) {
+          deleteCloudinaryMediaAction(formAvatar).catch(() => {});
+        }
+        setFormAvatar(data.secure_url);
+      } else {
+        throw new Error("No image URL returned from upload server.");
+      }
+    } catch (err) {
+      setAvatarUploadError(
+        err instanceof Error ? err.message : "Failed to upload avatar image."
+      );
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
   const handleSaveTestimonial = (e: React.FormEvent) => {
@@ -240,7 +331,7 @@ export default function TestimonialsManager({
                 value={leftImage}
                 onChange={(e) => setLeftImage(e.target.value)}
                 placeholder="https://images.unsplash.com/..."
-                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 text-black bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
               />
               <div className="w-full h-36 rounded-xl overflow-hidden border border-cocoa-200/60 bg-cocoa-50 mt-2 relative">
                 {leftImage ? (
@@ -267,7 +358,7 @@ export default function TestimonialsManager({
                 value={rightImage}
                 onChange={(e) => setRightImage(e.target.value)}
                 placeholder="https://images.unsplash.com/..."
-                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 text-black bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
               />
               <div className="w-full h-36 rounded-xl overflow-hidden border border-cocoa-200/60 bg-cocoa-50 mt-2 relative">
                 {rightImage ? (
@@ -451,8 +542,8 @@ export default function TestimonialsManager({
                     required
                     value={formAuthor}
                     onChange={(e) => setFormAuthor(e.target.value)}
-                    placeholder="e.g. Elena Rostova"
-                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 focus:outline-none focus:ring-2 focus:ring-cocoa-800"
+                    placeholder="Enter name"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 text-black bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
                   />
                 </div>
                 <div>
@@ -463,27 +554,46 @@ export default function TestimonialsManager({
                     type="text"
                     value={formLocation}
                     onChange={(e) => setFormLocation(e.target.value)}
-                    placeholder="e.g. Kochi, Kerala"
-                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 focus:outline-none focus:ring-2 focus:ring-cocoa-800"
+                    placeholder="Enter Location"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 text-black bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
                   />
                 </div>
               </div>
 
-              {/* Avatar URL */}
+              {/* Avatar URL & Upload Option */}
               <div>
                 <label className="block text-xs font-bold text-cocoa-800 mb-1">
                   Avatar Photo URL
                 </label>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <input
                     type="url"
                     value={formAvatar}
                     onChange={(e) => setFormAvatar(e.target.value)}
                     placeholder="https://images.unsplash.com/photo-..."
-                    className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 focus:outline-none focus:ring-2 focus:ring-cocoa-800"
+                    className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 text-black bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
                   />
-                  <div className="w-10 h-10 rounded-full overflow-hidden border border-cocoa-200 bg-cocoa-50 flex-shrink-0">
-                    {formAvatar ? (
+                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-cocoa-200 bg-parchment-muted/60 hover:bg-parchment-muted text-cocoa-800 text-xs font-semibold shrink-0 transition-colors">
+                    {isUploadingAvatar ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-cocoa-700" />
+                    ) : (
+                      <UploadCloud className="w-3.5 h-3.5 text-cocoa-700" />
+                    )}
+                    <span>{isUploadingAvatar ? "Uploading..." : "Upload Image"}</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      disabled={isUploadingAvatar}
+                      onChange={handleAvatarFileUpload}
+                    />
+                  </label>
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-cocoa-200 bg-cocoa-50 flex-shrink-0 relative">
+                    {isUploadingAvatar ? (
+                      <div className="w-full h-full flex items-center justify-center bg-cocoa-100">
+                        <Loader2 className="w-4 h-4 animate-spin text-cocoa-700" />
+                      </div>
+                    ) : formAvatar ? (
                       <img
                         src={formAvatar}
                         alt="Avatar preview"
@@ -496,6 +606,11 @@ export default function TestimonialsManager({
                     )}
                   </div>
                 </div>
+                {avatarUploadError && (
+                  <p className="text-[11px] text-rose-600 mt-1">
+                    {avatarUploadError}
+                  </p>
+                )}
               </div>
 
               {/* Rating */}
@@ -537,7 +652,7 @@ export default function TestimonialsManager({
                   value={formQuote}
                   onChange={(e) => setFormQuote(e.target.value)}
                   placeholder="Enter the customer review quote..."
-                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 focus:outline-none focus:ring-2 focus:ring-cocoa-800"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 text-black bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
                 />
               </div>
 
@@ -551,10 +666,14 @@ export default function TestimonialsManager({
                   onChange={(e) =>
                     setFormStatus(e.target.value as "active" | "inactive")
                   }
-                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 bg-white text-black focus:outline-none focus:ring-2 focus:ring-cocoa-800"
                 >
-                  <option value="active">Active (Shown on Homepage)</option>
-                  <option value="inactive">Inactive (Hidden)</option>
+                  <option value="active" className="text-black bg-white">
+                    Active (Shown on Homepage)
+                  </option>
+                  <option value="inactive" className="text-black bg-white">
+                    Inactive (Hidden)
+                  </option>
                 </select>
               </div>
 
@@ -569,7 +688,7 @@ export default function TestimonialsManager({
                 </button>
                 <button
                   type="submit"
-                  disabled={isPending}
+                  disabled={isPending || isUploadingAvatar}
                   className="inline-flex items-center gap-2 rounded-xl bg-cocoa-900 hover:bg-cocoa-800 text-white px-5 py-2 text-xs font-bold uppercase tracking-wider shadow-sm disabled:opacity-50"
                 >
                   {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}

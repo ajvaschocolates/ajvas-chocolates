@@ -2,6 +2,10 @@ import { createClient } from "./server";
 import { Order, OrderStatus, PaymentStatus } from "@/types/orders";
 
 export interface DashboardMetrics {
+  totalOrdersCount: number;
+  totalRevenue: number;
+  totalCompletedOrdersCount: number;
+  totalPendingOrdersCount: number;
   ordersToProcessCount: number;
   awaitingDispatchCount: number;
   paymentIssuesCount: number;
@@ -19,18 +23,36 @@ export interface DashboardMetrics {
 }
 
 /**
- * Fetches all orders for Admin Order Management with filtering capabilities.
+ * Fetches orders for Admin Order Management with optimized field projection.
  */
-export async function getAllAdminOrders(): Promise<Order[]> {
+export async function getAllAdminOrders(limit = 100): Promise<Order[]> {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("orders")
       .select(`
-        *,
-        items:order_items (*)
+        id,
+        order_number,
+        customer_name,
+        customer_phone,
+        customer_email,
+        shipping_pincode,
+        shipping_city,
+        shipping_state,
+        total_amount,
+        subtotal,
+        shipping_amount,
+        order_status,
+        payment_status,
+        payment_provider,
+        courier_partner,
+        courier_service_name,
+        awb_number,
+        tracking_url,
+        created_at
       `)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
     if (error) {
       console.warn("Supabase admin orders query warning:", error.message);
@@ -81,10 +103,14 @@ export async function getAdminOrderById(id: string): Promise<Order | null> {
 }
 
 /**
- * Computes authoritative real-time metrics for the Admin Triage Dashboard from Supabase.
+ * Computes authoritative real-time metrics for the Admin Triage Dashboard from Supabase in parallel.
  */
 export async function getAdminDashboardMetrics(): Promise<DashboardMetrics> {
   const fallback: DashboardMetrics = {
+    totalOrdersCount: 0,
+    totalRevenue: 0,
+    totalCompletedOrdersCount: 0,
+    totalPendingOrdersCount: 0,
     ordersToProcessCount: 0,
     awaitingDispatchCount: 0,
     paymentIssuesCount: 0,
@@ -104,27 +130,29 @@ export async function getAdminDashboardMetrics(): Promise<DashboardMetrics> {
   try {
     const supabase = await createClient();
 
-    // Query 1: Orders and Order Summaries
-    const { data: orders, error: ordersErr } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    // Query 2: Product Inventory Summaries
-    const { data: products, error: prodsErr } = await supabase
-      .from("products")
-      .select("id, availability, status");
-
-    // Query 3: Active Couriers Count
-    const { count: activeCouriers } = await supabase
-      .from("couriers")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "active");
-
-    // Query 4: Total Customers Count
-    const { count: totalCustomers } = await supabase
-      .from("customers")
-      .select("*", { count: "exact", head: true });
+    // Run all dashboard metric queries concurrently in parallel
+    const [
+      { data: orders, error: ordersErr },
+      { data: products, error: prodsErr },
+      { count: activeCouriers },
+      { count: totalCustomers },
+    ] = await Promise.all([
+      supabase
+        .from("orders")
+        .select("id, order_number, customer_name, customer_phone, customer_email, shipping_city, shipping_district, shipping_state, shipping_pincode, total_amount, payment_status, order_status, courier_partner, awb_number, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200),
+      supabase
+        .from("products")
+        .select("id, availability, status"),
+      supabase
+        .from("couriers")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active"),
+      supabase
+        .from("customers")
+        .select("*", { count: "exact", head: true }),
+    ]);
 
     if (ordersErr) console.warn("Dashboard orders metrics warning:", ordersErr.message);
     if (prodsErr) console.warn("Dashboard products metrics warning:", prodsErr.message);
@@ -165,6 +193,18 @@ export async function getAdminDashboardMetrics(): Promise<DashboardMetrics> {
       .filter((o) => o.payment_status === "paid")
       .reduce((acc, o) => acc + Number(o.total_amount || 0), 0);
 
+    // Total order metrics calculations
+    const totalOrdersCount = allOrders.length;
+    const totalRevenue = allOrders
+      .filter((o) => o.payment_status === "paid")
+      .reduce((acc, o) => acc + Number(o.total_amount || 0), 0);
+    const totalCompletedOrdersCount = allOrders.filter(
+      (o) => o.order_status === "delivered"
+    ).length;
+    const totalPendingOrdersCount = allOrders.filter(
+      (o) => o.order_status === "pending"
+    ).length;
+
     // Product inventory metrics
     const lowStockCount = allProducts.filter((p) => p.availability === "low_stock").length;
     const outOfStockCount = allProducts.filter((p) => p.availability === "out_of_stock").length;
@@ -172,6 +212,10 @@ export async function getAdminDashboardMetrics(): Promise<DashboardMetrics> {
     const activeProductsCount = allProducts.filter((p) => p.status === "active").length;
 
     return {
+      totalOrdersCount,
+      totalRevenue,
+      totalCompletedOrdersCount,
+      totalPendingOrdersCount,
       ordersToProcessCount: ordersToProcess,
       awaitingDispatchCount: awaitingDispatch,
       paymentIssuesCount: paymentIssues,
@@ -183,7 +227,7 @@ export async function getAdminDashboardMetrics(): Promise<DashboardMetrics> {
       activeProductsCount,
       ordersTodayCount: ordersToday.length,
       revenueToday,
-      recentOrders: allOrders.slice(0, 5),
+      recentOrders: allOrders.slice(0, 10),
       activeCouriersCount: activeCouriers || 0,
       totalCustomersCount: totalCustomers || 0,
     };

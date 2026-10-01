@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { getAdminSession } from "@/lib/supabase/auth";
 import { getAdminTestimonialsDataAction } from "./actions";
 import {
   DEFAULT_LEFT_IMAGE,
@@ -11,16 +9,6 @@ import TestimonialsManager from "@/components/admin/TestimonialsManager";
 export const dynamic = "force-dynamic";
 
 export default async function AdminTestimonialsPage() {
-  const { user, isAdmin } = await getAdminSession();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  if (!isAdmin) {
-    redirect("/");
-  }
-
   const res = await getAdminTestimonialsDataAction();
   const initialData = res.data || {
     left_image_url: DEFAULT_LEFT_IMAGE,

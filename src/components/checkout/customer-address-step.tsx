@@ -30,14 +30,14 @@ export function CustomerAddressStep({
   };
 
   return (
-    <div className="bg-[#1f110c] rounded-2xl border border-[#3d1c12] p-6 sm:p-7 shadow-2xl flex flex-col gap-6">
+    <div className="bg-transparent p-0 shadow-none rounded-none sm:bg-[#1f110c] sm:rounded-sm sm:p-7 sm:shadow-2xl flex flex-col gap-6">
       {/* Step Heading */}
-      <div className="flex items-center gap-3">
+      <div className="hidden sm:flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-[#fb0b88] text-white font-sans text-xs font-extrabold flex items-center justify-center shrink-0 shadow-xs">
           1
         </div>
         <div>
-          <h2 className="font-serif text-lg sm:text-xl font-extrabold text-[#faf4f0]">
+          <h2 className="font-pally text-lg sm:text-xl font-bold text-[#faf4f0]">
             Contact &amp; Delivery Address
           </h2>
           <p className="font-sans text-xs text-[#a39085] mt-0.5 font-medium">
@@ -57,9 +57,9 @@ export function CustomerAddressStep({
             type="text"
             value={formData.fullName}
             onChange={(e) => onChange("fullName", e.target.value)}
-            placeholder="e.g. Ananya Sharma"
-            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
-              errors.fullName ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
+            placeholder="Full Name"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] rounded-sm text-sm font-sans text-[#faf4f0] placeholder:text-transparent sm:placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+              errors.fullName ? "ring-1 ring-[#fb0b88]" : ""
             }`}
           />
           {errors.fullName && <p className="text-[#fb0b88] text-[11px]">{errors.fullName}</p>}
@@ -76,9 +76,9 @@ export function CustomerAddressStep({
             maxLength={10}
             value={formData.phone}
             onChange={(e) => onChange("phone", e.target.value.replace(/\D/g, ""))}
-            placeholder="10-digit mobile number"
-            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
-              errors.phone ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
+            placeholder="Mobile Phone"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] rounded-sm text-sm font-sans text-[#faf4f0] placeholder:text-transparent sm:placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+              errors.phone ? "ring-1 ring-[#fb0b88]" : ""
             }`}
           />
           {errors.phone && <p className="text-[#fb0b88] text-[11px]">{errors.phone}</p>}
@@ -94,10 +94,10 @@ export function CustomerAddressStep({
             type="email"
             value={formData.email}
             onChange={(e) => onChange("email", e.target.value)}
-            placeholder="For order receipt"
+            placeholder="Email Address"
             aria-invalid={!!errors.email}
-            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
-              errors.email ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] rounded-sm text-sm font-sans text-[#faf4f0] placeholder:text-transparent sm:placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+              errors.email ? "ring-1 ring-[#fb0b88]" : ""
             }`}
           />
           {errors.email && <p className="text-[#fb0b88] text-[11px]">{errors.email}</p>}
@@ -113,9 +113,9 @@ export function CustomerAddressStep({
             type="text"
             value={formData.addressLine1}
             onChange={(e) => onChange("addressLine1", e.target.value)}
-            placeholder="House / Flat No., Apartment / Wing, Street Name"
-            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
-              errors.addressLine1 ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
+            placeholder="House / Flat / Street"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] rounded-sm text-sm font-sans text-[#faf4f0] placeholder:text-transparent sm:placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+              errors.addressLine1 ? "ring-1 ring-[#fb0b88]" : ""
             }`}
           />
           {errors.addressLine1 && <p className="text-[#fb0b88] text-[11px]">{errors.addressLine1}</p>}
@@ -131,8 +131,8 @@ export function CustomerAddressStep({
             type="text"
             value={formData.addressLine2}
             onChange={(e) => onChange("addressLine2", e.target.value)}
-            placeholder="Nearby landmark or colony"
-            className="w-full px-4 py-3 min-h-[44px] bg-[#140b07] border border-[#3d1c12] rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
+            placeholder="Area / Landmark"
+            className="w-full px-4 py-3 min-h-[44px] bg-[#140b07] rounded-sm text-sm font-sans text-[#faf4f0] placeholder:text-transparent sm:placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
           />
         </div>
 
@@ -145,8 +145,8 @@ export function CustomerAddressStep({
             id="state-select"
             value={formData.state}
             onChange={(e) => handleStateChange(e.target.value)}
-            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
-              errors.state ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] rounded-sm text-sm font-sans text-[#faf4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+              errors.state ? "ring-1 ring-[#fb0b88]" : ""
             }`}
           >
             <option value="" className="bg-[#140b07] text-[#a39085]">-- Select State --</option>
@@ -169,8 +169,8 @@ export function CustomerAddressStep({
             disabled={!formData.state}
             value={formData.district}
             onChange={(e) => onChange("district", e.target.value)}
-            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] disabled:bg-[#120805] disabled:text-[#a39085]/50 ${
-              errors.district ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] rounded-sm text-sm font-sans text-[#faf4f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] disabled:bg-[#120805] disabled:text-[#a39085]/50 ${
+              errors.district ? "ring-1 ring-[#fb0b88]" : ""
             }`}
           >
             <option value="" className="bg-[#140b07] text-[#a39085]">
@@ -195,8 +195,8 @@ export function CustomerAddressStep({
             type="text"
             value={formData.city}
             onChange={(e) => onChange("city", e.target.value)}
-            placeholder="Town or City Name"
-            className="w-full px-4 py-3 min-h-[44px] bg-[#140b07] border border-[#3d1c12] rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
+            placeholder="Town / City"
+            className="w-full px-4 py-3 min-h-[44px] bg-[#140b07] rounded-sm text-sm font-sans text-[#faf4f0] placeholder:text-transparent sm:placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
           />
         </div>
 
@@ -212,9 +212,9 @@ export function CustomerAddressStep({
             maxLength={6}
             value={formData.pincode}
             onChange={(e) => onChange("pincode", e.target.value.replace(/\D/g, ""))}
-            placeholder="6-digit Pincode"
-            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] border rounded-xl text-sm font-sans text-[#faf4f0] placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] tracking-wider ${
-              errors.pincode ? "border-[#fb0b88] ring-1 ring-[#fb0b88]" : "border-[#3d1c12]"
+            placeholder="Pincode"
+            className={`w-full px-4 py-3 min-h-[44px] bg-[#140b07] rounded-sm text-sm font-sans text-[#faf4f0] placeholder:text-transparent sm:placeholder:text-[#a39085]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] tracking-wider ${
+              errors.pincode ? "ring-1 ring-[#fb0b88]" : ""
             }`}
           />
           {errors.pincode ? (

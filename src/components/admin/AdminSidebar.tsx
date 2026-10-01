@@ -8,12 +8,10 @@ import {
   ShoppingBag,
   Package,
   Tag,
-  Users,
-  Truck,
   Receipt,
   X,
-  UserCheck,
   MessageSquareQuote,
+  BookOpen,
 } from "lucide-react";
 import SignOutButton from "./SignOutButton";
 import { BrandLogo } from "@/components/layout/brand-logo";
@@ -58,6 +56,12 @@ export default function AdminSidebar({
       icon: MessageSquareQuote,
     },
     {
+      name: "Pages CMS",
+      href: "/admin/pages",
+      icon: BookOpen,
+      badge: "CMS",
+    },
+    {
       name: "Orders",
       href: "/admin/orders",
       icon: ShoppingBag,
@@ -71,16 +75,6 @@ export default function AdminSidebar({
       name: "Categories",
       href: "/admin/categories",
       icon: Tag,
-    },
-    {
-      name: "Customers",
-      href: "/admin/customers",
-      icon: Users,
-    },
-    {
-      name: "Couriers",
-      href: "/admin/couriers",
-      icon: Truck,
     },
   ];
 
@@ -102,14 +96,12 @@ export default function AdminSidebar({
         } md:translate-x-0 md:static md:h-screen md:shrink-0`}
       >
         {/* Brand Identity Header */}
-        <div className="h-20 px-6 flex items-center justify-between border-b border-white/10 shrink-0">
+        <div className="h-20 px-6 flex items-center justify-center border-b border-white/10 shrink-0">
           <div className="flex items-center gap-3">
             <Link href="/admin" aria-label="AJVAS Admin Dashboard" className="shrink-0">
               <BrandLogo size="sm" />
             </Link>
-            <span className="text-[10px] uppercase font-mono tracking-widest text-brand-pink border-l border-white/20 pl-3 py-1 font-bold">
-              Operations
-            </span>
+          
           </div>
           <button
             onClick={onClose}
@@ -132,6 +124,7 @@ export default function AdminSidebar({
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
                 onClick={onClose}
                 className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                   isActive
@@ -159,23 +152,8 @@ export default function AdminSidebar({
         </nav>
 
         {/* Footer Admin Identity & Logout */}
-        <div className="p-4 border-t border-white/10 bg-black/20 space-y-3 shrink-0">
-          {userEmail && (
-            <div className="flex items-center gap-2.5 px-2 text-xs">
-              <UserCheck className="w-4 h-4 text-brand-pink shrink-0" />
-              <div className="truncate">
-                <span className="block text-[10px] uppercase font-mono text-white/60">
-                  Signed in as
-                </span>
-                <span className="font-medium text-white truncate block">
-                  {userEmail}
-                </span>
-              </div>
-            </div>
-          )}
-          <div className="pt-1">
-            <SignOutButton />
-          </div>
+        <div className="p-4 border-t border-white/10 bg-black/20 shrink-0">
+          <SignOutButton />
         </div>
       </aside>
     </>

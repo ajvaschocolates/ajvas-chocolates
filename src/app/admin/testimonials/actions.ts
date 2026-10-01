@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSession } from "@/lib/supabase/auth";
+import {
+  destroyCloudinaryAsset,
+  extractCloudinaryPublicId,
+} from "@/lib/cloudinary/server";
 import { TestimonialItem, TestimonialsSectionData } from "@/types/cms";
 import {
   DEFAULT_TESTIMONIALS,
@@ -146,6 +150,14 @@ export async function deleteTestimonialAction(
 
     if (section && section.content_json) {
       content = section.content_json as TestimonialsSectionData;
+    }
+
+    const targetTestimonial = (content.testimonials || []).find((t) => t.id === id);
+    if (targetTestimonial?.avatar_url) {
+      const publicId = extractCloudinaryPublicId(targetTestimonial.avatar_url);
+      if (publicId) {
+        await destroyCloudinaryAsset(publicId);
+      }
     }
 
     content.testimonials = (content.testimonials || []).filter((t) => t.id !== id);

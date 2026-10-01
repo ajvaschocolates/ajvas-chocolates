@@ -4,11 +4,29 @@ import { getSupabaseEnv } from "./env";
 
 /**
  * Refreshes Supabase auth session tokens and enforces /admin route authorization.
+ * Optimized with session caching to avoid redundant database RPC round-trips.
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
+
+  const pathname = request.nextUrl.pathname;
+
+  // Bypass session check for webhooks and health endpoints
+  if (pathname.startsWith("/api/webhooks") || pathname.startsWith("/api/keep-alive")) {
+    return supabaseResponse;
+  }
+
+  const allCookies = request.cookies.getAll();
+  const hasAuthCookie = allCookies.some(
+    (c) => c.name.includes("-auth-token") || c.name.startsWith("sb-")
+  );
+
+  // Skip auth network round-trip for unauthenticated guest visitors on public store pages
+  if (!pathname.startsWith("/admin") && !hasAuthCookie) {
+    return supabaseResponse;
+  }
 
   const { supabaseUrl, supabasePublishableKey } = getSupabaseEnv();
 
@@ -31,12 +49,10 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // Calling getUser() securely refreshes the session token if needed
+  // Calling getUser() securely refreshes the session token
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
 
   // Route protection for /admin routes
   if (pathname.startsWith("/admin")) {
@@ -50,8 +66,15 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url);
       }
     } else {
-      // User is authenticated in Supabase Auth -> check public.admin_users authorization
-      const { data: isAdmin } = await supabase.rpc("is_admin");
+      // Fast check: Check if user was already verified as admin in this session (avoids redundant RPC network roundtrip)
+      const adminCookie = request.cookies.get("ajv_admin_verified")?.value;
+      let isAdmin = adminCookie === user.id;
+
+      if (!isAdmin) {
+        // Query database RPC only on initial login or when cache expires
+        const { data: rpcAdmin } = await supabase.rpc("is_admin");
+        isAdmin = !!rpcAdmin;
+      }
 
       if (!isAdmin) {
         // Authenticated user is NOT authorized as an admin
@@ -66,6 +89,36 @@ export async function updateSession(request: NextRequest) {
         url.pathname = "/admin";
         return NextResponse.redirect(url);
       }
+
+      // Forward verified admin headers so AdminLayout can skip duplicate DB round-trips
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set("x-admin-verified", "1");
+      if (user.email) {
+        requestHeaders.set("x-admin-email", user.email);
+      }
+      requestHeaders.set("x-admin-id", user.id);
+
+      const modifiedResponse = NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
+
+      // Cache admin authorization for 5 minutes (300 seconds) on /admin
+      modifiedResponse.cookies.set("ajv_admin_verified", user.id, {
+        path: "/admin",
+        maxAge: 300,
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      });
+
+      // Forward any updated auth cookies
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        modifiedResponse.cookies.set(cookie.name, cookie.value, cookie);
+      });
+
+      return modifiedResponse;
     }
   }
 

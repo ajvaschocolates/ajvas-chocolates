@@ -1,10 +1,11 @@
-import { redirect, notFound } from "next/navigation";
-import { getAdminSession } from "@/lib/supabase/auth";
+import { notFound } from "next/navigation";
 import {
   getAdminProductById,
   getAllAdminCategories,
 } from "@/lib/supabase/admin-catalog";
 import ProductFormClient from "@/components/admin/ProductFormClient";
+
+export const dynamic = "force-dynamic";
 
 interface EditProductPageProps {
   params: Promise<{
@@ -13,19 +14,12 @@ interface EditProductPageProps {
 }
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
-  const { user, isAdmin } = await getAdminSession();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  if (!isAdmin) {
-    redirect("/");
-  }
-
   const { id } = await params;
-  const product = await getAdminProductById(id);
-  const categories = await getAllAdminCategories();
+
+  const [product, categories] = await Promise.all([
+    getAdminProductById(id),
+    getAllAdminCategories(),
+  ]);
 
   if (!product) {
     notFound();

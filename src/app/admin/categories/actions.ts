@@ -3,6 +3,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSession } from "@/lib/supabase/auth";
 import { revalidatePath } from "next/cache";
+import {
+  destroyCloudinaryAsset,
+  extractCloudinaryPublicId,
+} from "@/lib/cloudinary/server";
 
 export interface CategoryActionResult {
   success: boolean;
@@ -207,6 +211,13 @@ export async function deleteCategoryAction(
   try {
     const supabase = await createClient();
 
+    // Fetch category first to retain image identifier for Cloudinary cleanup
+    const { data: categoryData } = await supabase
+      .from("categories")
+      .select("image_public_id, image_url")
+      .eq("id", categoryId)
+      .maybeSingle();
+
     const { error } = await supabase
       .from("categories")
       .delete()
@@ -225,6 +236,16 @@ export async function deleteCategoryAction(
           ? "Cannot delete this category because it is assigned to one or more products. Deactivate it instead."
           : error.message || "Failed to delete category.",
       };
+    }
+
+    // Cleanup Cloudinary asset if present
+    if (categoryData) {
+      const publicId =
+        categoryData.image_public_id ||
+        extractCloudinaryPublicId(categoryData.image_url || "");
+      if (publicId) {
+        await destroyCloudinaryAsset(publicId);
+      }
     }
 
     revalidatePath("/admin/categories");

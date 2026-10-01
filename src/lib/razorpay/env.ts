@@ -13,7 +13,7 @@ export interface RazorpayPublicEnv {
 export interface RazorpayServerEnv {
   keyId: string;
   keySecret: string;
-  webhookSecret: string;
+  webhookSecret?: string;
 }
 
 /**
@@ -59,15 +59,9 @@ export function getRazorpayServerEnv(): RazorpayServerEnv {
     );
   }
 
-  if (!webhookSecret || webhookSecret.trim() === "") {
-    throw new Error(
-      "Missing required server environment variable: RAZORPAY_WEBHOOK_SECRET. Please set it in your server environment configuration."
-    );
-  }
-
   return {
     keyId: keyId.trim(),
     keySecret: keySecret.trim(),
-    webhookSecret: webhookSecret.trim(),
+    webhookSecret: webhookSecret ? webhookSecret.trim() : undefined,
   };
 }

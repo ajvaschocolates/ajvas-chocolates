@@ -545,3 +545,59 @@ export function isCloudinaryDeliveryUrl(
     return false;
   }
 }
+
+/**
+ * Safely extracts the canonical Cloudinary public_id from a Cloudinary URL or public ID string.
+ * Strips transformations, version prefixes (/v1234567/), and file extensions.
+ * Returns null if not a Cloudinary asset.
+ */
+export function extractCloudinaryPublicId(urlOrPublicId: string): string | null {
+  if (!urlOrPublicId || typeof urlOrPublicId !== "string") return null;
+  const trimmed = urlOrPublicId.trim();
+  if (!trimmed || trimmed.startsWith("external_url_")) return null;
+
+  if (!trimmed.includes("cloudinary.com")) {
+    // Already a public ID (e.g., "ajvas_chocolates/products/123/img_1")
+    return trimmed.replace(/\.[^/.]+$/, "");
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const pathname = parsed.pathname;
+    const uploadIndex = pathname.indexOf("/image/upload/");
+    if (uploadIndex === -1) return null;
+
+    const afterUpload = pathname.substring(uploadIndex + "/image/upload/".length);
+    const rawSegments = afterUpload.split("/").filter(Boolean);
+
+    let versionIndex = -1;
+    for (let i = 0; i < rawSegments.length; i++) {
+      if (/^v\d+$/.test(rawSegments[i])) {
+        versionIndex = i;
+        break;
+      }
+    }
+
+    let publicIdSegments: string[];
+    if (versionIndex !== -1) {
+      publicIdSegments = rawSegments.slice(versionIndex + 1);
+    } else {
+      let pastTransforms = false;
+      publicIdSegments = [];
+      for (const seg of rawSegments) {
+        if (!pastTransforms && isCloudinaryTransformationSegment(seg)) {
+          continue;
+        }
+        pastTransforms = true;
+        publicIdSegments.push(seg);
+      }
+    }
+
+    if (publicIdSegments.length === 0) return null;
+    const fullPathWithExt = publicIdSegments.join("/");
+    return decodeURIComponent(fullPathWithExt).replace(/\.[^/.]+$/, "");
+  } catch {
+    return null;
+  }
+}
+

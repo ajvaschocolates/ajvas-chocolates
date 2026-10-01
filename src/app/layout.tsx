@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter, Dancing_Script } from "next/font/google";
 import { CartProvider } from "@/context/cart-context";
+import { BackToTop } from "@/components/ui/back-to-top";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -48,6 +49,7 @@ export default function RootLayout({
       >
         <CartProvider>
           {children}
+          <BackToTop />
         </CartProvider>
       </body>
     </html>

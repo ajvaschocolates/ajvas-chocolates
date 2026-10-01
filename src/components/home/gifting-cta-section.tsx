@@ -58,7 +58,7 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
   };
 
   return (
-    <section className="relative w-full bg-[#160c08] text-white py-16 sm:py-20 lg:py-24 overflow-hidden border-t border-[#2d1810]">
+    <section className="relative w-full bg-[#160c08] text-white py-16 sm:py-20 lg:py-24 overflow-hidden ">
       {/* CMS Admin-Controlled Background Image Canvas */}
       {showBgImage ? (
         <img
@@ -93,15 +93,14 @@ export function GiftingCtaSection({ section }: GiftingCtaSectionProps) {
           </p>
 
           {/* Primary CTA Button */}
-          <div className="flex items-center justify-center w-full sm:w-auto">
-            <Link href={primaryCtaLink} className="w-full sm:w-auto">
+          <div className="flex items-center justify-center w-full">
+            <Link href={primaryCtaLink} className="inline-flex justify-center w-auto">
               <Button
                 variant="primary"
                 size="lg"
-                className="w-full sm:w-auto gap-2.5 bg-[#fb0b88] hover:bg-[#d90974] text-white font-pally text-xs uppercase tracking-wider !text-sm rounded-full px-8 py-3 shadow-xl transition-all hover:scale-105 active:scale-95"
+                className="w-auto gap-2.5 bg-[#fb0b88] hover:bg-[#d90974] text-white font-pally text-xs uppercase tracking-wider !text-sm rounded-full px-8 py-3 shadow-xl transition-all hover:scale-105 active:scale-95"
               >
                 <span>{primaryCtaText}</span>
-              
               </Button>
             </Link>
           </div>

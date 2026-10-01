@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Heart, ShoppingCart, Check } from "lucide-react";
 import { Product } from "@/types/catalog";
 import { Container } from "@/components/ui/container";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
 import { formatINR } from "@/lib/utils";
 
@@ -79,9 +80,8 @@ function ProductCard({
 
         {computedBadge && (
           <span
-            className={`absolute top-2 left-2 z-10 inline-block font-sans text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm text-white shadow-sm ${
-              computedBadge.includes("OFF") ? "bg-[#fb0b88]" : "bg-[#c99d52]"
-            }`}
+            className={`absolute top-2 left-2 z-10 inline-block font-sans text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-sm text-white shadow-sm ${computedBadge.includes("OFF") ? "bg-[#fb0b88]" : "bg-[#c99d52]"
+              }`}
           >
             {computedBadge}
           </span>
@@ -106,13 +106,12 @@ function ProductCard({
           disabled={isOutOfStock}
           onClick={handleAdd}
           aria-label={isOutOfStock ? "Sold out" : isAdded ? "Added to cart" : "Add to cart"}
-          className={`sm:hidden absolute bottom-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-md active:scale-95 transition-colors ${
-            isOutOfStock
-              ? "bg-stone-700/90 cursor-not-allowed"
-              : isAdded
+          className={`sm:hidden absolute bottom-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-md active:scale-95 transition-colors ${isOutOfStock
+            ? "bg-stone-700/90 cursor-not-allowed"
+            : isAdded
               ? "bg-emerald-600"
               : "bg-[#fb0b88]"
-          }`}
+            }`}
         >
           {isAdded ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
         </button>
@@ -122,13 +121,12 @@ function ProductCard({
           type="button"
           disabled={isOutOfStock}
           onClick={handleAdd}
-          className={`hidden sm:flex absolute inset-x-0 bottom-0 z-10 items-center justify-center gap-2 py-2.5 font-sans text-[10px] uppercase tracking-wider font-bold text-white transition-transform duration-300 translate-y-full group-hover:translate-y-0 focus-visible:translate-y-0 ${
-            isOutOfStock
-              ? "bg-stone-700/90 cursor-not-allowed"
-              : isAdded
+          className={`hidden sm:flex absolute inset-x-0 bottom-0 z-10 items-center justify-center gap-2 py-2.5 font-sans text-[10px] uppercase tracking-wider font-bold text-white transition-transform duration-300 translate-y-full group-hover:translate-y-0 focus-visible:translate-y-0 ${isOutOfStock
+            ? "bg-stone-700/90 cursor-not-allowed"
+            : isAdded
               ? "bg-emerald-600"
               : "bg-[#fb0b88] hover:bg-[#d90974]"
-          }`}
+            }`}
         >
           {isOutOfStock ? (
             "Sold out"
@@ -256,7 +254,7 @@ export function CuratedCollectionsSection({
   const badges = ["BESTSELLER", undefined, undefined, "NEW"];
 
   return (
-    <section className="w-full bg-black py-14 sm:py-16 lg:py-20" id="best-sellers">
+    <section className="w-full bg-black py-8 sm:py-16 lg:py-16" id="best-sellers">
       <Container>
         {/* Section Header */}
         <div className="mb-8 sm:mb-10">
@@ -280,6 +278,19 @@ export function CuratedCollectionsSection({
               className={idx === 3 ? "lg:hidden" : ""}
             />
           ))}
+        </div>
+
+        {/* Bottom Center "View All Products" Button */}
+        <div className="mt-8 sm:mt-10 flex justify-center">
+          <Link href="/shop" className="inline-flex justify-center">
+            <Button
+              variant="primary"
+              size="lg"
+              className="gap-2 bg-[#fb0b88] hover:bg-[#d90974] text-white font-pally !text-sm uppercase tracking-wider  rounded-full px-7 sm:px-8 py-3 shadow-xl transition-all hover:scale-105 active:scale-95"
+            >
+              <span>View All Products</span>
+            </Button>
+          </Link>
         </div>
       </Container>
     </section>
