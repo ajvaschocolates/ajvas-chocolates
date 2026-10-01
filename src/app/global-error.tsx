@@ -40,12 +40,12 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               <RotateCcw className="w-4 h-4" />
               <span>Reload</span>
             </button>
-            <a
+            <Link
               href="/"
               className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-md text-xs font-semibold uppercase tracking-wider border border-[#c99d52]/50 text-[#c99d52] hover:bg-[#c99d52]/10 transition-colors"
             >
               Home
-            </a>
+            </Link>
           </div>
         </div>
       </body>

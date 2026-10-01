@@ -15,10 +15,6 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
-  if (!categories || categories.length === 0) return null;
-
-  const displayCategories = categories;
-
   // Gentle auto-scroll when user is not interacting (both mobile & desktop)
   const checkOverflow = useCallback(() => {
     if (scrollRef.current) {
@@ -49,6 +45,10 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
 
     return () => clearInterval(interval);
   }, [isHovered, checkOverflow]);
+
+  if (!categories || categories.length === 0) return null;
+
+  const displayCategories = categories;
 
   return (
     <section

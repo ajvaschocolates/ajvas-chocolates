@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { ShoppingBag, Heart, Search, X, Menu, Plus, Minus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Container } from "@/components/ui/container";
 import { BrandLogo } from "./brand-logo";
 import { useCart } from "@/context/cart-context";
 

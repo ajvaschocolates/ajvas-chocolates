@@ -28,7 +28,7 @@ export async function pingSupabaseConnection(): Promise<KeepAlivePingResult> {
     });
 
     // Extremely lightweight query: read 1 record ID
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("categories")
       .select("id")
       .limit(1);
@@ -82,7 +82,6 @@ export function getMillisUntilNextMidnight(): number {
 
 // Global variable to avoid multiple timers during Next.js hot reloads
 declare global {
-  // eslint-disable-next-line no-var
   var __supabaseKeepAliveTimer: NodeJS.Timeout | undefined;
 }
 

@@ -29,7 +29,6 @@ import {
 import {
   DEFAULT_LEFT_IMAGE,
   DEFAULT_RIGHT_IMAGE,
-  DEFAULT_TESTIMONIALS,
 } from "@/lib/constants/testimonials";
 
 interface TestimonialsManagerProps {

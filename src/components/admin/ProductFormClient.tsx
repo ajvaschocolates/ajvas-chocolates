@@ -14,15 +14,11 @@ import {
   toggleProductStatusAction,
 } from "@/app/admin/products/actions";
 import {
-  ArrowLeft,
   Loader2,
   AlertCircle,
-  Package,
-  Image as ImageIcon,
   CheckCircle2,
   Eye,
   EyeOff,
-  Sparkles,
 } from "lucide-react";
 
 interface ProductFormClientProps {
@@ -59,20 +55,20 @@ export default function ProductFormClient({
   const [availability, setAvailability] = useState<
     "in_stock" | "low_stock" | "out_of_stock"
   >(product?.availability || "in_stock");
-  const [weightGrams, setWeightGrams] = useState<string>(
+  const [weightGrams] = useState<string>(
     product?.weight_grams !== undefined ? String(product.weight_grams) : "500"
   );
-  const [lengthCm, setLengthCm] = useState<string>(
+  const [lengthCm] = useState<string>(
     product?.length_cm !== undefined && product.length_cm !== null
       ? String(product.length_cm)
       : ""
   );
-  const [widthCm, setWidthCm] = useState<string>(
+  const [widthCm] = useState<string>(
     product?.width_cm !== undefined && product.width_cm !== null
       ? String(product.width_cm)
       : ""
   );
-  const [heightCm, setHeightCm] = useState<string>(
+  const [heightCm] = useState<string>(
     product?.height_cm !== undefined && product.height_cm !== null
       ? String(product.height_cm)
       : ""
@@ -106,31 +102,14 @@ export default function ProductFormClient({
     (product?.images && product.images.length > 0 ? product.images[0].image_url : "");
 
   const [imageUrl, setImageUrl] = useState(existingImageUrl);
-  const [cloudinaryPublicId, setCloudinaryPublicId] = useState("");
-  const [imageError, setImageError] = useState(false);
+  const [cloudinaryPublicId] = useState("");
 
   // Dedicated state for Create mode uploaded images
   const [uploadedCreateImages, setUploadedCreateImages] = useState<UploadedImageItem[]>([]);
 
-  const activePreviewUrl = primaryImageFromList || imageUrl;
-
   // Status & Error Banner
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  // Compute calculated discount price for preview
-  const numericPrice = parseFloat(price) || 0;
-  const numericDiscountVal = parseFloat(discountValue) || 0;
-
-  let calculatedFinalPrice = numericPrice;
-  if (discountType === "percentage" && numericDiscountVal > 0) {
-    calculatedFinalPrice = Math.max(
-      0,
-      numericPrice - (numericPrice * numericDiscountVal) / 100
-    );
-  } else if (discountType === "fixed" && numericDiscountVal > 0) {
-    calculatedFinalPrice = Math.max(0, numericPrice - numericDiscountVal);
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -688,7 +667,6 @@ export default function ProductFormClient({
                 setImagesList(updatedList);
                 if (updatedList.length > 0) {
                   setImageUrl(updatedList[0].image_url);
-                  setImageError(false);
                 }
               }}
             />

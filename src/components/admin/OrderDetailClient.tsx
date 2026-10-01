@@ -9,13 +9,9 @@ import {
   Truck,
   User,
   MapPin,
-  CreditCard,
   Package,
   Clock,
-  CheckCircle2,
-  AlertTriangle,
   Loader2,
-  ExternalLink,
 } from "lucide-react";
 
 interface OrderDetailClientProps {

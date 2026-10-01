@@ -8,7 +8,6 @@ import {
 import {
   validateMediaFile,
   prepareMediaFileForUpload,
-  MAX_FILE_SIZE_BYTES,
   ALLOWED_MIME_TYPES,
 } from "@/lib/utils/image-compression";
 import { validateImageInput } from "@/lib/validation/image-url";
@@ -413,6 +412,8 @@ export default function ProductSingleImageUploader({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
+              title={dropzoneText}
+              aria-label={dropzoneText}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand-pink text-white text-xs font-extrabold shadow-xs hover:bg-brand-pink-hover transition shrink-0"
             >
               <UploadCloud className="w-3.5 h-3.5" />

@@ -13,7 +13,6 @@ import {
   updateHomepageSectionAction,
 } from "@/app/admin/homepage/actions";
 import {
-  Sparkles,
   Plus,
   Edit2,
   Trash2,

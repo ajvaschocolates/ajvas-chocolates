@@ -27,7 +27,7 @@ export default function ShippingRateListClient({
   const [minWeight, setMinWeight] = useState("1");
   const [maxWeight, setMaxWeight] = useState("");
   const [shippingAmount, setShippingAmount] = useState("150");
-  const [modalStatus, setModalStatus] = useState<"active" | "inactive">("active");
+  const [modalStatus] = useState<"active" | "inactive">("active");
   const [modalError, setModalError] = useState<string | null>(null);
 
   function handleToggleStatus(rate: ShippingRate) {

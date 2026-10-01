@@ -8,7 +8,6 @@ import {
   ShoppingBag,
   Package,
   Tag,
-  Receipt,
   X,
   MessageSquareQuote,
   BookOpen,
@@ -153,6 +152,11 @@ export default function AdminSidebar({
 
         {/* Footer Admin Identity & Logout */}
         <div className="p-4 border-t border-white/10 bg-black/20 shrink-0">
+          {userEmail && (
+            <p className="text-xs text-white/60 truncate mb-2 font-mono">
+              {userEmail}
+            </p>
+          )}
           <SignOutButton />
         </div>
       </aside>

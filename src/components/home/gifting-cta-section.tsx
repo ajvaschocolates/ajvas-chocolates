@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { HomepageSection } from "@/types/cms";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";

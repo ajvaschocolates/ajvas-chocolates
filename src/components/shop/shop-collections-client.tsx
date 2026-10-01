@@ -15,7 +15,6 @@ import { Product, Category } from "@/types/catalog";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
-import { formatINR } from "@/lib/utils";
 
 export interface ShopCollectionsClientProps {
   initialCategories: Category[];

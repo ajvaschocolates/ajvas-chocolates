@@ -1,5 +1,5 @@
 import { createClient } from "./server";
-import { Order, OrderStatus, PaymentStatus } from "@/types/orders";
+import { Order } from "@/types/orders";
 
 export interface DashboardMetrics {
   totalOrdersCount: number;

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, ShoppingBag, ArrowRight, X, Copy, Check, Sparkles } from "lucide-react";
+import { CheckCircle2, ShoppingBag, ArrowRight, X, Copy, Check } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 
 // Lightweight celebratory confetti particle canvas

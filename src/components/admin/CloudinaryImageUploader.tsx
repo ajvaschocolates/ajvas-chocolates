@@ -5,17 +5,14 @@ import { getCloudinaryUploadSignatureAction } from "@/app/admin/products/actions
 import {
   validateMediaFile,
   prepareMediaFileForUpload,
-  MAX_FILE_SIZE_BYTES,
   ALLOWED_MIME_TYPES,
 } from "@/lib/utils/image-compression";
 import {
   UploadCloud,
-  Loader2,
   AlertTriangle,
   CheckCircle2,
   X,
   FileImage,
-  RefreshCw,
 } from "lucide-react";
 
 interface CloudinaryImageUploaderProps {
