@@ -37,6 +37,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           setItems(parsed);
         }
       }
+      const storedBuyNow = sessionStorage.getItem("ajvas_buy_now_item");
+      if (storedBuyNow) {
+        setBuyNowItemState(JSON.parse(storedBuyNow));
+      }
     } catch (e) {
       console.warn("Failed to load cart from localStorage", e);
     } finally {
@@ -188,6 +192,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       };
 
       setBuyNowItemState(item);
+      try {
+        sessionStorage.setItem("ajvas_buy_now_item", JSON.stringify(item));
+      } catch (e) {
+        console.warn("Failed to persist buy now item to sessionStorage", e);
+      }
     },
     []
   );
@@ -196,14 +205,34 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setLastAddedItem(null);
   }, []);
 
+  const clearCart = useCallback(() => {
+    setItems([]);
+    setBuyNowItemState(null);
+    setLastAddedItem(null);
+    try {
+      localStorage.removeItem(CART_STORAGE_KEY);
+      sessionStorage.removeItem("ajvas_buy_now_item");
+    } catch (e) {
+      console.warn("Failed to clear cart in localStorage/sessionStorage", e);
+    }
+  }, []);
+
   const totalItemsCount = useMemo(() => {
     return items.reduce((acc, item) => acc + item.quantity, 0);
+  }, [items]);
+
+  const subtotal = useMemo(() => {
+    return items.reduce((acc, item) => {
+      const price = item.discountedUnitPrice ?? item.unitPrice;
+      return acc + price * item.quantity;
+    }, 0);
   }, [items]);
 
   const value = useMemo<CartContextValue>(
     () => ({
       items,
       totalItemsCount,
+      subtotal,
       isHydrated,
       addItem,
       removeItem,
@@ -212,8 +241,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       buyNowItem,
       lastAddedItem,
       clearLastAddedItem,
+      clearCart,
     }),
-    [items, totalItemsCount, isHydrated, addItem, removeItem, updateQuantity, setBuyNowItem, buyNowItem, lastAddedItem, clearLastAddedItem]
+    [items, totalItemsCount, subtotal, isHydrated, addItem, removeItem, updateQuantity, setBuyNowItem, buyNowItem, lastAddedItem, clearLastAddedItem, clearCart]
   );
 
 

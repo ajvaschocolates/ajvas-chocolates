@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { getAdminSession } from "@/lib/supabase/auth";
 import {
   getAllAdminShippingRates,
   getAllAdminPincodes,
@@ -7,17 +5,9 @@ import {
 } from "@/lib/supabase/admin-logistics";
 import ShippingRateListClient from "@/components/admin/ShippingRateListClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminShippingRatesPage() {
-  const { user, isAdmin } = await getAdminSession();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  if (!isAdmin) {
-    redirect("/");
-  }
-
   const [rates, pincodes, couriers] = await Promise.all([
     getAllAdminShippingRates(),
     getAllAdminPincodes(),

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "./server";
 
@@ -10,8 +11,9 @@ export interface AdminAuthSession {
  * Server-side helper to verify authentication and admin authorization.
  * Checks both Supabase Auth authentication and public.admin_users membership
  * via the security-definer public.is_admin() function.
+ * Wrapped in React cache() to deduplicate requests within the same server render.
  */
-export async function getAdminSession(): Promise<AdminAuthSession> {
+export const getAdminSession = cache(async (): Promise<AdminAuthSession> => {
   try {
     const supabase = await createClient();
     const {
@@ -33,4 +35,4 @@ export async function getAdminSession(): Promise<AdminAuthSession> {
   } catch {
     return { user: null, isAdmin: false };
   }
-}
+});

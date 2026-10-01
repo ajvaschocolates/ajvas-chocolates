@@ -175,7 +175,7 @@ export async function calculateStateShippingServer(
       shippingAmount: totalShipping,
       zone,
     };
-  } catch (err) {
+  } catch {
     return {
       success: false,
       error: "Unexpected error encountered while calculating state shipping fee.",

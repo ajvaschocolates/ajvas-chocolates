@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { CategoryWithCount } from "@/lib/supabase/admin-catalog";
 import ProductSingleImageUploader from "@/components/admin/ProductSingleImageUploader";
 import { getCloudinaryCmsUploadSignatureAction } from "@/app/admin/homepage/actions";
@@ -38,10 +39,15 @@ export default function CategoryListClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isPending, startTransition] = useTransition();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Action status IDs
   const [togglingId, setTogglingId] = useState<string | null>(null);
-  
+
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryWithCount | null>(null);
@@ -150,6 +156,9 @@ export default function CategoryListClient({
                     ...c,
                     name: modalName.trim(),
                     status: modalStatus,
+                    image_url: modalImageUrl,
+                    image_public_id: modalImagePublicId,
+                    display_order: modalDisplayOrder,
                     updated_at: new Date().toISOString(),
                   }
                 : c
@@ -161,6 +170,9 @@ export default function CategoryListClient({
             id: res.categoryId,
             name: modalName.trim(),
             status: modalStatus,
+            image_url: modalImageUrl,
+            image_public_id: modalImagePublicId,
+            display_order: modalDisplayOrder,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             product_count: 0,
@@ -221,9 +233,19 @@ export default function CategoryListClient({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8">
+      {/* Category Header */}
+      <div>
+        <h1 className="text-xl sm:text-2xl font-serif font-bold text-cocoa-950">
+          Categories
+        </h1>
+        <p className="text-xs text-cocoa-600 mt-1">
+          Store product categories and collection organization
+        </p>
+      </div>
+
       {/* Metrics Triage Strip */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <div className="rounded-xl border border-cocoa-200/80 bg-parchment-card p-4 shadow-sm transition-all hover:border-cocoa-300">
           <div className="flex items-center justify-between">
             <span className="font-mono text-xs uppercase tracking-wider text-cocoa-600">
@@ -561,110 +583,127 @@ export default function CategoryListClient({
       </div>
 
       {/* Add / Edit Category Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-cocoa-200 bg-parchment-card p-6 shadow-xl">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-cocoa-100">
-              <h3 className="font-sans text-lg font-bold text-cocoa-950">
-                {editingCategory ? "Edit Category" : "Add New Category"}
-              </h3>
+      {mounted && isModalOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="flex w-full max-w-3xl max-h-[calc(100dvh-24px)] flex-col overflow-hidden rounded-2xl border border-parchment-border bg-white shadow-2xl">
+            {/* Header */}
+            <div className="shrink-0 flex items-start justify-between gap-4 border-b border-parchment-border bg-parchment/60 px-5 py-4 sm:px-6">
+              <div className="min-w-0">
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-cocoa-950 truncate">
+                  {editingCategory ? "Edit Category" : "Add New Category"}
+                </h3>
+                <p className="mt-0.5 text-xs text-cocoa-600">
+                  {editingCategory
+                    ? "Update category details and storefront display order."
+                    : "Create a new chocolate category for the store."}
+                </p>
+              </div>
               <button
+                type="button"
                 onClick={handleCloseModal}
                 disabled={isSubmitting}
-                className="rounded-lg p-1 text-cocoa-400 hover:bg-parchment-hover hover:text-cocoa-700"
+                className="shrink-0 rounded-lg p-1.5 text-cocoa-400 transition-colors hover:bg-parchment-muted hover:text-cocoa-700"
+                aria-label="Close modal"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Error Banner inside Modal */}
-            {modalError && (
-              <div className="mt-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs text-rose-800">
-                <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
-                <div>{modalError}</div>
-              </div>
-            )}
-
             {/* Form */}
-            <form onSubmit={handleSubmitModal} className="mt-4 space-y-4">
-              <div>
-                <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                  Category Name <span className="text-rose-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={modalName}
-                  onChange={(e) => setModalName(e.target.value)}
-                  placeholder="e.g. Dark Chocolates"
-                  required
-                  autoFocus
-                  className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs font-sans text-cocoa-900 placeholder-cocoa-400 focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
-                />
+            <form onSubmit={handleSubmitModal} className="flex min-h-0 flex-1 flex-col">
+              <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-white px-5 py-5 sm:px-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {modalError && (
+                  <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
+                    <div className="min-w-0 flex-1 break-words">{modalError}</div>
+                  </div>
+                )}
+
+                {/* Fields row */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                  <div className="min-w-0 sm:col-span-2">
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-cocoa-950">
+                      Category Name <span className="text-burgundy">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={modalName}
+                      onChange={(e) => setModalName(e.target.value)}
+                      required
+                      autoFocus
+                      className="w-full rounded-lg border border-parchment-border bg-parchment px-3.5 py-2.5 text-sm text-cocoa-950 placeholder-cocoa-400 transition focus:border-cocoa-700 focus:bg-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-cocoa-950">
+                      Status
+                    </label>
+                    <select
+                      value={modalStatus}
+                      onChange={(e) => setModalStatus(e.target.value as "active" | "inactive")}
+                      className="w-full rounded-lg border border-parchment-border bg-parchment px-3.5 py-2.5 text-sm text-cocoa-950 transition focus:border-cocoa-700 focus:bg-white focus:outline-none"
+                    >
+                      <option value="active">Active (Visible in storefront)</option>
+                      <option value="inactive">Inactive (Hidden from storefront)</option>
+                    </select>
+                  </div>
+
+                  <div className="min-w-0">
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-cocoa-950">
+                      Display Order
+                    </label>
+                    <input
+                      type="number"
+                      value={modalDisplayOrder}
+                      onChange={(e) => setModalDisplayOrder(parseInt(e.target.value || "0", 10))}
+                      min={0}
+                      className="w-full rounded-lg border border-parchment-border bg-parchment px-3.5 py-2.5 font-mono text-sm text-cocoa-950 transition focus:border-cocoa-700 focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Image uploader: full width */}
+                <div className="mt-5 w-full">
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-cocoa-950">
+                    Category Image
+                    <span className="mt-0.5 block text-[10px] font-normal normal-case tracking-normal text-cocoa-500">
+                      Used in Shop by Occasion
+                    </span>
+                  </label>
+
+                  <ProductSingleImageUploader
+                    currentImageUrl={modalImageUrl}
+                    currentPublicId={modalImagePublicId}
+                    productId={editingCategory?.id || "cat_new"}
+                    getSignatureAction={getCloudinaryCmsUploadSignatureAction}
+                    onImageChange={(url, publicId) => {
+                      setModalImageUrl(url);
+                      setModalImagePublicId(publicId || "");
+                    }}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                  Status
-                </label>
-                <select
-                  value={modalStatus}
-                  onChange={(e) => setModalStatus(e.target.value as "active" | "inactive")}
-                  className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs font-sans text-cocoa-900 focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
-                >
-                  <option value="active">Active (Visible in storefront)</option>
-                  <option value="inactive">Inactive (Hidden from storefront)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                  Display Order
-                </label>
-                <input
-                  type="number"
-                  value={modalDisplayOrder}
-                  onChange={(e) => setModalDisplayOrder(parseInt(e.target.value || "0", 10))}
-                  min={0}
-                  className="w-full rounded-lg border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs font-sans text-cocoa-900 focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
-                />
-              </div>
-
-              <div>
-                <label className="block font-mono text-xs uppercase tracking-wider text-cocoa-700 mb-1">
-                  Category Image (Used in Shop by Occasion)
-                </label>
-                <ProductSingleImageUploader
-                  currentImageUrl={modalImageUrl}
-                  currentPublicId={modalImagePublicId}
-                  productId={editingCategory?.id || "cat_new"}
-                  getSignatureAction={getCloudinaryCmsUploadSignatureAction}
-                  onImageChange={(url, publicId) => {
-                    setModalImageUrl(url);
-                    setModalImagePublicId(publicId || "");
-                  }}
-                />
-              </div>
-
-              {/* Modal Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-cocoa-100">
+              {/* Footer */}
+              <div className="shrink-0 flex flex-col-reverse gap-2 border-t border-parchment-border bg-parchment/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:gap-3 sm:px-6">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
-                  className="rounded-lg border border-cocoa-200 px-4 py-2 font-mono text-xs text-cocoa-700 hover:bg-parchment-hover disabled:opacity-50"
+                  className="w-full rounded-lg border border-parchment-border bg-white px-4 py-2.5 text-xs font-semibold text-cocoa-800 shadow-2xs transition hover:bg-parchment-muted disabled:opacity-50 sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || isPending}
-                  className="inline-flex items-center gap-2 rounded-lg bg-gold-600 px-4 py-2 text-xs font-semibold text-cocoa-950 shadow-sm hover:bg-gold-500 disabled:opacity-50"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-burgundy px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-burgundy-hover disabled:opacity-50 sm:w-auto"
                 >
                   {isSubmitting || isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Saving...
+                      <span>Saving...</span>
                     </>
                   ) : editingCategory ? (
                     "Save Changes"
@@ -675,18 +714,19 @@ export default function CategoryListClient({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete Confirmation Modal */}
-      {deletingCategory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-rose-200 bg-parchment-card p-6 shadow-xl">
-            <div className="flex items-center gap-3 text-rose-700">
+      {mounted && deletingCategory && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl border border-parchment-border bg-white p-6 shadow-2xl">
+            <div className="flex items-center gap-3">
               <div className="rounded-full bg-rose-100 p-2 text-rose-600">
                 <AlertTriangle className="h-5 w-5" />
               </div>
-              <h3 className="font-sans text-lg font-bold text-cocoa-950">
+              <h3 className="font-serif text-lg font-bold text-cocoa-950">
                 Delete Category
               </h3>
             </div>
@@ -701,18 +741,18 @@ export default function CategoryListClient({
 
             {/* Error Banner inside Delete Modal */}
             {deleteError && (
-              <div className="mt-4 flex items-start gap-2 rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-800">
+              <div className="mt-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
                 <XCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
                 <div>{deleteError}</div>
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-3 pt-6 border-t border-cocoa-100 mt-6">
+            <div className="flex items-center justify-end gap-3 pt-5 border-t border-parchment-border mt-6">
               <button
                 type="button"
                 onClick={() => setDeletingCategory(null)}
                 disabled={isPending}
-                className="rounded-lg border border-cocoa-200 px-4 py-2 font-mono text-xs text-cocoa-700 hover:bg-parchment-hover disabled:opacity-50"
+                className="px-4 py-2 rounded-lg border border-parchment-border bg-white text-xs font-semibold text-cocoa-800 hover:bg-parchment-muted transition shadow-2xs disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -720,12 +760,12 @@ export default function CategoryListClient({
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={isPending}
-                className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition disabled:opacity-50"
               >
                 {isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Deleting...
+                    <span>Deleting...</span>
                   </>
                 ) : (
                   "Delete Category"
@@ -733,7 +773,8 @@ export default function CategoryListClient({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

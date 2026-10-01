@@ -3,20 +3,18 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { 
-  CheckCircle, 
   X, 
   SearchX, 
   Check, 
   ArrowUpDown, 
   ChevronDown, 
   ShoppingBag,
-  ExternalLink
+  SlidersHorizontal
 } from "lucide-react";
 import { Product, Category } from "@/types/catalog";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
-import { formatINR } from "@/lib/utils";
 
 export interface ShopCollectionsClientProps {
   initialCategories: Category[];
@@ -58,7 +56,32 @@ export function ShopCollectionsClient({
   const [priceRange, setPriceRange] = useState<string>("all");
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>("featured");
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+
+  // Mobile Bottom Sheet Filter State
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [draftCategory, setDraftCategory] = useState(selectedCategory);
+  const [draftPriceRange, setDraftPriceRange] = useState(priceRange);
+  const [draftInStockOnly, setDraftInStockOnly] = useState(inStockOnly);
+  const [draftSortBy, setDraftSortBy] = useState(sortBy);
+
+  const openMobileFilter = () => {
+    setDraftCategory(selectedCategory);
+    setDraftPriceRange(priceRange);
+    setDraftInStockOnly(inStockOnly);
+    setDraftSortBy(sortBy);
+    setIsMobileFilterOpen(true);
+  };
+
+  const closeMobileFilter = () => {
+    setIsMobileFilterOpen(false);
+  };
+
+  const resetDraftFilters = () => {
+    setDraftCategory("all");
+    setDraftPriceRange("all");
+    setDraftInStockOnly(false);
+    setDraftSortBy("featured");
+  };
 
   const handleCategorySelect = useCallback((catId: string) => {
     setSelectedCategory(catId);
@@ -73,20 +96,25 @@ export function ShopCollectionsClient({
     }
   }, []);
 
-  // Close modal on Escape key
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape" && quickViewProduct) {
-        setQuickViewProduct(null);
-      }
-    },
-    [quickViewProduct]
-  );
+  const applyMobileFilters = () => {
+    handleCategorySelect(draftCategory);
+    setPriceRange(draftPriceRange);
+    setInStockOnly(draftInStockOnly);
+    setSortBy(draftSortBy);
+    setIsMobileFilterOpen(false);
+  };
 
+  // Lock body scroll when mobile filter is open
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+    if (isMobileFilterOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileFilterOpen]);
 
   // Check if any filter is active
   const hasActiveFilters =
@@ -101,6 +129,25 @@ export function ShopCollectionsClient({
     setInStockOnly(false);
     setSortBy("featured");
   };
+
+  // Preview count for mobile bottom sheet
+  const draftPreviewCount = useMemo(() => {
+    let result = [...initialProducts];
+    if (draftCategory !== "all") {
+      result = result.filter((p) => p.category_id === draftCategory);
+    }
+    if (draftPriceRange === "under-1000") {
+      result = result.filter((p) => p.price < 1000);
+    } else if (draftPriceRange === "1000-2500") {
+      result = result.filter((p) => p.price >= 1000 && p.price <= 2500);
+    } else if (draftPriceRange === "above-2500") {
+      result = result.filter((p) => p.price > 2500);
+    }
+    if (draftInStockOnly) {
+      result = result.filter((p) => p.availability !== "out_of_stock");
+    }
+    return result.length;
+  }, [initialProducts, draftCategory, draftPriceRange, draftInStockOnly]);
 
   // Filtered and sorted products
   const filteredProducts = useMemo(() => {
@@ -141,36 +188,12 @@ export function ShopCollectionsClient({
 
   return (
     <div className="w-full bg-[#120805] text-[#faf4f0] min-h-screen">
-      {/* 1. Editorial Header Section */}
-      <section className="w-full pt-8 pb-6 border-b border-[#2d1810] bg-[#120805]">
-        <Container>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div className="max-w-2xl">
-              <span className="font-sans text-xs uppercase tracking-widest text-amber-200 font-bold mb-2 block">
-                Chocolate Gifting
-              </span>
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#faf4f0] tracking-tight">
-                Shop &amp; Collections
-              </h1>
-              <p className="font-sans text-sm sm:text-base text-[#d0c4b8]/80 mt-2 leading-relaxed">
-                Explore chocolate gift hampers, keepsake boxes, and curated confections for celebrations and memorable moments.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 text-[#d0c4b8]/80 text-xs sm:text-sm font-sans self-start md:self-end bg-[#1b0e0a] px-3.5 py-2 rounded-lg border border-[#3d1c12]">
-              <CheckCircle className="w-4 h-4 text-amber-200 shrink-0" />
-              <span>Pan-India courier delivery available</span>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* 2. Error State (Server / Query Failure) */}
+      {/* 1. Error State (Server / Query Failure) */}
       {error && (
-        <section className="py-8 sm:py-12">
+        <section className="pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12">
           <Container>
-            <div className="max-w-md mx-auto text-center p-6 sm:p-8 bg-[#1f110c] rounded-2xl border border-[#3d1c12] shadow-xl">
-              <h2 className="font-serif text-2xl font-bold text-[#faf4f0] mb-2">
+            <div className="max-w-md mx-auto text-center p-6 sm:p-8 bg-[#1f110c] rounded-sm shadow-xl">
+              <h2 className="font-pally text-2xl font-bold text-[#faf4f0] mb-2">
                 We couldn&apos;t load the collection
               </h2>
               <p className="font-sans text-sm text-[#d0c4b8]/80 mb-6">
@@ -180,7 +203,7 @@ export function ShopCollectionsClient({
                 variant="primary"
                 size="md"
                 onClick={() => window.location.reload()}
-                className="w-full sm:w-auto bg-[#fb0b88] hover:bg-[#d90974] text-white font-bold rounded-full px-6 py-2.5"
+                className="w-full sm:w-auto bg-[#fb0b88] hover:bg-[#d90974] text-white font-bold rounded-sm px-6 py-2.5 border-none"
               >
                 Try Again
               </Button>
@@ -189,15 +212,15 @@ export function ShopCollectionsClient({
         </section>
       )}
 
-      {/* 3. Empty Catalog State */}
+      {/* 2. Empty Catalog State */}
       {!error && initialProducts.length === 0 && (
-        <section className="py-8 sm:py-12">
+        <section className="pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12">
           <Container>
-            <div className="max-w-md mx-auto text-center p-6 sm:p-8 bg-[#1f110c] rounded-2xl border border-[#3d1c12] shadow-xl flex flex-col items-center">
-              <div className="w-11 h-11 rounded-full bg-[#2a140d] flex items-center justify-center text-amber-200 mb-3.5 border border-[#3d1c12]">
+            <div className="max-w-md mx-auto text-center p-6 sm:p-8 bg-[#1f110c] rounded-sm shadow-xl flex flex-col items-center">
+              <div className="w-11 h-11 rounded-sm bg-[#2a140d] flex items-center justify-center text-amber-200 mb-3.5">
                 <ShoppingBag className="w-5 h-5" />
               </div>
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#faf4f0] mb-1.5">
+              <h2 className="font-pally text-xl sm:text-2xl font-bold text-[#faf4f0] mb-1.5">
                 Catalog updating
               </h2>
               <p className="font-sans text-xs sm:text-sm text-[#d0c4b8]/80 max-w-xs mb-6 leading-relaxed">
@@ -205,7 +228,7 @@ export function ShopCollectionsClient({
               </p>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center font-sans uppercase tracking-wider font-semibold text-xs px-6 py-3 min-h-[44px] bg-[#fb0b88] hover:bg-[#d90974] text-white rounded-full shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
+                className="inline-flex items-center justify-center font-sans uppercase tracking-wider font-semibold text-xs px-6 py-3 min-h-[44px] bg-[#fb0b88] hover:bg-[#d90974] text-white rounded-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
               >
                 Return to Home
               </Link>
@@ -214,24 +237,24 @@ export function ShopCollectionsClient({
         </section>
       )}
 
-      {/* 4. Populated Catalog Experience */}
+      {/* 3. Populated Catalog Experience */}
       {!error && initialProducts.length > 0 && (
         <>
           {/* Category Navigation Pills & Counter */}
-          <section className="w-full pt-6 pb-2">
+          <section className="w-full pt-20 sm:pt-24 lg:pt-28 pb-1">
             <Container>
-              <div className="flex flex-wrap items-center justify-between gap-y-4 gap-x-6 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-y-3 gap-x-4 py-1.5">
                 <nav
                   aria-label="Category filter"
-                  className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none w-full sm:w-auto"
+                  className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none w-full sm:w-auto"
                 >
                   <button
                     type="button"
                     onClick={() => handleCategorySelect("all")}
-                    className={`min-h-[44px] px-5 py-2 rounded-full font-sans text-xs uppercase tracking-wider font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+                    className={`min-h-[36px] px-3.5 py-1.5 rounded-sm font-sans text-[11px] uppercase tracking-wider font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
                       selectedCategory === "all"
-                        ? "bg-[#fb0b88] text-white shadow-md"
-                        : "bg-[#1b0e0a] hover:bg-[#2d1810] text-[#faf4f0] border border-[#3d1c12]"
+                        ? "bg-[#fb0b88] text-white shadow-sm"
+                        : "bg-[#1b0e0a] hover:bg-[#2d1810] text-[#faf4f0]"
                     }`}
                   >
                     All Confections
@@ -242,10 +265,10 @@ export function ShopCollectionsClient({
                       key={cat.id}
                       type="button"
                       onClick={() => handleCategorySelect(cat.id)}
-                      className={`min-h-[44px] px-5 py-2 rounded-full font-sans text-xs uppercase tracking-wider font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+                      className={`min-h-[36px] px-3.5 py-1.5 rounded-sm font-sans text-[11px] uppercase tracking-wider font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
                         selectedCategory === cat.id
-                          ? "bg-[#fb0b88] text-white shadow-md"
-                          : "bg-[#1b0e0a] hover:bg-[#2d1810] text-[#faf4f0] border border-[#3d1c12]"
+                          ? "bg-[#fb0b88] text-white shadow-sm"
+                          : "bg-[#1b0e0a] hover:bg-[#2d1810] text-[#faf4f0]"
                       }`}
                     >
                       {cat.name}
@@ -253,19 +276,19 @@ export function ShopCollectionsClient({
                   ))}
                 </nav>
 
-                <div className="font-sans text-xs sm:text-sm text-[#d0c4b8]/80 font-medium flex items-center gap-2 ml-auto sm:ml-0">
-                  <span className="w-2 h-2 rounded-full bg-[#fb0b88] inline-block" />
+                <div className="font-sans text-xs text-[#d0c4b8]/80 font-medium flex items-center gap-1.5 ml-auto sm:ml-0">
+                  <span className="w-1.5 h-1.5 rounded-sm bg-[#fb0b88] inline-block" />
                   <span>{filteredProducts.length} {filteredProducts.length === 1 ? "Product" : "Products"}</span>
                 </div>
               </div>
             </Container>
           </section>
 
-          {/* Horizontal Filter & Sort Bar */}
-          <section className="w-full pb-8">
+          {/* Horizontal Filter & Sort Bar (Desktop/Tablet) */}
+          <section className="w-full pb-5 hidden sm:block">
             <Container>
-              <div className="bg-[#1f110c] rounded-xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 border border-[#3d1c12] shadow-md">
-                <div className="flex flex-wrap items-center gap-3 flex-grow">
+              <div className="bg-[#1b0e0a] rounded-sm p-2.5 sm:p-3 flex flex-wrap items-center justify-between gap-3 shadow-md">
+                <div className="flex flex-wrap items-center gap-2 flex-grow">
                   {/* Price Filter Dropdown */}
                   <div className="relative inline-block">
                     <label htmlFor="filter-price" className="sr-only">
@@ -275,27 +298,27 @@ export function ShopCollectionsClient({
                       id="filter-price"
                       value={priceRange}
                       onChange={(e) => setPriceRange(e.target.value)}
-                      className="appearance-none min-h-[44px] bg-[#140b07] text-[#faf4f0] font-sans text-xs sm:text-sm pl-4 pr-10 py-2.5 rounded-lg border border-[#3d1c12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] cursor-pointer hover:border-amber-200/50 transition-colors font-medium"
+                      className="appearance-none min-h-[36px] bg-[#140b07] text-[#faf4f0] font-sans text-xs pl-3 pr-8 py-1.5 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] cursor-pointer hover:bg-[#1a0e09] transition-colors font-medium border-0"
                     >
                       <option value="all">All Prices</option>
                       <option value="under-1000">Under ₹1,000</option>
                       <option value="1000-2500">₹1,000 – ₹2,500</option>
                       <option value="above-2500">Above ₹2,500</option>
                     </select>
-                    <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-amber-200" />
+                    <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-amber-200" />
                   </div>
 
                   {/* Availability Toggle */}
                   <button
                     type="button"
                     onClick={() => setInStockOnly(!inStockOnly)}
-                    className={`min-h-[44px] flex items-center gap-2 px-4 py-2.5 rounded-lg font-sans text-xs sm:text-sm font-medium border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
+                    className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-sm font-sans text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] ${
                       inStockOnly
-                        ? "bg-[#fb0b88] text-white border-[#fb0b88]"
-                        : "bg-[#140b07] text-[#faf4f0] border-[#3d1c12] hover:border-amber-200/50"
+                        ? "bg-[#fb0b88] text-white"
+                        : "bg-[#140b07] text-[#faf4f0] hover:bg-[#1a0e09]"
                     }`}
                   >
-                    <Check className={`w-4 h-4 ${inStockOnly ? "text-white" : "text-amber-200"}`} />
+                    <Check className={`w-3.5 h-3.5 ${inStockOnly ? "text-white" : "text-amber-200"}`} />
                     <span>In Stock Only</span>
                   </button>
 
@@ -304,17 +327,17 @@ export function ShopCollectionsClient({
                     <button
                       type="button"
                       onClick={handleResetFilters}
-                      className="min-h-[44px] flex items-center gap-1.5 font-sans text-xs uppercase tracking-wider font-semibold text-amber-200 hover:text-[#fb0b88] px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] rounded"
+                      className="min-h-[36px] flex items-center gap-1 font-sans text-[11px] uppercase tracking-wider font-semibold text-amber-200 hover:text-[#fb0b88] px-2.5 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] rounded-sm"
                     >
-                      <X className="w-4 h-4" />
-                      <span>Clear Filters</span>
+                      <X className="w-3.5 h-3.5" />
+                      <span>Clear</span>
                     </button>
                   )}
                 </div>
 
                 {/* Sort Control */}
                 <div className="flex items-center gap-2 ml-auto">
-                  <label htmlFor="filter-sort" className="font-sans text-xs sm:text-sm text-[#d0c4b8]/70 font-medium hidden sm:inline">
+                  <label htmlFor="filter-sort" className="font-sans text-xs text-[#d0c4b8]/70 font-medium hidden sm:inline">
                     Sort:
                   </label>
                   <div className="relative inline-block">
@@ -322,14 +345,14 @@ export function ShopCollectionsClient({
                       id="filter-sort"
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
-                      className="appearance-none min-h-[44px] bg-[#140b07] text-[#faf4f0] font-sans text-xs sm:text-sm pl-4 pr-10 py-2.5 rounded-lg border border-[#3d1c12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] cursor-pointer hover:border-amber-200/50 transition-colors font-medium"
+                      className="appearance-none min-h-[36px] bg-[#140b07] text-[#faf4f0] font-sans text-xs pl-3 pr-8 py-1.5 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] cursor-pointer hover:bg-[#1a0e09] transition-colors font-medium border-0"
                     >
                       <option value="featured">Featured Curations</option>
                       <option value="price-asc">Price: Low to High</option>
                       <option value="price-desc">Price: High to Low</option>
                       <option value="newest">Newest Arrivals</option>
                     </select>
-                    <ArrowUpDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-amber-200" />
+                    <ArrowUpDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-amber-200" />
                   </div>
                 </div>
               </div>
@@ -340,32 +363,31 @@ export function ShopCollectionsClient({
           <section className="w-full pb-16 lg:pb-24">
             <Container>
               {filteredProducts.length === 0 ? (
-                <div className="w-full py-16 px-6 text-center bg-[#1f110c] rounded-2xl border border-[#3d1c12] shadow-xl flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-[#2d1810] flex items-center justify-center text-amber-200 mb-4">
-                    <SearchX className="w-6 h-6" />
+                <div className="w-full py-12 px-6 text-center bg-[#1f110c] rounded-sm shadow-xl flex flex-col items-center">
+                  <div className="w-10 h-10 rounded-sm bg-[#2d1810] flex items-center justify-center text-amber-200 mb-3">
+                    <SearchX className="w-5 h-5" />
                   </div>
-                  <h3 className="font-serif text-2xl font-bold text-[#faf4f0] mb-2">
+                  <h3 className="font-pally text-xl font-bold text-[#faf4f0] mb-1.5">
                     No chocolates found
                   </h3>
-                  <p className="font-sans text-sm text-[#d0c4b8]/80 max-w-md mb-6 leading-relaxed">
+                  <p className="font-sans text-xs sm:text-sm text-[#d0c4b8]/80 max-w-md mb-5 leading-relaxed">
                     We couldn&apos;t find any curations matching your current selection. Try resetting filters to explore our full collection.
                   </p>
                   <Button
                     variant="primary"
-                    size="md"
+                    size="sm"
                     onClick={handleResetFilters}
-                    className="bg-[#fb0b88] hover:bg-[#d90974] text-white font-bold rounded-full px-6 py-2.5"
+                    className="bg-[#fb0b88] hover:bg-[#d90974] text-white font-bold rounded-sm px-5 py-2 text-xs border-none"
                   >
                     Clear all filters
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5">
                   {filteredProducts.map((product) => (
                     <ProductCard
                       key={product.id}
                       product={product}
-                      onQuickView={(p) => setQuickViewProduct(p)}
                     />
                   ))}
                 </div>
@@ -373,135 +395,193 @@ export function ShopCollectionsClient({
             </Container>
           </section>
 
-          {/* 5. Occasion Discovery Bar */}
-          <section className="w-full bg-[#160c08] py-12 lg:py-16 border-t border-[#2d1810]">
-            <Container>
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                  <span className="font-sans text-xs uppercase tracking-widest text-amber-200 font-bold block mb-1">
-                    Tailored Selection
-                  </span>
-                  <h3 className="font-serif text-2xl sm:text-3xl font-bold text-[#faf4f0] tracking-tight">
-                    Gifting by Occasion
-                  </h3>
-                </div>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <Link
-                    href="/#occasions"
-                    className="min-h-[44px] px-5 py-2.5 rounded-full bg-[#1f110c] hover:bg-[#2d1810] text-[#faf4f0] font-sans text-xs sm:text-sm font-semibold transition-colors shadow-sm border border-[#3d1c12] inline-flex items-center hover:text-amber-200"
-                  >
-                    Birthdays
-                  </Link>
-                  <Link
-                    href="/#occasions"
-                    className="min-h-[44px] px-5 py-2.5 rounded-full bg-[#1f110c] hover:bg-[#2d1810] text-[#faf4f0] font-sans text-xs sm:text-sm font-semibold transition-colors shadow-sm border border-[#3d1c12] inline-flex items-center hover:text-amber-200"
-                  >
-                    Anniversaries
-                  </Link>
-                  <Link
-                    href="/#occasions"
-                    className="min-h-[44px] px-5 py-2.5 rounded-full bg-[#1f110c] hover:bg-[#2d1810] text-[#faf4f0] font-sans text-xs sm:text-sm font-semibold transition-colors shadow-sm border border-[#3d1c12] inline-flex items-center hover:text-amber-200"
-                  >
-                    Weddings &amp; Favours
-                  </Link>
-                  <Link
-                    href="/#occasions"
-                    className="min-h-[44px] px-5 py-2.5 rounded-full bg-[#1f110c] hover:bg-[#2d1810] text-[#faf4f0] font-sans text-xs sm:text-sm font-semibold transition-colors shadow-sm border border-[#3d1c12] inline-flex items-center hover:text-amber-200"
-                  >
-                    Corporate Gifting
-                  </Link>
-                  <Link
-                    href="/#occasions"
-                    className="min-h-[44px] px-5 py-2.5 rounded-full bg-[#1f110c] hover:bg-[#2d1810] text-[#faf4f0] font-sans text-xs sm:text-sm font-semibold transition-colors shadow-sm border border-[#3d1c12] inline-flex items-center hover:text-amber-200"
-                  >
-                    Tokens of Gratitude
-                  </Link>
-                </div>
-              </div>
-            </Container>
-          </section>
-        </>
-      )}
-
-      {/* 7. Quick View Modal (Accessible Dialog) */}
-      {quickViewProduct && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="quick-view-title"
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setQuickViewProduct(null);
-            }
-          }}
-        >
-          <div className="bg-[#1f110c] rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#3d1c12] flex flex-col md:flex-row gap-6 relative text-[#faf4f0]">
+          {/* Mobile Floating Bottom Center Filter Button */}
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 sm:hidden">
             <button
               type="button"
-              onClick={() => setQuickViewProduct(null)}
-              aria-label="Close product quick view"
-              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-[#140b07] hover:bg-[#2d1810] flex items-center justify-center text-[#d0c4b8] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
+              onClick={openMobileFilter}
+              className="flex items-center gap-2 bg-[#fb0b88] hover:bg-[#d90974] active:scale-95 text-white font-pally font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-sm shadow-2xl transition-all border-none"
             >
-              <X className="w-5 h-5" />
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Filters</span>
+              {hasActiveFilters && (
+                <span className="w-2 h-2 rounded-full bg-white ml-0.5" />
+              )}
             </button>
-
-            {/* Modal Image */}
-            <div className="w-full md:w-1/2 aspect-[4/5] bg-[#140b07] rounded-xl overflow-hidden border border-[#3d1c12]">
-              <img
-                src={quickViewProduct.images?.[0]?.image_url || "/images/placeholder-confection.jpg"}
-                alt={quickViewProduct.images?.[0]?.alt_text || quickViewProduct.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            {/* Modal Content */}
-            <div className="w-full md:w-1/2 flex flex-col justify-between gap-4">
-              <div>
-                {quickViewProduct.category?.name && (
-                  <span className="font-sans text-xs uppercase tracking-widest text-amber-200 font-bold">
-                    {quickViewProduct.category.name}
-                  </span>
-                )}
-                <h3
-                  id="quick-view-title"
-                  className="font-serif text-2xl font-bold text-[#faf4f0] mt-1"
-                >
-                  {quickViewProduct.name}
-                </h3>
-                <p className="font-sans text-xl font-bold text-white mt-2">
-                  {formatINR(quickViewProduct.price)}
-                </p>
-                {quickViewProduct.description && (
-                  <p className="font-sans text-sm text-[#d0c4b8]/80 mt-3 leading-relaxed line-clamp-4">
-                    {quickViewProduct.description}
-                  </p>
-                )}
-              </div>
-
-              <div className="pt-4 border-t border-[#2d1810] flex flex-col gap-2.5">
-                <Link
-                  href={`/products/${quickViewProduct.slug}`}
-                  className="w-full"
-                  onClick={() => setQuickViewProduct(null)}
-                >
-                  <Button variant="primary" size="md" className="w-full gap-2 bg-[#fb0b88] hover:bg-[#d90974] text-white font-bold rounded-full">
-                    <span>View Product Details</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  size="md"
-                  onClick={() => setQuickViewProduct(null)}
-                  className="w-full border-[#3d1c12] text-[#faf4f0] hover:bg-white/10 rounded-full"
-                >
-                  Continue Browsing
-                </Button>
-              </div>
-            </div>
           </div>
-        </div>
+
+          {/* Mobile Filter Bottom Sheet Drawer */}
+          {isMobileFilterOpen && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="mobile-filter-title"
+              className="fixed inset-0 z-50 sm:hidden"
+            >
+              {/* Backdrop */}
+              <div
+                className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+                onClick={closeMobileFilter}
+                aria-hidden="true"
+              />
+
+              {/* Drawer content sliding up from bottom */}
+              <div className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto bg-[#1b0e0a] rounded-t-lg shadow-2xl p-5 flex flex-col gap-4 text-[#faf4f0] animate-in slide-in-from-bottom duration-300">
+                {/* Top Handle */}
+                <div className="w-10 h-1 bg-[#3d1c12] rounded-full mx-auto -mt-1 mb-1 shrink-0" />
+
+                {/* Header */}
+                <div className="flex items-center justify-between pb-1 border-b border-[#3d1c12]/40">
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal className="w-4 h-4 text-[#fb0b88]" />
+                    <h3 id="mobile-filter-title" className="font-pally text-base font-bold text-[#faf4f0]">
+                      Filters &amp; Sort
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={resetDraftFilters}
+                      className="font-sans text-xs uppercase tracking-wider font-semibold text-amber-200 hover:text-[#fb0b88] transition-colors"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      type="button"
+                      onClick={closeMobileFilter}
+                      aria-label="Close filters"
+                      className="w-7 h-7 rounded-sm bg-[#140b07] flex items-center justify-center text-[#d0c4b8] hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Category Selection */}
+                <div className="flex flex-col gap-2">
+                  <span className="font-pally text-xs font-bold uppercase tracking-wider text-amber-200">
+                    Categories
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setDraftCategory("all")}
+                      className={`px-3 py-1.5 rounded-sm font-sans text-xs uppercase tracking-wider font-bold transition-all ${
+                        draftCategory === "all"
+                          ? "bg-[#fb0b88] text-white shadow-sm"
+                          : "bg-[#140b07] text-[#faf4f0]"
+                      }`}
+                    >
+                      All
+                    </button>
+                    {initialCategories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setDraftCategory(cat.id)}
+                        className={`px-3 py-1.5 rounded-sm font-sans text-xs uppercase tracking-wider font-bold transition-all ${
+                          draftCategory === cat.id
+                            ? "bg-[#fb0b88] text-white shadow-sm"
+                            : "bg-[#140b07] text-[#faf4f0]"
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Price Range */}
+                <div className="flex flex-col gap-2">
+                  <span className="font-pally text-xs font-bold uppercase tracking-wider text-amber-200">
+                    Price Range
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: "all", label: "All Prices" },
+                      { id: "under-1000", label: "Under ₹1,000" },
+                      { id: "1000-2500", label: "₹1,000 – ₹2,500" },
+                      { id: "above-2500", label: "Above ₹2,500" },
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setDraftPriceRange(item.id)}
+                        className={`px-3 py-2 rounded-sm font-sans text-xs font-medium text-center transition-all ${
+                          draftPriceRange === item.id
+                            ? "bg-[#fb0b88] text-white shadow-sm font-bold"
+                            : "bg-[#140b07] text-[#faf4f0]"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* In Stock Only */}
+                <div className="flex flex-col gap-2">
+                  <span className="font-pally text-xs font-bold uppercase tracking-wider text-amber-200">
+                    Availability
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setDraftInStockOnly(!draftInStockOnly)}
+                    className={`flex items-center justify-between p-2.5 rounded-sm font-sans text-xs font-medium transition-all ${
+                      draftInStockOnly
+                        ? "bg-[#fb0b88] text-white"
+                        : "bg-[#140b07] text-[#faf4f0]"
+                    }`}
+                  >
+                    <span>In Stock Only</span>
+                    <Check className={`w-4 h-4 ${draftInStockOnly ? "text-white" : "opacity-0"}`} />
+                  </button>
+                </div>
+
+                {/* Sort By */}
+                <div className="flex flex-col gap-2">
+                  <span className="font-pally text-xs font-bold uppercase tracking-wider text-amber-200">
+                    Sort By
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: "featured", label: "Featured" },
+                      { id: "newest", label: "Newest" },
+                      { id: "price-asc", label: "Price: Low to High" },
+                      { id: "price-desc", label: "Price: High to Low" },
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setDraftSortBy(item.id)}
+                        className={`px-3 py-2 rounded-sm font-sans text-xs font-medium text-center transition-all ${
+                          draftSortBy === item.id
+                            ? "bg-[#fb0b88] text-white shadow-sm font-bold"
+                            : "bg-[#140b07] text-[#faf4f0]"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Submit / Apply Button */}
+                <div className="pt-2 sticky bottom-0 bg-[#1b0e0a] pb-1">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={applyMobileFilters}
+                    className="w-full min-h-[44px] bg-[#fb0b88] hover:bg-[#d90974] active:bg-[#b0075e] text-white font-pally font-bold text-xs uppercase tracking-wider rounded-sm shadow-xl border-none flex items-center justify-center gap-2"
+                  >
+                    <span>Apply Filters</span>
+                    <span className="opacity-90 font-normal">({draftPreviewCount} Products)</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

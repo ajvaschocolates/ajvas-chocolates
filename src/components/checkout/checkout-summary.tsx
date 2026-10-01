@@ -44,18 +44,18 @@ export function CheckoutSummary({
   };
 
   return (
-    <div className="bg-[#1f110c] rounded-2xl border border-[#3d1c12] p-6 sm:p-7 shadow-2xl flex flex-col gap-6 lg:sticky lg:top-28">
+    <div className="bg-transparent p-0 shadow-none rounded-none sm:bg-[#1f110c] sm:rounded-sm sm:p-7 sm:shadow-2xl flex flex-col gap-6 lg:sticky lg:top-28">
       {/* Heading */}
       <div className="flex items-center justify-between border-b border-[#3d1c12] pb-4">
         <div>
-          <h2 className="font-serif text-xl font-bold text-[#faf4f0] tracking-tight">
+          <h2 className="font-pally text-xl font-bold text-[#faf4f0] tracking-tight">
             Order Summary
           </h2>
           <p className="font-sans text-xs text-[#a39085] mt-0.5">
             {isBuyNowMode ? "Direct item purchase" : `${totalItemsCount} ${totalItemsCount === 1 ? "item" : "items"}`}
           </p>
         </div>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#140b07] rounded-lg border border-[#3d1c12] text-[11px] font-sans font-medium text-[#c99d52]">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#140b07] rounded-sm text-[11px] font-sans font-medium text-[#c99d52]">
           <Scale className="w-3.5 h-3.5 text-[#c99d52] shrink-0" />
           <span>{formattedWeight}</span>
         </div>
@@ -69,7 +69,7 @@ export function CheckoutSummary({
           return (
             <div key={item.productId} className="py-3 flex items-center justify-between gap-3 text-xs font-sans">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-12 h-12 rounded-lg bg-[#140b07] border border-[#3d1c12] overflow-hidden shrink-0 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-sm bg-[#140b07] overflow-hidden shrink-0 flex items-center justify-center">
                   {item.imageUrl ? (
                     <img
                       src={item.imageUrl}
@@ -157,7 +157,7 @@ export function CheckoutSummary({
           </div>
           <div className="text-right">
             <span className="font-bold text-xl text-[#c99d52]">
-              ₹{(finalTotal ?? subtotal).toLocaleString("en-IN")}
+              ₹{(finalTotal ?? subtotal ?? 0).toLocaleString("en-IN")}
             </span>
             {finalTotal === null && (
               <span className="block text-[10px] uppercase font-sans tracking-wider text-[#a39085] font-semibold">

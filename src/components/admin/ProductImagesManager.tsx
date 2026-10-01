@@ -12,7 +12,6 @@ import {
   cleanupOrphanedAssetAction,
 } from "@/app/admin/products/actions";
 import {
-  isValidImageUrl,
   validateImageInput,
 } from "@/lib/validation/image-url";
 import {

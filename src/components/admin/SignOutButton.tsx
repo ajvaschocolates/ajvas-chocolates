@@ -26,12 +26,12 @@ export default function SignOutButton() {
     <button
       onClick={handleSignOut}
       disabled={loading}
-      className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white rounded-lg border border-neutral-700/60 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+      className="inline-flex w-full items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs transition cursor-pointer disabled:opacity-50"
     >
       {loading ? (
         <Loader2 className="w-3.5 h-3.5 animate-spin" />
       ) : (
-        <LogOut className="w-3.5 h-3.5 text-neutral-400" />
+        <LogOut className="w-3.5 h-3.5" />
       )}
       Sign Out
     </button>

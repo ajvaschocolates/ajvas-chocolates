@@ -3,13 +3,16 @@
 import { useState, useRef } from "react";
 import { getCloudinaryUploadSignatureAction } from "@/app/admin/products/actions";
 import {
+  validateMediaFile,
+  prepareMediaFileForUpload,
+  ALLOWED_MIME_TYPES,
+} from "@/lib/utils/image-compression";
+import {
   UploadCloud,
-  Loader2,
   AlertTriangle,
   CheckCircle2,
   X,
   FileImage,
-  RefreshCw,
 } from "lucide-react";
 
 interface CloudinaryImageUploaderProps {
@@ -21,14 +24,6 @@ interface CloudinaryImageUploaderProps {
   ) => Promise<void> | void;
   onError?: (error: string) => void;
 }
-
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB app-level cap
-const ALLOWED_MIME_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-];
 
 export default function CloudinaryImageUploader({
   productId,
@@ -47,16 +42,7 @@ export default function CloudinaryImageUploader({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   function validateFile(file: File): string | null {
-    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      return "Unsupported file format. Only JPG, PNG, WebP, and GIF images are allowed.";
-    }
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      return `File size exceeds the 10 MB maximum limit (${(
-        file.size /
-        (1024 * 1024)
-      ).toFixed(2)} MB). Please select a smaller file.`;
-    }
-    return null;
+    return validateMediaFile(file);
   }
 
   function handleFileSelect(file: File) {
@@ -120,6 +106,9 @@ export default function CloudinaryImageUploader({
     setUploadProgress(0);
 
     try {
+      // Automatically compress file if > 2 MB (files <= 2 MB upload untouched)
+      const fileToUpload = await prepareMediaFileForUpload(selectedFile);
+
       // Step 1: Request signed upload signature from server
       const sigRes = await getCloudinaryUploadSignatureAction(productId);
       if (!sigRes.success || !sigRes.params) {
@@ -133,7 +122,7 @@ export default function CloudinaryImageUploader({
 
       // Step 2: Prepare FormData for direct upload to Cloudinary
       const formData = new FormData();
-      formData.append("file", selectedFile);
+      formData.append("file", fileToUpload);
       formData.append("api_key", apiKey);
       formData.append("timestamp", String(timestamp));
       formData.append("signature", signature);
@@ -290,7 +279,7 @@ export default function CloudinaryImageUploader({
           Click or Drag &amp; Drop product photo here
         </p>
         <p className="font-sans text-xs text-brand-muted mt-1 font-medium">
-          Supports JPG, PNG, WebP, GIF (Max 10 MB per image)
+          Supports JPG, PNG, WebP, GIF (Max 4 MB per image. Auto-compressed above 2 MB)
         </p>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Customer } from "@/types/logistics";
-import { Users, Search, ShoppingBag } from "lucide-react";
+import { Users, Search } from "lucide-react";
 
 interface CustomerListClientProps {
   initialCustomers: Customer[];

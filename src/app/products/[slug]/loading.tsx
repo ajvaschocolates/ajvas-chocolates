@@ -10,38 +10,38 @@ export default function ProductLoading() {
         <Container>
           {/* Breadcrumb Skeleton */}
           <div className="flex items-center gap-2 mb-8 animate-pulse">
-            <div className="h-4 w-12 bg-[#1f110c] rounded" />
-            <div className="h-4 w-3 bg-[#1f110c]/60 rounded" />
-            <div className="h-4 w-16 bg-[#1f110c] rounded" />
-            <div className="h-4 w-3 bg-[#1f110c]/60 rounded" />
-            <div className="h-4 w-28 bg-[#1f110c] rounded" />
+            <div className="h-4 w-12 bg-[#1f110c] rounded-sm" />
+            <div className="h-4 w-3 bg-[#1f110c]/60 rounded-sm" />
+            <div className="h-4 w-16 bg-[#1f110c] rounded-sm" />
+            <div className="h-4 w-3 bg-[#1f110c]/60 rounded-sm" />
+            <div className="h-4 w-28 bg-[#1f110c] rounded-sm" />
           </div>
 
           {/* Two-Column Grid Skeleton */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             {/* Gallery Skeleton */}
             <div className="lg:col-span-7 flex flex-col gap-4 animate-pulse">
-              <div className="w-full aspect-square bg-[#1f110c] rounded-2xl border border-[#3d1c12]" />
+              <div className="w-full aspect-square bg-[#1f110c] rounded-sm" />
               <div className="flex gap-3">
-                <div className="w-20 h-20 bg-[#1f110c] rounded-xl border border-[#3d1c12]" />
-                <div className="w-20 h-20 bg-[#1f110c]/80 rounded-xl border border-[#3d1c12]" />
-                <div className="w-20 h-20 bg-[#1f110c]/60 rounded-xl border border-[#3d1c12]" />
+                <div className="w-20 h-20 bg-[#1f110c] rounded-sm" />
+                <div className="w-20 h-20 bg-[#1f110c]/80 rounded-sm" />
+                <div className="w-20 h-20 bg-[#1f110c]/60 rounded-sm" />
               </div>
             </div>
 
             {/* Info Skeleton */}
             <div className="lg:col-span-5 flex flex-col gap-6 animate-pulse">
-              <div className="h-4 w-24 bg-[#1f110c] rounded" />
-              <div className="h-10 w-3/4 bg-[#1f110c] rounded" />
-              <div className="h-8 w-1/3 bg-[#1f110c] rounded" />
-              <div className="h-px w-full bg-[#3d1c12]" />
+              <div className="h-4 w-24 bg-[#1f110c] rounded-sm" />
+              <div className="h-10 w-3/4 bg-[#1f110c] rounded-sm" />
+              <div className="h-8 w-1/3 bg-[#1f110c] rounded-sm" />
+              <div className="h-px w-full bg-[#2d1810]" />
               <div className="space-y-2">
-                <div className="h-4 w-full bg-[#1f110c] rounded" />
-                <div className="h-4 w-5/6 bg-[#1f110c] rounded" />
-                <div className="h-4 w-4/6 bg-[#1f110c] rounded" />
+                <div className="h-4 w-full bg-[#1f110c] rounded-sm" />
+                <div className="h-4 w-5/6 bg-[#1f110c] rounded-sm" />
+                <div className="h-4 w-4/6 bg-[#1f110c] rounded-sm" />
               </div>
-              <div className="h-14 w-full bg-[#1f110c] rounded-xl border border-[#3d1c12]" />
-              <div className="h-24 w-full bg-[#1f110c] rounded-xl border border-[#3d1c12]" />
+              <div className="h-14 w-full bg-[#1f110c] rounded-sm" />
+              <div className="h-24 w-full bg-[#1f110c] rounded-sm" />
             </div>
           </div>
         </Container>

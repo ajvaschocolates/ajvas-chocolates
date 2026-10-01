@@ -15,38 +15,6 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Curated fallback categories if CMS category array is empty
-  const fallbackCategories = [
-    {
-      id: "cat-1",
-      name: "Box Hampers",
-      image_url: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?q=80&w=600&auto=format&fit=crop",
-    },
-    {
-      id: "cat-2",
-      name: "Trolly Hampers",
-      image_url: "https://images.unsplash.com/photo-1582293041079-7814c2f12063?q=80&w=600&auto=format&fit=crop",
-    },
-    {
-      id: "cat-3",
-      name: "Festive Specials",
-      image_url: "https://images.unsplash.com/photo-1548848221-0c2e497ed557?q=80&w=600&auto=format&fit=crop",
-    },
-    {
-      id: "cat-4",
-      name: "Assorted Boxes",
-      image_url: "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?q=80&w=600&auto=format&fit=crop",
-    },
-  ];
-
-  const displayCategories =
-    categories && categories.length > 0
-      ? categories.map((cat, idx) => ({
-          ...cat,
-          image_url: cat.image_url || fallbackCategories[idx % fallbackCategories.length]?.image_url,
-        }))
-      : fallbackCategories;
-
   // Gentle auto-scroll when user is not interacting (both mobile & desktop)
   const checkOverflow = useCallback(() => {
     if (scrollRef.current) {
@@ -78,14 +46,15 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
     return () => clearInterval(interval);
   }, [isHovered, checkOverflow]);
 
+  if (!categories || categories.length === 0) return null;
+
+  const displayCategories = categories;
+
   return (
     <section
-      className="relative w-full py-14 sm:py-16 lg:py-20 overflow-hidden"
+      className="relative w-full py-8 sm:py-16 lg:py-16 overflow-hidden bg-black"
       id="occasions"
-      style={{ backgroundImage: "url('/bg-cover.png')", backgroundSize: "cover", backgroundPosition: "center" }}
     >
-      {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-black/60 pointer-events-none" />
       <Container className="relative z-10">
         {/* Section Header:
             Mobile  → left-aligned

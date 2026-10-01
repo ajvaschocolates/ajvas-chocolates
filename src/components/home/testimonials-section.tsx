@@ -113,11 +113,10 @@ export function TestimonialsSection({ section }: TestimonialsSectionProps) {
                   type="button"
                   onClick={() => setCurrentIndex(idx)}
                   aria-label={`Go to review ${idx + 1}`}
-                  className={`h-1 transition-all duration-300 rounded-full ${
-                    idx === currentIndex
-                      ? "w-6 sm:w-7 bg-[#d97746]"
-                      : "w-3.5 sm:w-4 bg-white/30 hover:bg-white/60"
-                  }`}
+                  className={`h-1 transition-all duration-300 rounded-full ${idx === currentIndex
+                    ? "w-6 sm:w-7 bg-[#d97746]"
+                    : "w-3.5 sm:w-4 bg-white/30 hover:bg-white/60"
+                    }`}
                 />
               ))}
             </div>

@@ -16,6 +16,7 @@ export interface CartItem {
 export interface CartContextValue {
   items: CartItem[];
   totalItemsCount: number;
+  subtotal: number;
   isHydrated: boolean;
   addItem: (product: {
     id: string;
@@ -50,4 +51,5 @@ export interface CartContextValue {
   buyNowItem: CartItem | null;
   lastAddedItem: CartItem | null;
   clearLastAddedItem: () => void;
+  clearCart: () => void;
 }

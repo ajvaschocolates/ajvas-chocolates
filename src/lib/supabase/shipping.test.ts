@@ -2,7 +2,6 @@ import {
   resolveShippingZone,
   getProductUnitShippingCharge,
   calculateStateShippingServer,
-  StateShippingItemInput,
 } from "./shipping";
 import { Product } from "@/types/catalog";
 import { INDIA_STATES_DISTRICTS } from "@/data/india-states-districts";
