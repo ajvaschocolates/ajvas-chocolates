@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, RefreshCw } from "lucide-react";
+import { Menu, RefreshCw, UserCircle2 } from "lucide-react";
 
 interface AdminHeaderProps {
   onOpenMobileMenu: () => void;
+  userEmail?: string | null;
 }
 
 const PAGE_META: Record<string, { title: string; subtitle: string }> = {
@@ -39,7 +40,7 @@ const PAGE_META: Record<string, { title: string; subtitle: string }> = {
   },
 };
 
-export default function AdminHeader({ onOpenMobileMenu }: AdminHeaderProps) {
+export default function AdminHeader({ onOpenMobileMenu, userEmail }: AdminHeaderProps) {
   const pathname = usePathname();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -75,10 +76,20 @@ export default function AdminHeader({ onOpenMobileMenu }: AdminHeaderProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Logged-in user */}
+        {userEmail && (
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-brand-cream border border-brand-sand/60">
+            <UserCircle2 className="w-4 h-4 text-brand-pink shrink-0" />
+            <span className="text-xs font-medium text-brand-navy truncate max-w-[160px]">
+              {userEmail}
+            </span>
+          </div>
+        )}
+
         <button
           onClick={handleRefresh}
-          className="touch-target inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-brand-navy bg-brand-pink-light/50 hover:bg-brand-pink hover:text-white border border-brand-pink/30 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-brand-pink cursor-pointer"
+          className="touch-target inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-brand-navy bg-brand-pink-light/50 hover:bg-brand-pink hover:text-white border border-brand-pink/30 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-brand-pink cursor-pointer"
         >
           <RefreshCw
             className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}

@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { getCloudinaryUploadSignatureAction } from "@/app/admin/products/actions";
+import {
+  getCloudinaryUploadSignatureAction,
+  deleteCloudinaryMediaAction,
+} from "@/app/admin/products/actions";
+import {
+  validateMediaFile,
+  prepareMediaFileForUpload,
+  ALLOWED_MIME_TYPES,
+} from "@/lib/utils/image-compression";
 import { validateImageInput } from "@/lib/validation/image-url";
 import {
   UploadCloud,
@@ -38,13 +46,7 @@ interface ProductSingleImageUploaderProps {
   }>;
 }
 
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB limit
-const ALLOWED_MIME_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-];
+
 
 export default function ProductSingleImageUploader({
   currentImageUrl,
@@ -59,7 +61,6 @@ export default function ProductSingleImageUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const xhrRef = useRef<XMLHttpRequest | null>(null);
 
-  const [inputMode, setInputMode] = useState<"upload" | "url">("upload");
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -87,16 +88,7 @@ export default function ProductSingleImageUploader({
   }
 
   function validateFile(file: File): string | null {
-    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      return "Unsupported file format. Please choose a JPG, PNG, WebP, or GIF image.";
-    }
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      return `File size exceeds 10 MB limit (${(
-        file.size /
-        (1024 * 1024)
-      ).toFixed(2)} MB). Please select a smaller file.`;
-    }
-    return null;
+    return validateMediaFile(file);
   }
 
   function handleFileSelect(file: File) {
@@ -111,6 +103,8 @@ export default function ProductSingleImageUploader({
     }
 
     setSelectedFile(file);
+    // Auto-upload immediately
+    uploadFile(file);
   }
 
   function handleDragOver(e: React.DragEvent) {
@@ -145,15 +139,16 @@ export default function ProductSingleImageUploader({
     setErrorMessage("Upload cancelled by user.");
   }
 
-  async function handleStartUpload() {
-    if (!selectedFile) return;
-
+  async function uploadFile(file: File) {
     setErrorMessage(null);
     setSuccessMessage(null);
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
+      // Automatically compress file if > 2 MB (files <= 2 MB upload untouched)
+      const fileToUpload = await prepareMediaFileForUpload(file);
+
       const sigRes = await getSignatureAction(productId);
       if (!sigRes.success || !sigRes.params) {
         throw new Error(
@@ -165,7 +160,7 @@ export default function ProductSingleImageUploader({
         sigRes.params;
 
       const formData = new FormData();
-      formData.append("file", selectedFile);
+      formData.append("file", fileToUpload);
       formData.append("api_key", apiKey);
       formData.append("timestamp", String(timestamp));
       formData.append("signature", signature);
@@ -198,7 +193,7 @@ export default function ProductSingleImageUploader({
             }
 
             onImageChange(secureUrl, uploadedPublicId);
-            setSuccessMessage("Image uploaded to Cloudinary successfully!");
+            setSuccessMessage("Image uploaded successfully!");
             setSelectedFile(null);
             setIsReplacing(false);
             setImagePreviewError(false);
@@ -207,6 +202,7 @@ export default function ProductSingleImageUploader({
             setErrorMessage(
               err instanceof Error ? err.message : "Error processing upload response."
             );
+            setSelectedFile(null);
           }
         } else {
           let cloudErr = "Upload failed.";
@@ -217,6 +213,7 @@ export default function ProductSingleImageUploader({
             // fallback
           }
           setErrorMessage(`Cloudinary Upload Error: ${cloudErr}`);
+          setSelectedFile(null);
         }
       };
 
@@ -224,11 +221,13 @@ export default function ProductSingleImageUploader({
         setIsUploading(false);
         xhrRef.current = null;
         setErrorMessage("Network error during Cloudinary upload. Please check connection.");
+        setSelectedFile(null);
       };
 
       xhr.onabort = () => {
         setIsUploading(false);
         xhrRef.current = null;
+        setSelectedFile(null);
       };
 
       const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
@@ -236,6 +235,7 @@ export default function ProductSingleImageUploader({
       xhr.send(formData);
     } catch (err) {
       setIsUploading(false);
+      setSelectedFile(null);
       setErrorMessage(
         err instanceof Error ? err.message : "Unexpected upload error occurred."
       );
@@ -267,6 +267,12 @@ export default function ProductSingleImageUploader({
   }
 
   function handleRemoveImage() {
+    if (currentPublicId || currentImageUrl) {
+      deleteCloudinaryMediaAction(currentPublicId || currentImageUrl).catch((err) => {
+        console.warn("Cloudinary asset deletion error on remove:", err);
+      });
+    }
+
     onImageChange("");
     setSelectedFile(null);
     setIsReplacing(false);
@@ -386,47 +392,10 @@ export default function ProductSingleImageUploader({
           </div>
         </div>
       ) : (
-        /* Image Selection Controls (Tabs & Upload Area) */
+        /* Image Selection Controls (Inline Row) */
         <div className="space-y-3">
-          {/* Mode Switcher Tabs */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 p-1 bg-brand-cream rounded-xl border border-brand-sand/60 w-fit">
-              <button
-                type="button"
-                onClick={() => {
-                  setInputMode("upload");
-                  setErrorMessage(null);
-                  setUrlValidationError(null);
-                }}
-                className={`px-3 py-1.5 rounded-lg font-sans text-xs font-extrabold transition flex items-center gap-1.5 ${
-                  inputMode === "upload"
-                    ? "bg-brand-pink text-white shadow-xs"
-                    : "text-brand-navy hover:bg-brand-pink-light/50"
-                }`}
-              >
-                <UploadCloud className="w-3.5 h-3.5" />
-                Upload Image File
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setInputMode("url");
-                  setErrorMessage(null);
-                  setUrlValidationError(null);
-                }}
-                className={`px-3 py-1.5 rounded-lg font-sans text-xs font-extrabold transition flex items-center gap-1.5 ${
-                  inputMode === "url"
-                    ? "bg-brand-pink text-white shadow-xs"
-                    : "text-brand-navy hover:bg-brand-pink-light/50"
-                }`}
-              >
-                <LinkIcon className="w-3.5 h-3.5" />
-                Paste Image URL
-              </button>
-            </div>
-
-            {currentImageUrl && isReplacing && (
+          {currentImageUrl && isReplacing && (
+            <div className="flex justify-end">
               <button
                 type="button"
                 onClick={() => setIsReplacing(false)}
@@ -434,156 +403,111 @@ export default function ProductSingleImageUploader({
               >
                 Cancel Replace
               </button>
-            )}
-          </div>
-
-          {/* TAB 1: File Upload */}
-          {inputMode === "upload" && (
-            <div className="space-y-3">
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`relative flex flex-col items-center justify-center min-h-[160px] sm:min-h-[190px] rounded-2xl border-2 border-dashed p-4 sm:p-5 text-center cursor-pointer transition-colors ${
-                  isDragging
-                    ? "border-brand-pink bg-brand-pink-light/40"
-                    : "border-brand-sand/80 bg-brand-cream/30 hover:border-brand-pink hover:bg-brand-pink-light/20"
-                }`}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept={ALLOWED_MIME_TYPES.join(",")}
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files.length > 0) {
-                      handleFileSelect(e.target.files[0]);
-                    }
-                  }}
-                  className="hidden"
-                />
-
-                <div className="w-10 h-10 rounded-full bg-brand-pink-light/60 border border-brand-pink/20 flex items-center justify-center text-brand-pink mb-2">
-                  <UploadCloud className="w-5 h-5 text-brand-pink" />
-                </div>
-
-                <p className="font-sans text-sm font-bold text-brand-navy">
-                  {dropzoneText}
-                </p>
-                <p className="font-sans text-[11px] text-brand-muted mt-0.5 font-medium">
-                  Supports JPG, PNG, WebP, GIF (Max 10 MB per image)
-                </p>
-
-                <div className="mt-3">
-                  <span className="px-4 py-2 rounded-full bg-brand-pink text-white hover:bg-brand-pink-hover text-xs font-extrabold shadow-sm transition inline-flex items-center gap-2">
-                    <UploadCloud className="w-3.5 h-3.5 text-white" />
-                    Select Image File
-                  </span>
-                </div>
-              </div>
-
-              {/* Selected File Card & Start Upload */}
-              {selectedFile && (
-                <div className="rounded-xl border border-brand-sand/80 bg-white p-4 space-y-3 shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-brand-navy truncate">
-                      <FileImage className="w-4 h-4 text-brand-pink shrink-0" />
-                      <span className="truncate">{selectedFile.name}</span>
-                      <span className="font-mono text-[10px] text-brand-muted font-normal">
-                        ({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
-                      </span>
-                    </div>
-
-                    {!isUploading && (
-                      <button
-                        type="button"
-                        onClick={() => setSelectedFile(null)}
-                        className="text-brand-muted hover:text-rose-600 p-1"
-                        title="Remove file"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Upload Progress Bar */}
-                  {isUploading && (
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex items-center justify-between text-xs font-mono text-brand-navy">
-                        <span className="font-bold">Uploading to Cloudinary...</span>
-                        <span className="font-bold text-brand-pink">{uploadProgress}%</span>
-                      </div>
-                      <div className="h-2.5 w-full rounded-full bg-brand-sand/40 overflow-hidden">
-                        <div
-                          className="h-full bg-brand-pink transition-all duration-150"
-                          style={{ width: `${uploadProgress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex items-center justify-end gap-3 pt-1">
-                    {isUploading ? (
-                      <button
-                        type="button"
-                        onClick={handleCancelUpload}
-                        className="px-4 py-2 rounded-full border border-rose-300 bg-rose-50 text-xs font-extrabold text-rose-800 hover:bg-rose-100 transition"
-                      >
-                        Cancel Upload
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleStartUpload}
-                        className="px-5 py-2.5 rounded-full bg-brand-pink hover:bg-brand-pink-hover text-white text-xs font-extrabold shadow-sm transition inline-flex items-center gap-2"
-                      >
-                        <UploadCloud className="w-4 h-4 text-white" />
-                        Upload File to Cloudinary
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
-          {/* TAB 2: Paste Image URL */}
-          {inputMode === "url" && (
-            <form onSubmit={handleApplyPastedUrl} className="space-y-3">
-              <div>
-                <label
-                  htmlFor="pasted_image_url"
-                  className="block text-xs font-extrabold uppercase tracking-wider text-brand-navy mb-1.5"
-                >
-                  Or paste image URL
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="pasted_image_url"
-                    type="url"
-                    value={pastedUrl}
-                    onChange={(e) => {
-                      setPastedUrl(e.target.value);
-                      setUrlValidationError(null);
-                    }}
-                    placeholder="https://images.unsplash.com/... or Cloudinary URL"
-                    className="flex-1 px-4 py-2.5 bg-brand-cream/50 border border-brand-sand/80 rounded-xl text-xs font-sans text-brand-navy placeholder-brand-muted focus:outline-none focus:border-brand-pink"
-                  />
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-full bg-brand-navy hover:bg-brand-navy-light text-white text-xs font-extrabold transition shrink-0"
-                  >
-                    Apply URL
-                  </button>
-                </div>
-                {urlValidationError && (
-                  <p className="text-xs font-medium text-rose-600 mt-1">
-                    {urlValidationError}
-                  </p>
-                )}
+          {/* Inline Row: Upload File + Paste URL side by side */}
+          <div className="flex items-stretch gap-2 p-1.5 bg-brand-cream rounded-xl border border-brand-sand/60">
+            {/* File Upload Button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              title={dropzoneText}
+              aria-label={dropzoneText}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand-pink text-white text-xs font-extrabold shadow-xs hover:bg-brand-pink-hover transition shrink-0"
+            >
+              <UploadCloud className="w-3.5 h-3.5" />
+              Upload Image File
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ALLOWED_MIME_TYPES.join(",")}
+              disabled={isUploading}
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  handleFileSelect(e.target.files[0]);
+                }
+              }}
+              className="hidden"
+            />
+
+            {/* Divider */}
+            <div className="w-px bg-brand-sand/60 self-stretch" />
+
+            {/* URL Input + Apply */}
+            <form onSubmit={handleApplyPastedUrl} className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="relative flex-1 min-w-0">
+                <LinkIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-brand-muted pointer-events-none" />
+                <input
+                  id="pasted_image_url"
+                  type="url"
+                  value={pastedUrl}
+                  onChange={(e) => {
+                    setPastedUrl(e.target.value);
+                    setUrlValidationError(null);
+                  }}
+                  placeholder="Paste image URL..."
+                  className="w-full pl-7 pr-3 py-2 bg-white border border-brand-sand/80 rounded-lg text-xs font-sans text-brand-navy placeholder-brand-muted focus:outline-none focus:border-brand-pink"
+                />
               </div>
+              <button
+                type="submit"
+                className="px-3 py-2 rounded-lg bg-brand-navy hover:bg-brand-navy-light text-white text-xs font-extrabold transition shrink-0"
+              >
+                Apply
+              </button>
             </form>
+          </div>
+
+          {urlValidationError && (
+            <p className="text-xs font-medium text-rose-600">{urlValidationError}</p>
+          )}
+
+          {/* Drag & Drop hint */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`flex items-center justify-center gap-2 py-2 rounded-xl border-2 border-dashed text-xs font-medium transition-colors ${
+              isDragging
+                ? "border-brand-pink bg-brand-pink-light/40 text-brand-pink"
+                : "border-brand-sand/60 text-brand-muted hover:border-brand-pink hover:text-brand-pink"
+            }`}
+          >
+            <FileImage className="w-3.5 h-3.5" />
+            or drag &amp; drop an image here
+          </div>
+
+          {/* Upload Progress Card (shown while uploading) */}
+          {isUploading && selectedFile && (
+            <div className="rounded-xl border border-brand-sand/80 bg-white p-3.5 space-y-2.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold text-brand-navy truncate">
+                  <UploadCloud className="w-4 h-4 text-brand-pink shrink-0 animate-pulse" />
+                  <span className="truncate">{selectedFile.name}</span>
+                  <span className="font-mono text-[10px] text-brand-muted font-normal">
+                    ({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
+                  </span>
+                </div>
+                <span className="font-bold text-brand-pink text-xs font-mono shrink-0">{uploadProgress}%</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-brand-sand/40 overflow-hidden">
+                <div
+                  className="h-full bg-brand-pink transition-all duration-150"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleCancelUpload}
+                  className="px-3 py-1.5 rounded-full border border-rose-300 bg-rose-50 text-xs font-bold text-rose-800 hover:bg-rose-100 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}

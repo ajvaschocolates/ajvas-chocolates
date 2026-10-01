@@ -9,6 +9,7 @@ import {
   generateSignedUploadParams,
   destroyCloudinaryAsset,
   verifyCloudinaryAssetProductOwnership,
+  extractCloudinaryPublicId,
   SignedUploadParams,
 } from "@/lib/cloudinary/server";
 
@@ -121,7 +122,7 @@ export async function createProductAction(
   const discountValue = parseFloat(formData.get("discount_value") as string || "0");
   const status = (formData.get("status") as string || "active") as "active" | "inactive";
   const availability = (formData.get("availability") as string || "in_stock") as "in_stock" | "low_stock" | "out_of_stock";
-  const weightGrams = parseInt(formData.get("weight_grams") as string || "500", 10);
+  const weightGrams = parseInt(formData.get("weight_grams") as string || "500", 10) || 500;
   const lengthCm = parseFloat(formData.get("length_cm") as string || "0") || null;
   const widthCm = parseFloat(formData.get("width_cm") as string || "0") || null;
   const heightCm = parseFloat(formData.get("height_cm") as string || "0") || null;
@@ -197,8 +198,35 @@ export async function createProductAction(
       };
     }
 
-    // Attach initial primary image if valid URL provided
-    if (imageUrl) {
+    // Attach initial images (supports single or multiple with designated Main Image at sort_order 0)
+    const imagesJsonStr = (formData.get("images_json") as string || "").trim();
+    let parsedImages: Array<{ image_url: string; cloudinary_public_id?: string; alt_text?: string; sort_order?: number }> = [];
+    if (imagesJsonStr) {
+      try {
+        parsedImages = JSON.parse(imagesJsonStr);
+      } catch {
+        parsedImages = [];
+      }
+    }
+
+    if (Array.isArray(parsedImages) && parsedImages.length > 0) {
+      const recordsToInsert = parsedImages.map((img, idx) => {
+        const imageValidation = validateImageInput(img.image_url, name);
+        const validUrl = imageValidation.valid && imageValidation.url ? imageValidation.url : img.image_url;
+        const publicId = img.cloudinary_public_id || (validUrl.includes("cloudinary.com")
+          ? `product_${newProduct.id}_${idx + 1}`
+          : `external_url_${crypto.randomUUID()}`);
+        return {
+          product_id: newProduct.id,
+          image_url: validUrl,
+          cloudinary_public_id: publicId,
+          alt_text: img.alt_text || imageValidation.altText || name,
+          sort_order: typeof img.sort_order === "number" ? img.sort_order : idx,
+        };
+      });
+
+      await supabase.from("product_images").insert(recordsToInsert);
+    } else if (imageUrl) {
       const imageValidation = validateImageInput(imageUrl, name);
       if (imageValidation.valid && imageValidation.url) {
         const publicId = cloudinaryPublicIdFromForm || (imageValidation.url.includes("cloudinary.com")
@@ -728,28 +756,20 @@ export async function deleteProductImageAction(
       }
     }
 
-    // Step 2: Attempt Cloudinary Asset Destruction
-    if (
-      targetImg.cloudinary_public_id &&
-      !targetImg.cloudinary_public_id.startsWith("external_url_")
-    ) {
-      // Server-side API verification before asset destruction
-      const verifyRes = await verifyCloudinaryAssetProductOwnership(
-        targetImg.cloudinary_public_id,
-        productId,
-        targetImg.image_url
-      );
+    // Step 2: Ensure Cloudinary Asset Destruction
+    const publicIdToDestroy =
+      targetImg.cloudinary_public_id ||
+      extractCloudinaryPublicId(targetImg.image_url);
 
-      if (verifyRes.valid) {
-        const destroyRes = await destroyCloudinaryAsset(targetImg.cloudinary_public_id);
-        if (!destroyRes.success) {
-          warningMessage = `Database record deleted, but Cloudinary asset cleanup failed: ${
-            destroyRes.error || "Cloudinary API timeout"
-          }. Public ID: ${targetImg.cloudinary_public_id}`;
-        }
-      } else {
-        // Cloudinary asset verification failed (e.g. legacy record without signed tags, or missing asset)
-        warningMessage = `Database record deleted, but Cloudinary asset destruction was skipped because asset metadata could not be verified: ${verifyRes.error}. Public ID: ${targetImg.cloudinary_public_id}`;
+    if (
+      publicIdToDestroy &&
+      !publicIdToDestroy.startsWith("external_url_")
+    ) {
+      const destroyRes = await destroyCloudinaryAsset(publicIdToDestroy);
+      if (!destroyRes.success && destroyRes.error && !destroyRes.error.includes("not found")) {
+        warningMessage = `Database record deleted, but Cloudinary asset cleanup reported: ${
+          destroyRes.error
+        }. Public ID: ${publicIdToDestroy}`;
       }
     }
 
@@ -828,6 +848,33 @@ export async function cleanupOrphanedAssetAction(
     };
   }
 }
+
+/**
+ * Server Action to delete a media file from Cloudinary when removed in the admin panel.
+ * Accepts a Cloudinary delivery URL or a public ID.
+ * Returns immediately with success if not a Cloudinary asset.
+ */
+export async function deleteCloudinaryMediaAction(
+  urlOrPublicId: string
+): Promise<{ success: boolean; error?: string }> {
+  const { user, isAdmin } = await getAdminSession();
+  if (!user || !isAdmin) {
+    return { success: false, error: "Unauthorized: Admin privileges required." };
+  }
+
+  if (!urlOrPublicId || typeof urlOrPublicId !== "string") {
+    return { success: true };
+  }
+
+  const publicId = extractCloudinaryPublicId(urlOrPublicId);
+  if (!publicId) {
+    return { success: true };
+  }
+
+  const res = await destroyCloudinaryAsset(publicId);
+  return { success: res.success, error: res.error };
+}
+
 
 /**
  * Reorders product images given an ordered list of image IDs.

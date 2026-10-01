@@ -5,6 +5,8 @@ import { getAdminSession } from "@/lib/supabase/auth";
 import { revalidatePath } from "next/cache";
 import {
   generateSignedUploadParams,
+  destroyCloudinaryAsset,
+  extractCloudinaryPublicId,
   SignedUploadParams,
 } from "@/lib/cloudinary/server";
 
@@ -244,6 +246,21 @@ export async function deleteHeroBannerAction(
 
   try {
     const supabase = await createClient();
+
+    // Retrieve banner image info to delete asset from Cloudinary
+    const { data: banner } = await supabase
+      .from("hero_banners")
+      .select("image_public_id, image_url")
+      .eq("id", bannerId)
+      .maybeSingle();
+
+    if (banner) {
+      const publicId =
+        banner.image_public_id || extractCloudinaryPublicId(banner.image_url || "");
+      if (publicId) {
+        await destroyCloudinaryAsset(publicId);
+      }
+    }
 
     const { error } = await supabase
       .from("hero_banners")

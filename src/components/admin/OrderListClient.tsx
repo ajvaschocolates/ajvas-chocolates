@@ -8,11 +8,6 @@ import {
   ShoppingBag,
   RotateCcw,
   Eye,
-  Truck,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  XCircle,
 } from "lucide-react";
 
 interface OrderListClientProps {
@@ -31,7 +26,6 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
   const processingCount = orders.filter((o) => o.order_status === "processing").length;
   const shippedCount = orders.filter((o) => o.order_status === "shipped").length;
   const deliveredCount = orders.filter((o) => o.order_status === "delivered").length;
-  const failedCount = orders.filter((o) => o.payment_status === "failed").length;
 
   const filteredOrders = orders.filter((o) => {
     if (searchQuery.trim()) {

@@ -5,22 +5,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Product, Category, ProductImage } from "@/types/catalog";
 import ProductImagesManager from "./ProductImagesManager";
-import ProductSingleImageUploader from "./ProductSingleImageUploader";
+import ProductCreateImageUploader, {
+  UploadedImageItem,
+} from "./ProductCreateImageUploader";
 import {
   createProductAction,
   updateProductAction,
   toggleProductStatusAction,
 } from "@/app/admin/products/actions";
 import {
-  ArrowLeft,
   Loader2,
   AlertCircle,
-  Package,
-  Image as ImageIcon,
   CheckCircle2,
   Eye,
   EyeOff,
-  Sparkles,
 } from "lucide-react";
 
 interface ProductFormClientProps {
@@ -57,20 +55,20 @@ export default function ProductFormClient({
   const [availability, setAvailability] = useState<
     "in_stock" | "low_stock" | "out_of_stock"
   >(product?.availability || "in_stock");
-  const [weightGrams, setWeightGrams] = useState<string>(
+  const [weightGrams] = useState<string>(
     product?.weight_grams !== undefined ? String(product.weight_grams) : "500"
   );
-  const [lengthCm, setLengthCm] = useState<string>(
+  const [lengthCm] = useState<string>(
     product?.length_cm !== undefined && product.length_cm !== null
       ? String(product.length_cm)
       : ""
   );
-  const [widthCm, setWidthCm] = useState<string>(
+  const [widthCm] = useState<string>(
     product?.width_cm !== undefined && product.width_cm !== null
       ? String(product.width_cm)
       : ""
   );
-  const [heightCm, setHeightCm] = useState<string>(
+  const [heightCm] = useState<string>(
     product?.height_cm !== undefined && product.height_cm !== null
       ? String(product.height_cm)
       : ""
@@ -104,28 +102,14 @@ export default function ProductFormClient({
     (product?.images && product.images.length > 0 ? product.images[0].image_url : "");
 
   const [imageUrl, setImageUrl] = useState(existingImageUrl);
-  const [cloudinaryPublicId, setCloudinaryPublicId] = useState("");
-  const [imageError, setImageError] = useState(false);
+  const [cloudinaryPublicId] = useState("");
 
-  const activePreviewUrl = primaryImageFromList || imageUrl;
+  // Dedicated state for Create mode uploaded images
+  const [uploadedCreateImages, setUploadedCreateImages] = useState<UploadedImageItem[]>([]);
 
   // Status & Error Banner
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  // Compute calculated discount price for preview
-  const numericPrice = parseFloat(price) || 0;
-  const numericDiscountVal = parseFloat(discountValue) || 0;
-
-  let calculatedFinalPrice = numericPrice;
-  if (discountType === "percentage" && numericDiscountVal > 0) {
-    calculatedFinalPrice = Math.max(
-      0,
-      numericPrice - (numericPrice * numericDiscountVal) / 100
-    );
-  } else if (discountType === "fixed" && numericDiscountVal > 0) {
-    calculatedFinalPrice = Math.max(0, numericPrice - numericDiscountVal);
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -142,15 +126,42 @@ export default function ProductFormClient({
     formData.append("discount_value", discountValue);
     formData.append("status", status);
     formData.append("availability", availability);
-    formData.append("weight_grams", weightGrams);
+    formData.append("weight_grams", weightGrams || "500");
     formData.append("length_cm", lengthCm);
     formData.append("width_cm", widthCm);
     formData.append("height_cm", heightCm);
     formData.append("shipping_kerala", shippingKerala);
     formData.append("shipping_tn_kar", shippingTnKar);
     formData.append("shipping_other", shippingOther);
-    formData.append("image_url", imageUrl);
-    formData.append("cloudinary_public_id", cloudinaryPublicId);
+
+    if (mode === "create") {
+      const mainImg =
+        uploadedCreateImages.find((img) => img.isMain) || uploadedCreateImages[0];
+      if (mainImg) {
+        formData.append("image_url", mainImg.url);
+        if (mainImg.publicId) {
+          formData.append("cloudinary_public_id", mainImg.publicId);
+        }
+      }
+      const ordered = mainImg
+        ? [mainImg, ...uploadedCreateImages.filter((img) => img.id !== mainImg.id)]
+        : [];
+      formData.append(
+        "images_json",
+        JSON.stringify(
+          ordered.map((img, idx) => ({
+            image_url: img.url,
+            cloudinary_public_id: img.publicId,
+            alt_text: img.altText || name || "Product image",
+            sort_order: idx,
+            is_primary: idx === 0,
+          }))
+        )
+      );
+    } else {
+      formData.append("image_url", imageUrl);
+      formData.append("cloudinary_public_id", cloudinaryPublicId);
+    }
 
     startTransition(async () => {
       let res;
@@ -304,8 +315,7 @@ export default function ProductFormClient({
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. The Grand Velvet Hamper"
-                className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm text-cocoa-950 placeholder-cocoa-600/50 focus:outline-none focus:border-cocoa-700"
+                className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm text-cocoa-950 focus:outline-none focus:border-cocoa-700"
               />
             </div>
 
@@ -322,8 +332,7 @@ export default function ProductFormClient({
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
-                placeholder="e.g. grand-velvet-hamper (auto-generated if empty)"
-                className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 placeholder-cocoa-600/50 focus:outline-none focus:border-cocoa-700"
+                className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none focus:border-cocoa-700"
               />
             </div>
 
@@ -363,8 +372,7 @@ export default function ProductFormClient({
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter detailed product description and tasting notes..."
-                className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm text-cocoa-950 placeholder-cocoa-600/50 focus:outline-none focus:border-cocoa-700 leading-relaxed"
+                className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm text-cocoa-950 focus:outline-none focus:border-cocoa-700 leading-relaxed"
               />
             </div>
           </section>
@@ -399,7 +407,6 @@ export default function ProductFormClient({
                     step="1"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    placeholder="3450"
                     className="w-full pl-8 pr-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm font-semibold text-cocoa-950 focus:outline-none focus:border-cocoa-700"
                   />
                 </div>
@@ -446,9 +453,6 @@ export default function ProductFormClient({
                   step="1"
                   value={discountValue}
                   onChange={(e) => setDiscountValue(e.target.value)}
-                  placeholder={
-                    discountType === "percentage" ? "10" : "150"
-                  }
                   className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm text-cocoa-950 focus:outline-none focus:border-cocoa-700"
                 />
               </div>
@@ -538,103 +542,7 @@ export default function ProductFormClient({
             </div>
           </section>
 
-          {/* Card 4: Package Metrics (Dynamic Shipping Rules) */}
-          <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-4">
-            <div className="border-b border-parchment-border pb-3">
-              <div className="flex items-center gap-2">
-                <h2 className="font-sans text-lg font-bold text-cocoa-950">
-                  Package Details
-                </h2>
-                <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-parchment-muted text-cocoa-950 uppercase tracking-wider">
-                  Logistics Engine
-                </span>
-              </div>
-              <p className="text-xs text-cocoa-600 mt-1">
-                Physical dimensions used for dynamic courier shipping rate calculations.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-              <div>
-                <label
-                  htmlFor="weightGrams"
-                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1"
-                >
-                  Weight (g) <span className="text-burgundy">*</span>
-                </label>
-                <input
-                  id="weightGrams"
-                  type="number"
-                  required
-                  min="1"
-                  step="1"
-                  value={weightGrams}
-                  onChange={(e) => setWeightGrams(e.target.value)}
-                  placeholder="500"
-                  className="w-full px-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="lengthCm"
-                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1"
-                >
-                  Length (cm)
-                </label>
-                <input
-                  id="lengthCm"
-                  type="number"
-                  min="0.1"
-                  step="0.5"
-                  value={lengthCm}
-                  onChange={(e) => setLengthCm(e.target.value)}
-                  placeholder="20"
-                  className="w-full px-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="widthCm"
-                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1"
-                >
-                  Width (cm)
-                </label>
-                <input
-                  id="widthCm"
-                  type="number"
-                  min="0.1"
-                  step="0.5"
-                  value={widthCm}
-                  onChange={(e) => setWidthCm(e.target.value)}
-                  placeholder="15"
-                  className="w-full px-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="heightCm"
-                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1"
-                >
-                  Height (cm)
-                </label>
-                <input
-                  id="heightCm"
-                  type="number"
-                  min="0.1"
-                  step="0.5"
-                  value={heightCm}
-                  onChange={(e) => setHeightCm(e.target.value)}
-                  placeholder="10"
-                  className="w-full px-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Card 5: State Shipping Rates */}
+          {/* Card 4: State Shipping Rates */}
           <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-4">
             <div className="border-b border-parchment-border pb-3">
               <div className="flex items-center gap-2">
@@ -668,7 +576,6 @@ export default function ProductFormClient({
                     step="1"
                     value={shippingKerala}
                     onChange={(e) => setShippingKerala(e.target.value)}
-                    placeholder="50"
                     className="w-full pl-7 pr-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
                   />
                 </div>
@@ -692,7 +599,6 @@ export default function ProductFormClient({
                     step="1"
                     value={shippingTnKar}
                     onChange={(e) => setShippingTnKar(e.target.value)}
-                    placeholder="80"
                     className="w-full pl-7 pr-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
                   />
                 </div>
@@ -716,7 +622,6 @@ export default function ProductFormClient({
                     step="1"
                     value={shippingOther}
                     onChange={(e) => setShippingOther(e.target.value)}
-                    placeholder="120"
                     className="w-full pl-7 pr-3 py-2 bg-parchment border border-parchment-border rounded-lg text-sm font-mono text-cocoa-950 focus:outline-none"
                   />
                 </div>
@@ -752,7 +657,7 @@ export default function ProductFormClient({
           )}
         </div>
 
-        {/* RIGHT COLUMN: Product Image Gallery & Storefront Card Preview (5 Cols) */}
+        {/* RIGHT COLUMN: Product Images (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
           {mode === "edit" && product ? (
             <ProductImagesManager
@@ -762,91 +667,16 @@ export default function ProductFormClient({
                 setImagesList(updatedList);
                 if (updatedList.length > 0) {
                   setImageUrl(updatedList[0].image_url);
-                  setImageError(false);
                 }
               }}
             />
           ) : (
-            <ProductSingleImageUploader
-              currentImageUrl={imageUrl}
-              currentPublicId={cloudinaryPublicId}
-              onImageChange={(url, publicId) => {
-                setImageUrl(url);
-                setCloudinaryPublicId(publicId || "");
-                setImageError(false);
-              }}
-              productId="new"
+            <ProductCreateImageUploader
+              images={uploadedCreateImages}
+              onImagesChange={setUploadedCreateImages}
+              productName={name}
             />
           )}
-
-          {/* Card 6: Storefront Card Preview */}
-          <section className="bg-parchment-surface border border-parchment-border rounded-xl p-6 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between border-b border-parchment-border pb-3">
-              <h2 className="font-sans text-lg font-bold text-cocoa-950">
-                Storefront Card Preview
-              </h2>
-              <span className="text-[11px] font-medium text-cocoa-600 uppercase tracking-wider">
-                Live Mirror
-              </span>
-            </div>
-
-            <div className="max-w-[280px] mx-auto bg-white border border-parchment-border rounded-lg overflow-hidden shadow-sm transition-all duration-300">
-              <div className="aspect-[4/3] bg-parchment-muted overflow-hidden relative flex items-center justify-center">
-                {activePreviewUrl && !imageError ? (
-                  <img
-                    src={activePreviewUrl}
-                    alt={name || "Product Preview"}
-                    onError={() => setImageError(true)}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="text-cocoa-600/60 flex flex-col items-center gap-1">
-                    <ImageIcon className="w-8 h-8" />
-                    <span className="text-[10px]">
-                      {imageError
-                        ? "Invalid or broken image URL"
-                        : "No image URL"}
-                    </span>
-                  </div>
-                )}
-                {availability === "out_of_stock" && (
-                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-100 text-rose-800 shadow-xs">
-                    Out of Stock
-                  </div>
-                )}
-                {availability === "low_stock" && (
-                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 shadow-xs">
-                    Low Stock
-                  </div>
-                )}
-              </div>
-
-              <div className="p-4 space-y-2">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-cocoa-600">
-                  {categories.find((c) => c.id === categoryId)?.name ||
-                    "Confectionery"}
-                </div>
-                <h3 className="font-serif font-bold text-sm text-cocoa-950 leading-snug truncate">
-                  {name || "Product Name"}
-                </h3>
-
-                <div className="flex items-baseline gap-2 pt-1">
-                  <span className="font-bold text-cocoa-950 text-base font-mono">
-                    ₹{calculatedFinalPrice.toLocaleString("en-IN")}
-                  </span>
-                  {discountType !== "none" && numericDiscountVal > 0 && (
-                    <span className="text-xs text-neutral-400 line-through font-mono">
-                      ₹{numericPrice.toLocaleString("en-IN")}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <p className="text-center text-[11px] text-cocoa-600">
-              Visual representation of the customer card on shop and collections screens.
-            </p>
-          </section>
         </div>
       </form>
     </div>

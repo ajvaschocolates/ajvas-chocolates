@@ -14,8 +14,8 @@ import { GiftingExperienceSection } from "@/components/home/gifting-experience-s
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { GiftingCtaSection } from "@/components/home/gifting-cta-section";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0; // Real-time CMS updates without stale ISR cache
+// Use Incremental Static Regeneration (ISR) with on-demand cache revalidation via CMS server actions
+export const revalidate = 60;
 
 export default async function HomePage() {
   const [products, heroBanners, sections, categories] = await Promise.all([

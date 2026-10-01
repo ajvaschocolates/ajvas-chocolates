@@ -94,7 +94,7 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
           )}
 
           {ctaText && (
-            <a href={ctaLink || "#"}>
+            <a href={ctaLink || "/shop"}>
               <Button
                 variant="primary"
                 size="lg"
