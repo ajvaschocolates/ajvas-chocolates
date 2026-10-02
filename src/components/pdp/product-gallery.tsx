@@ -21,7 +21,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   // Zero-image fallback state
   if (validImages.length === 0) {
     return (
-      <div className="w-full flex flex-col items-center justify-center aspect-square sm:aspect-[4/3] lg:aspect-square bg-[#1f110c] rounded-sm border border-[#3d1c12] p-8 text-center shadow-2xl">
+      <div className="w-full flex flex-col items-center justify-center aspect-[5/4] max-h-[640px] sm:max-h-[680px] bg-[#1f110c] rounded-sm border border-[#3d1c12] p-8 text-center shadow-2xl">
         <div className="w-24 h-24 mb-4 flex items-center justify-center rounded-sm bg-[#140b07] border border-[#3d1c12]">
           <BrandLogo size="md" />
         </div>
@@ -72,12 +72,12 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative w-full aspect-square bg-[#1f110c] rounded-sm border border-[#3d1c12] overflow-hidden shadow-2xl group select-none touch-pan-y"
+        className="relative mx-auto w-fit max-w-full bg-[#1f110c] rounded-sm border border-[#3d1c12] overflow-hidden shadow-2xl group select-none touch-pan-y flex items-center justify-center"
       >
         <img
           src={currentImage.image_url}
           alt={currentImage.alt_text || productName}
-          className="w-full h-full object-cover object-center transition-all duration-300 pointer-events-none"
+          className="max-h-[640px] sm:max-h-[680px] w-auto max-w-full object-contain pointer-events-none block"
         />
 
         {/* Floating Counter Badge */}
@@ -110,7 +110,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
       {/* Thumbnail Selector Strip */}
       {validImages.length > 1 && (
         <div
-          className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none"
+          className="flex items-center justify-center sm:justify-start gap-3 overflow-x-auto pb-2 scrollbar-none"
           role="region"
           aria-label="Product image thumbnails"
         >
@@ -123,7 +123,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 onClick={() => setSelectedIndex(idx)}
                 aria-label={`View product image ${idx + 1} of ${validImages.length}`}
                 aria-current={isSelected ? "true" : undefined}
-                className={`relative w-20 h-20 min-w-[44px] min-h-[44px] rounded-sm overflow-hidden border-2 transition-all shrink-0 bg-[#1f110c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c99d52] ${
+                className={`relative w-20 h-20 min-w-[44px] min-h-[44px] rounded-sm overflow-hidden border-2 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c99d52] ${
                   isSelected
                     ? "border-[#c99d52] ring-2 ring-[#c99d52]/30 shadow-md"
                     : "border-[#3d1c12] opacity-60 hover:opacity-100 hover:border-[#a39085]"
@@ -132,7 +132,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 <img
                   src={img.image_url}
                   alt={img.alt_text || `${productName} thumbnail ${idx + 1}`}
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-contain object-center p-1"
                 />
               </button>
             );

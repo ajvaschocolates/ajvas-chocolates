@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Product, Category, ProductImage } from "@/types/catalog";
@@ -12,6 +12,7 @@ import {
   createProductAction,
   updateProductAction,
   toggleProductStatusAction,
+  deleteProductAction,
 } from "@/app/admin/products/actions";
 import {
   Loader2,
@@ -19,7 +20,9 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  Trash2,
 } from "lucide-react";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 
 interface ProductFormClientProps {
   mode: "create" | "edit";
@@ -49,6 +52,124 @@ export default function ProductFormClient({
   const [discountValue, setDiscountValue] = useState<string>(
     product?.discount_value !== undefined ? String(product.discount_value) : "0"
   );
+  const [sellingPrice, setSellingPrice] = useState<string>(() => {
+    if (!product || product.price === undefined) return "";
+    const p = product.price;
+    const dt = product.discount_type;
+    const dv = product.discount_value || 0;
+    if (dt === "percentage" && dv > 0) {
+      return String(Math.max(0, Math.round(p - (p * dv) / 100)));
+    }
+    if (dt === "fixed" && dv > 0) {
+      return String(Math.max(0, Math.round(p - dv)));
+    }
+    return String(p);
+  });
+
+  // Synchronized Pricing Logic Handlers
+  function handlePriceChange(val: string) {
+    setPrice(val);
+    const numOrig = parseFloat(val);
+
+    if (isNaN(numOrig) || numOrig <= 0) {
+      return;
+    }
+
+    const numDisc = parseFloat(discountValue) || 0;
+    if (discountType === "percentage" && numDisc > 0) {
+      const computedSell = Math.max(0, Math.round(numOrig - (numOrig * numDisc) / 100));
+      setSellingPrice(String(computedSell));
+    } else if (discountType === "fixed" && numDisc > 0) {
+      const computedSell = Math.max(0, Math.round(numOrig - numDisc));
+      setSellingPrice(String(computedSell));
+    } else {
+      setSellingPrice(val);
+    }
+  }
+
+  function handleSellingPriceChange(val: string) {
+    setSellingPrice(val);
+    const numSell = parseFloat(val);
+    const numOrig = parseFloat(price);
+
+    if (isNaN(numSell) || isNaN(numOrig) || numOrig <= 0) {
+      return;
+    }
+
+    if (numSell >= numOrig) {
+      setDiscountType("none");
+      setDiscountValue("0");
+    } else {
+      const diff = numOrig - numSell;
+      if (discountType === "percentage") {
+        const pct = Math.round((diff / numOrig) * 100 * 10) / 10;
+        setDiscountValue(String(pct));
+      } else if (discountType === "fixed") {
+        setDiscountValue(String(Math.round(diff)));
+      } else {
+        setDiscountType("percentage");
+        const pct = Math.round((diff / numOrig) * 100 * 10) / 10;
+        setDiscountValue(String(pct));
+      }
+    }
+  }
+
+  function handleDiscountTypeChange(newType: "none" | "percentage" | "fixed") {
+    setDiscountType(newType);
+    const numOrig = parseFloat(price);
+    const numSell = parseFloat(sellingPrice);
+
+    if (newType === "none") {
+      setDiscountValue("0");
+      if (!isNaN(numOrig) && numOrig > 0) {
+        setSellingPrice(String(numOrig));
+      }
+      return;
+    }
+
+    if (!isNaN(numOrig) && numOrig > 0 && !isNaN(numSell) && numSell < numOrig) {
+      const diff = numOrig - numSell;
+      if (newType === "percentage") {
+        const pct = Math.round((diff / numOrig) * 100 * 10) / 10;
+        setDiscountValue(String(pct));
+      } else if (newType === "fixed") {
+        setDiscountValue(String(Math.round(diff)));
+      }
+    } else {
+      const numDisc = parseFloat(discountValue) || 0;
+      if (!isNaN(numOrig) && numOrig > 0 && numDisc > 0) {
+        if (newType === "percentage") {
+          setSellingPrice(String(Math.max(0, Math.round(numOrig - (numOrig * numDisc) / 100))));
+        } else if (newType === "fixed") {
+          setSellingPrice(String(Math.max(0, Math.round(numOrig - numDisc))));
+        }
+      }
+    }
+  }
+
+  function handleDiscountValueChange(val: string) {
+    setDiscountValue(val);
+    const numDisc = parseFloat(val);
+    const numOrig = parseFloat(price);
+
+    if (isNaN(numOrig) || numOrig <= 0) return;
+
+    if (isNaN(numDisc) || numDisc <= 0) {
+      setSellingPrice(String(numOrig));
+      return;
+    }
+
+    if (discountType === "percentage") {
+      const clamped = Math.min(100, numDisc);
+      const computedSell = Math.max(0, Math.round(numOrig - (numOrig * clamped) / 100));
+      setSellingPrice(String(computedSell));
+    } else if (discountType === "fixed") {
+      const clamped = Math.min(numOrig, numDisc);
+      const computedSell = Math.max(0, Math.round(numOrig - clamped));
+      setSellingPrice(String(computedSell));
+    }
+  }
+
   const [status, setStatus] = useState<"active" | "inactive">(
     product?.status || "active"
   );
@@ -111,6 +232,57 @@ export default function ProductFormClient({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Sync existing product values when editing
+  useEffect(() => {
+    if (product) {
+      setName(product.name || "");
+      setSlug(product.slug || "");
+      setCategoryId(product.category_id || "");
+      setDescription(product.description || "");
+      setPrice(product.price !== undefined ? String(product.price) : "");
+      setDiscountType(product.discount_type || "none");
+      setDiscountValue(
+        product.discount_value !== undefined ? String(product.discount_value) : "0"
+      );
+      const p = product.price;
+      const dt = product.discount_type;
+      const dv = product.discount_value || 0;
+      if (dt === "percentage" && dv > 0) {
+        setSellingPrice(String(Math.max(0, Math.round(p - (p * dv) / 100))));
+      } else if (dt === "fixed" && dv > 0) {
+        setSellingPrice(String(Math.max(0, Math.round(p - dv))));
+      } else {
+        setSellingPrice(p !== undefined ? String(p) : "");
+      }
+      setStatus(product.status || "active");
+      setAvailability(product.availability || "in_stock");
+      setShippingKerala(
+        product.shipping_kerala !== undefined && product.shipping_kerala !== null
+          ? String(product.shipping_kerala)
+          : "0"
+      );
+      setShippingTnKar(
+        product.shipping_tn_kar !== undefined && product.shipping_tn_kar !== null
+          ? String(product.shipping_tn_kar)
+          : "0"
+      );
+      setShippingOther(
+        product.shipping_other !== undefined && product.shipping_other !== null
+          ? String(product.shipping_other)
+          : "0"
+      );
+      if (product.images && Array.isArray(product.images)) {
+        const sorted = [...product.images].sort(
+          (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+        );
+        setImagesList(sorted);
+        if (sorted.length > 0) {
+          setImageUrl(sorted[0].image_url);
+        }
+      }
+    }
+  }, [product]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMessage(null);
@@ -121,9 +293,20 @@ export default function ProductFormClient({
     formData.append("slug", slug);
     formData.append("category_id", categoryId);
     formData.append("description", description);
+    const numOrig = parseFloat(price) || 0;
+    const numSell = parseFloat(sellingPrice) || 0;
+
+    let finalDiscountType = discountType;
+    let finalDiscountValue = discountValue;
+
+    if (numSell >= numOrig || numSell <= 0 || isNaN(numSell)) {
+      finalDiscountType = "none";
+      finalDiscountValue = "0";
+    }
+
     formData.append("price", price);
-    formData.append("discount_type", discountType);
-    formData.append("discount_value", discountValue);
+    formData.append("discount_type", finalDiscountType);
+    formData.append("discount_value", finalDiscountValue || "0");
     formData.append("status", status);
     formData.append("availability", availability);
     formData.append("weight_grams", weightGrams || "500");
@@ -172,16 +355,8 @@ export default function ProductFormClient({
       }
 
       if (res?.success) {
-        setSuccessMessage(
-          mode === "create"
-            ? "Product created successfully!"
-            : "Product updated successfully!"
-        );
-        if (mode === "create" && res.productId) {
-          router.push(`/admin/products/${res.productId}`);
-        } else {
-          router.refresh();
-        }
+        router.push("/admin/products");
+        router.refresh();
       } else {
         setErrorMessage(res?.error || "Failed to save product.");
       }
@@ -207,6 +382,26 @@ export default function ProductFormClient({
         router.refresh();
       } else {
         setErrorMessage(res.error || "Failed to update product status.");
+      }
+    });
+  }
+
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  function handleConfirmDeleteProduct() {
+    if (!product) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    startTransition(async () => {
+      const res = await deleteProductAction(product.id);
+      if (res.success) {
+        router.push("/admin/products");
+      } else {
+        setDeleteError(res.error || "Failed to delete product.");
+        setIsDeleting(false);
       }
     });
   }
@@ -269,6 +464,21 @@ export default function ProductFormClient({
         </div>
 
         <div className="flex items-center gap-3 self-end md:self-auto">
+          {mode === "edit" && product && (
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteError(null);
+                setIsDeleteOpen(true);
+              }}
+              className="px-3.5 py-2.5 rounded border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-sm font-semibold transition flex items-center gap-1.5"
+              title="Delete Product"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
+          )}
+
           <Link
             href="/admin/products"
             className="px-4 py-2.5 rounded border border-parchment-border bg-parchment-surface text-sm font-medium text-cocoa-950 hover:bg-parchment-muted transition"
@@ -387,13 +597,13 @@ export default function ProductFormClient({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Price */}
+              {/* Original Price */}
               <div>
                 <label
                   htmlFor="price"
                   className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1.5"
                 >
-                  Regular Price (₹) <span className="text-burgundy">*</span>
+                  Original Price (₹) <span className="text-burgundy">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-cocoa-600 font-semibold text-sm">
@@ -406,7 +616,33 @@ export default function ProductFormClient({
                     min="0"
                     step="1"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    onChange={(e) => handlePriceChange(e.target.value)}
+                    placeholder="1999"
+                    className="w-full pl-8 pr-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm font-semibold text-cocoa-950 focus:outline-none focus:border-cocoa-700"
+                  />
+                </div>
+              </div>
+
+              {/* Selling Price */}
+              <div>
+                <label
+                  htmlFor="sellingPrice"
+                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1.5"
+                >
+                  Selling Price (₹) <span className="text-burgundy">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-cocoa-600 font-semibold text-sm">
+                    ₹
+                  </span>
+                  <input
+                    id="sellingPrice"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={sellingPrice}
+                    onChange={(e) => handleSellingPriceChange(e.target.value)}
+                    placeholder="1499"
                     className="w-full pl-8 pr-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm font-semibold text-cocoa-950 focus:outline-none focus:border-cocoa-700"
                   />
                 </div>
@@ -424,7 +660,7 @@ export default function ProductFormClient({
                   id="discountType"
                   value={discountType}
                   onChange={(e) =>
-                    setDiscountType(
+                    handleDiscountTypeChange(
                       e.target.value as "none" | "percentage" | "fixed"
                     )
                   }
@@ -435,9 +671,8 @@ export default function ProductFormClient({
                   <option value="fixed">Fixed Amount (₹) Off</option>
                 </select>
               </div>
-            </div>
 
-            {discountType !== "none" && (
+              {/* Discount Value */}
               <div>
                 <label
                   htmlFor="discountValue"
@@ -450,13 +685,40 @@ export default function ProductFormClient({
                   id="discountValue"
                   type="number"
                   min="0"
-                  step="1"
-                  value={discountValue}
-                  onChange={(e) => setDiscountValue(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm text-cocoa-950 focus:outline-none focus:border-cocoa-700"
+                  step={discountType === "percentage" ? "0.1" : "1"}
+                  disabled={discountType === "none"}
+                  value={discountType === "none" ? "0" : discountValue}
+                  onChange={(e) => handleDiscountValueChange(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm text-cocoa-950 focus:outline-none focus:border-cocoa-700 disabled:opacity-50"
                 />
               </div>
-            )}
+            </div>
+
+            {/* Live Pricing Summary Strip */}
+            {discountType !== "none" &&
+              parseFloat(discountValue) > 0 &&
+              parseFloat(price) > 0 &&
+              parseFloat(sellingPrice) < parseFloat(price) && (
+                <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
+                  <span className="font-medium">
+                    Active Discount:{" "}
+                    <strong>
+                      {discountType === "percentage"
+                        ? `${discountValue}% OFF`
+                        : `₹${parseFloat(discountValue).toLocaleString("en-IN")} OFF`}
+                    </strong>
+                  </span>
+                  <span>
+                    Customer pays:{" "}
+                    <strong className="text-emerald-950 font-bold font-mono text-sm">
+                      ₹{parseFloat(sellingPrice || "0").toLocaleString("en-IN")}
+                    </strong>{" "}
+                    <span className="line-through text-emerald-700/70 ml-1">
+                      ₹{parseFloat(price || "0").toLocaleString("en-IN")}
+                    </span>
+                  </span>
+                </div>
+              )}
           </section>
 
           {/* Card 3: Availability & Storefront Status */}
@@ -679,6 +941,22 @@ export default function ProductFormClient({
           )}
         </div>
       </form>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteOpen}
+        onClose={() => {
+          if (!isDeleting) {
+            setIsDeleteOpen(false);
+            setDeleteError(null);
+          }
+        }}
+        onConfirm={handleConfirmDeleteProduct}
+        itemType="product"
+        itemName={product?.name}
+        isDeleting={isDeleting}
+        error={deleteError}
+      />
     </div>
   );
 }

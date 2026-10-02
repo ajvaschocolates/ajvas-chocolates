@@ -87,15 +87,16 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
             <div className="flex flex-col gap-4 lg:col-span-5 lg:max-w-md">
               <ProductInfo product={product} />
 
-              <div>
-                <h2 className={sectionLabel}>Package Details</h2>
-                <ProductPackageSpecs
-                  weightGrams={product.weight_grams}
-                  lengthCm={product.length_cm}
-                  widthCm={product.width_cm}
-                  heightCm={product.height_cm}
-                />
-              </div>
+              {Boolean(product.length_cm && product.width_cm && product.height_cm) && (
+                <div>
+                  <h2 className={sectionLabel}>Package Details</h2>
+                  <ProductPackageSpecs
+                    lengthCm={product.length_cm}
+                    widthCm={product.width_cm}
+                    heightCm={product.height_cm}
+                  />
+                </div>
+              )}
 
               <ProductActions product={product} />
 

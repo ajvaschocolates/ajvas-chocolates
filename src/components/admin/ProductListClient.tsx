@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { Product, Category } from "@/types/catalog";
-import { toggleProductStatusAction } from "@/app/admin/products/actions";
+import { toggleProductStatusAction, deleteProductAction } from "@/app/admin/products/actions";
 import {
   Plus,
   Search,
@@ -13,7 +13,9 @@ import {
   Eye,
   EyeOff,
   Loader2,
+  Trash2,
 } from "lucide-react";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 
 interface ProductListClientProps {
   initialProducts: Product[];
@@ -25,6 +27,10 @@ export default function ProductListClient({
   categories,
 }: ProductListClientProps) {
   const [products, setProducts] = useState<Product[]>(initialProducts);
+
+  useEffect(() => {
+    setProducts(initialProducts);
+  }, [initialProducts]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [selectedAvailability, setSelectedAvailability] = useState("ALL");
@@ -92,6 +98,32 @@ export default function ProductListClient({
         alert(res.error || "Failed to update product status.");
       }
       setTogglingId(null);
+    });
+  }
+
+  const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  function handleOpenDeleteDialog(product: Product) {
+    setDeleteError(null);
+    setDeletingProduct(product);
+  }
+
+  function handleConfirmDelete() {
+    if (!deletingProduct) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    startTransition(async () => {
+      const res = await deleteProductAction(deletingProduct.id);
+      if (res.success) {
+        setProducts((prev) => prev.filter((p) => p.id !== deletingProduct.id));
+        setDeletingProduct(null);
+      } else {
+        setDeleteError(res.error || "Failed to delete product.");
+      }
+      setIsDeleting(false);
     });
   }
 
@@ -419,6 +451,15 @@ export default function ProductListClient({
                                 </>
                               )}
                             </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDeleteDialog(p)}
+                              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 hover:text-rose-800 transition-colors"
+                              title="Delete Product"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -506,6 +547,14 @@ export default function ProductListClient({
                       >
                         {p.status === "active" ? "Deactivate" : "Activate"}
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenDeleteDialog(p)}
+                        className="px-2 py-1.5 rounded bg-parchment-muted border border-parchment-line text-xs font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-800 transition-colors"
+                        title="Delete Product"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -514,6 +563,22 @@ export default function ProductListClient({
           </div>
         </>
       )}
+
+      {/* Reusable Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deletingProduct)}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeletingProduct(null);
+            setDeleteError(null);
+          }
+        }}
+        onConfirm={handleConfirmDelete}
+        itemType="product"
+        itemName={deletingProduct?.name}
+        isDeleting={isDeleting}
+        error={deleteError}
+      />
     </div>
   );
 }

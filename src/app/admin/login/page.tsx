@@ -70,16 +70,14 @@ export default function AdminLoginPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-[#fdf8f5] text-brand-navy">
-      <div className="w-full max-w-md p-8 rounded-3xl border border-brand-sand/80 bg-white shadow-elevated space-y-6">
+      <div className="w-full max-w-md p-8 rounded-md border border-brand-sand/80 bg-white shadow-elevated space-y-6">
         {/* Header */}
         <div className="text-center space-y-3 flex flex-col items-center">
           <BrandLogo size="lg" />
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-pink bg-brand-pink-light px-3 py-1 rounded-full border border-brand-pink/20">
-            Admin Portal Access
-          </p>
+       
         </div>
 
-        <div className="h-px bg-brand-sand/60 w-full" />
+     
 
         {/* Error Alert */}
         {errorMessage && (
@@ -110,7 +108,7 @@ export default function AdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@ajvaschocolates.com"
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-brand-sand/80 rounded-full text-brand-navy placeholder-brand-muted/50 focus:outline-none focus:border-brand-pink focus:ring-1 focus:ring-brand-pink text-sm font-medium disabled:opacity-50 transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-brand-sand/80 rounded-sm text-brand-navy placeholder-brand-muted/50 focus:outline-none focus:border-brand-pink focus:ring-1 focus:ring-brand-pink text-sm font-medium disabled:opacity-50 transition"
               />
             </div>
           </div>
@@ -134,7 +132,7 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-brand-sand/80 rounded-full text-brand-navy placeholder-brand-muted/50 focus:outline-none focus:border-brand-pink focus:ring-1 focus:ring-brand-pink text-sm font-medium disabled:opacity-50 transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-brand-sand/80 rounded-sm text-brand-navy placeholder-brand-muted/50 focus:outline-none focus:border-brand-pink focus:ring-1 focus:ring-brand-pink text-sm font-medium disabled:opacity-50 transition"
               />
             </div>
           </div>
@@ -142,7 +140,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-brand-pink hover:bg-brand-pink-hover text-white font-extrabold rounded-full shadow-md transition duration-200 flex items-center justify-center gap-2 text-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            className="w-full py-3 px-4 bg-brand-pink hover:bg-brand-pink-hover text-white rounded-sm shadow-md transition duration-200 flex items-center justify-center gap-2 text-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             {loading ? (
               <>

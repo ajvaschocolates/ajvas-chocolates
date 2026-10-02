@@ -200,7 +200,7 @@ export function PincodeCourierStep({
             onChange={(e) => onPincodeChange(e.target.value.replace(/\D/g, ""))}
             placeholder="6-digit Pincode"
             aria-describedby="pincode-status"
-            className="w-full px-4 py-3 min-h-[44px] bg-brand-surface border border-brand-sand/80 rounded-xl text-sm font-sans text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy tracking-wider"
+            className="w-full px-4 py-3 min-h-[44px] bg-brand-surface border border-brand-sand/80 rounded-md text-sm font-sans text-brand-espresso placeholder:text-brand-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-burgundy tracking-wider"
           />
           {pincodeState === "validating" && (
             <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-gold">

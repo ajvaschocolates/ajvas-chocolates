@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter, Dancing_Script } from "next/font/google";
 import { CartProvider } from "@/context/cart-context";
 import { BackToTop } from "@/components/ui/back-to-top";
@@ -22,6 +22,13 @@ const dancingScript = Dancing_Script({
   variable: "--font-dancing-script",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: "AJVAS CHOCOLATES — Curated Confections & Thoughtful Gifting",

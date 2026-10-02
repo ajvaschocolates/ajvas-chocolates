@@ -88,6 +88,27 @@ export function CheckoutView() {
     }
   }, [isBuyNowMode, contextBuyNowItem]);
 
+  // Auto-fill state from PDP selection (URL param or storage)
+  useEffect(() => {
+    try {
+      const paramState = searchParams.get("state");
+      const savedState =
+        paramState ||
+        localStorage.getItem("ajvas_selected_state") ||
+        sessionStorage.getItem("ajvas_selected_state");
+      if (savedState) {
+        setFormData((prev) => {
+          if (!prev.state) {
+            return { ...prev, state: savedState };
+          }
+          return prev;
+        });
+      }
+    } catch (e) {
+      console.error("Failed to restore destination state:", e);
+    }
+  }, [searchParams]);
+
   const effectiveBuyNowItem = buyNowItem || contextBuyNowItem;
 
   // Determine active checkout items
@@ -169,6 +190,19 @@ export function CheckoutView() {
     value: string
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === "state") {
+      try {
+        if (value) {
+          localStorage.setItem("ajvas_selected_state", value);
+          sessionStorage.setItem("ajvas_selected_state", value);
+        } else {
+          localStorage.removeItem("ajvas_selected_state");
+          sessionStorage.removeItem("ajvas_selected_state");
+        }
+      } catch {
+        // ignore
+      }
+    }
     // Clear error for edited field
     if (formErrors[field]) {
       setFormErrors((prev) => {
