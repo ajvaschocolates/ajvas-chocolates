@@ -8,6 +8,7 @@ import {
   updatePageSectionAction,
   deletePageSectionAction,
 } from "@/app/admin/pages/actions";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 
 const PAGES: { key: PageSectionPage; label: string }[] = [
   { key: "about", label: "About Us" },
@@ -115,14 +116,22 @@ export default function PageSectionsClient({ initialSections }: Props) {
     });
   }
 
-  function handleDelete(section: PageSection) {
-    if (!confirm(`Delete "${section.title}"? This cannot be undone.`)) return;
-    setDeletingId(section.id);
+  const [deletingSection, setDeletingSection] = useState<PageSection | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  function handleConfirmDeleteSection() {
+    if (!deletingSection) return;
+    setDeletingId(deletingSection.id);
+    setDeleteError(null);
     startTransition(async () => {
-      const res = await deletePageSectionAction(section.id, section.page);
+      const res = await deletePageSectionAction(deletingSection.id, deletingSection.page);
       setDeletingId(null);
-      if (!res.success) { setError(res.error || "Failed to delete."); return; }
-      setSections((prev) => prev.filter((s) => s.id !== section.id));
+      if (!res.success) {
+        setDeleteError(res.error || "Failed to delete section.");
+        return;
+      }
+      setSections((prev) => prev.filter((s) => s.id !== deletingSection.id));
+      setDeletingSection(null);
       flash("Section deleted.");
     });
   }
@@ -281,22 +290,37 @@ export default function PageSectionsClient({ initialSections }: Props) {
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(section)}
+                    onClick={() => {
+                      setDeleteError(null);
+                      setDeletingSection(section);
+                    }}
                     disabled={deletingId === section.id || isPending}
                     className="p-1.5 rounded hover:bg-red-50 text-red-500 transition-colors disabled:opacity-40"
                     title="Delete"
                   >
-                    {deletingId === section.id ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-3.5 h-3.5" />
-                    )}
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
             ))}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deletingSection)}
+        onClose={() => {
+          if (!deletingId) {
+            setDeletingSection(null);
+            setDeleteError(null);
+          }
+        }}
+        onConfirm={handleConfirmDeleteSection}
+        itemType="section"
+        itemName={deletingSection?.title}
+        isDeleting={Boolean(deletingId)}
+        error={deleteError}
+      />
     </main>
   );
 }

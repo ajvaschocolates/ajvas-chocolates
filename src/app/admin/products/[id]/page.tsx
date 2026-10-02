@@ -26,6 +26,6 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
   }
 
   return (
-    <ProductFormClient mode="edit" product={product} categories={categories} />
+    <ProductFormClient key={product.id} mode="edit" product={product} categories={categories} />
   );
 }

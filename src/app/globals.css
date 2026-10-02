@@ -13,6 +13,16 @@
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Prevent mobile browsers (especially iOS Safari) from auto-zooming when entering an input box */
+  @media screen and (max-width: 1024px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
 
   body {

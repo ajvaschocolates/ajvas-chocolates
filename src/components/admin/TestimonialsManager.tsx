@@ -20,6 +20,7 @@ import {
   deleteTestimonialAction,
   updateDecorativeImagesAction,
 } from "@/app/admin/testimonials/actions";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 import { getCloudinaryCmsUploadSignatureAction } from "@/app/admin/homepage/actions";
 import { deleteCloudinaryMediaAction } from "@/app/admin/products/actions";
 import {
@@ -48,6 +49,12 @@ export default function TestimonialsManager({
   const [rightImage, setRightImage] = useState(
     initialData.right_image_url || DEFAULT_RIGHT_IMAGE
   );
+  const [isUploadingLeft, setIsUploadingLeft] = useState(false);
+  const [isUploadingRight, setIsUploadingRight] = useState(false);
+  const [sideUploadError, setSideUploadError] = useState<{
+    left?: string | null;
+    right?: string | null;
+  }>({});
   const [imgMessage, setImgMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -174,6 +181,107 @@ export default function TestimonialsManager({
     }
   };
 
+  const handleSideImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    side: "left" | "right"
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset value so user can re-select same file if needed
+    e.target.value = "";
+
+    const validationError = validateMediaFile(file);
+    if (validationError) {
+      setSideUploadError((prev) => ({ ...prev, [side]: validationError }));
+      return;
+    }
+
+    if (side === "left") {
+      setIsUploadingLeft(true);
+    } else {
+      setIsUploadingRight(true);
+    }
+    setSideUploadError((prev) => ({ ...prev, [side]: null }));
+
+    try {
+      // Automatically compress file if > 2 MB (files <= 2 MB stay untouched)
+      const fileToUpload = await prepareMediaFileForUpload(file);
+
+      const sigRes = await getCloudinaryCmsUploadSignatureAction(
+        side === "left" ? "testimonial_left" : "testimonial_right"
+      );
+      if (!sigRes.success || !sigRes.params) {
+        throw new Error(
+          sigRes.error || "Failed to obtain upload authorization."
+        );
+      }
+
+      const {
+        signature,
+        timestamp,
+        apiKey,
+        cloudName,
+        folder,
+        publicId,
+        tags,
+      } = sigRes.params;
+
+      const formData = new FormData();
+      formData.append("file", fileToUpload);
+      formData.append("api_key", apiKey);
+      formData.append("timestamp", String(timestamp));
+      formData.append("signature", signature);
+      formData.append("folder", folder);
+      formData.append("public_id", publicId);
+      if (tags) formData.append("tags", tags);
+
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+      const res = await fetch(uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+          errorData.error?.message || "Failed to upload image to Cloudinary."
+        );
+      }
+
+      const data = await res.json();
+      if (data.secure_url) {
+        if (side === "left") {
+          if (leftImage && leftImage.includes("cloudinary.com")) {
+            deleteCloudinaryMediaAction(leftImage).catch(() => {});
+          }
+          setLeftImage(data.secure_url);
+        } else {
+          if (rightImage && rightImage.includes("cloudinary.com")) {
+            deleteCloudinaryMediaAction(rightImage).catch(() => {});
+          }
+          setRightImage(data.secure_url);
+        }
+      } else {
+        throw new Error("No image URL returned from upload server.");
+      }
+    } catch (err) {
+      setSideUploadError((prev) => ({
+        ...prev,
+        [side]:
+          err instanceof Error
+            ? err.message
+            : `Failed to upload ${side} image.`,
+      }));
+    } finally {
+      if (side === "left") {
+        setIsUploadingLeft(false);
+      } else {
+        setIsUploadingRight(false);
+      }
+    }
+  };
+
   const handleSaveTestimonial = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formAuthor.trim()) {
@@ -218,20 +326,25 @@ export default function TestimonialsManager({
     });
   };
 
-  const handleDeleteTestimonial = (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this testimonial?")) {
-      return;
-    }
-    setDeletingId(id);
+  const [deletingTestimonial, setDeletingTestimonial] = useState<TestimonialItem | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleConfirmDeleteTestimonial = () => {
+    if (!deletingTestimonial) return;
+    setDeletingId(deletingTestimonial.id);
+    setDeleteError(null);
     startTransition(async () => {
-      const res = await deleteTestimonialAction(id);
+      const res = await deleteTestimonialAction(deletingTestimonial.id);
       if (res.success) {
         setData((prev) => ({
           ...prev,
-          testimonials: (prev.testimonials || []).filter((t) => t.id !== id),
+          testimonials: (prev.testimonials || []).filter(
+            (t) => t.id !== deletingTestimonial.id
+          ),
         }));
+        setDeletingTestimonial(null);
       } else {
-        alert(res.error || "Failed to delete testimonial.");
+        setDeleteError(res.error || "Failed to delete testimonial.");
       }
       setDeletingId(null);
     });
@@ -320,55 +433,157 @@ export default function TestimonialsManager({
 
         <form onSubmit={handleSaveImages} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left Image URL */}
+            {/* Left Image URL & Upload */}
             <div className="space-y-2">
               <label className="block text-xs font-bold uppercase text-cocoa-800">
                 Left Image (Top-Down Chocolate Box)
               </label>
-              <input
-                type="url"
-                value={leftImage}
-                onChange={(e) => setLeftImage(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 text-black bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
-              />
-              <div className="w-full h-36 rounded-xl overflow-hidden border border-cocoa-200/60 bg-cocoa-50 mt-2 relative">
-                {leftImage ? (
-                  <img
-                    src={leftImage}
-                    alt="Left preview"
-                    className="w-full h-full object-cover"
+              <div className="flex items-center gap-2">
+                <input
+                  type="url"
+                  value={leftImage}
+                  onChange={(e) => setLeftImage(e.target.value)}
+                  placeholder="https://images.unsplash.com/..."
+                  className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 text-black bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
+                />
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-cocoa-200 bg-parchment-muted/60 hover:bg-parchment-muted text-cocoa-800 text-xs font-semibold shrink-0 transition-colors shadow-2xs">
+                  {isUploadingLeft ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-cocoa-700" />
+                  ) : (
+                    <UploadCloud className="w-3.5 h-3.5 text-cocoa-700" />
+                  )}
+                  <span>{isUploadingLeft ? "Uploading..." : "Upload Image"}</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    disabled={isUploadingLeft}
+                    onChange={(e) => handleSideImageUpload(e, "left")}
                   />
+                </label>
+              </div>
+              {sideUploadError.left && (
+                <p className="text-[11px] text-rose-600 mt-1">
+                  {sideUploadError.left}
+                </p>
+              )}
+              <div className="w-full h-44 rounded-xl overflow-hidden border border-cocoa-200/60 bg-cocoa-50 mt-2 relative group">
+                {leftImage ? (
+                  <>
+                    <img
+                      src={leftImage}
+                      alt="Left preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-xs font-medium gap-1.5 backdrop-blur-[2px]">
+                      <UploadCloud className="w-5 h-5" />
+                      <span>Click to replace image</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="hidden"
+                        disabled={isUploadingLeft}
+                        onChange={(e) => handleSideImageUpload(e, "left")}
+                      />
+                    </label>
+                  </>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-xs text-cocoa-400">
-                    No image
+                  <label className="flex flex-col items-center justify-center h-full text-xs text-cocoa-400 cursor-pointer hover:bg-cocoa-100/50 transition-colors gap-2">
+                    <UploadCloud className="w-6 h-6 text-cocoa-400" />
+                    <span>Upload image or paste URL above</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      disabled={isUploadingLeft}
+                      onChange={(e) => handleSideImageUpload(e, "left")}
+                    />
+                  </label>
+                )}
+                {isUploadingLeft && (
+                  <div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex items-center justify-center z-10">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-cocoa-900 bg-white/90 px-3 py-1.5 rounded-lg shadow-sm border border-cocoa-200">
+                      <Loader2 className="w-4 h-4 animate-spin text-cocoa-700" />
+                      <span>Uploading to Cloudinary...</span>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Right Image URL */}
+            {/* Right Image URL & Upload */}
             <div className="space-y-2">
               <label className="block text-xs font-bold uppercase text-cocoa-800">
                 Right Image (Golden Truffles in Glass)
               </label>
-              <input
-                type="url"
-                value={rightImage}
-                onChange={(e) => setRightImage(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 text-black bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
-              />
-              <div className="w-full h-36 rounded-xl overflow-hidden border border-cocoa-200/60 bg-cocoa-50 mt-2 relative">
-                {rightImage ? (
-                  <img
-                    src={rightImage}
-                    alt="Right preview"
-                    className="w-full h-full object-cover"
+              <div className="flex items-center gap-2">
+                <input
+                  type="url"
+                  value={rightImage}
+                  onChange={(e) => setRightImage(e.target.value)}
+                  placeholder="https://images.unsplash.com/..."
+                  className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-cocoa-200 text-black bg-white focus:outline-none focus:ring-2 focus:ring-cocoa-800"
+                />
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-cocoa-200 bg-parchment-muted/60 hover:bg-parchment-muted text-cocoa-800 text-xs font-semibold shrink-0 transition-colors shadow-2xs">
+                  {isUploadingRight ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-cocoa-700" />
+                  ) : (
+                    <UploadCloud className="w-3.5 h-3.5 text-cocoa-700" />
+                  )}
+                  <span>{isUploadingRight ? "Uploading..." : "Upload Image"}</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    disabled={isUploadingRight}
+                    onChange={(e) => handleSideImageUpload(e, "right")}
                   />
+                </label>
+              </div>
+              {sideUploadError.right && (
+                <p className="text-[11px] text-rose-600 mt-1">
+                  {sideUploadError.right}
+                </p>
+              )}
+              <div className="w-full h-44 rounded-xl overflow-hidden border border-cocoa-200/60 bg-cocoa-50 mt-2 relative group">
+                {rightImage ? (
+                  <>
+                    <img
+                      src={rightImage}
+                      alt="Right preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-xs font-medium gap-1.5 backdrop-blur-[2px]">
+                      <UploadCloud className="w-5 h-5" />
+                      <span>Click to replace image</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="hidden"
+                        disabled={isUploadingRight}
+                        onChange={(e) => handleSideImageUpload(e, "right")}
+                      />
+                    </label>
+                  </>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-xs text-cocoa-400">
-                    No image
+                  <label className="flex flex-col items-center justify-center h-full text-xs text-cocoa-400 cursor-pointer hover:bg-cocoa-100/50 transition-colors gap-2">
+                    <UploadCloud className="w-6 h-6 text-cocoa-400" />
+                    <span>Upload image or paste URL above</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      disabled={isUploadingRight}
+                      onChange={(e) => handleSideImageUpload(e, "right")}
+                    />
+                  </label>
+                )}
+                {isUploadingRight && (
+                  <div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex items-center justify-center z-10">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-cocoa-900 bg-white/90 px-3 py-1.5 rounded-lg shadow-sm border border-cocoa-200">
+                      <Loader2 className="w-4 h-4 animate-spin text-cocoa-700" />
+                      <span>Uploading to Cloudinary...</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -488,16 +703,15 @@ export default function TestimonialsManager({
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteTestimonial(t.id)}
+                    onClick={() => {
+                      setDeleteError(null);
+                      setDeletingTestimonial(t);
+                    }}
                     disabled={deletingId === t.id}
                     className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors"
                     title="Delete review"
                   >
-                    {deletingId === t.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -698,6 +912,22 @@ export default function TestimonialsManager({
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deletingTestimonial)}
+        onClose={() => {
+          if (!deletingId) {
+            setDeletingTestimonial(null);
+            setDeleteError(null);
+          }
+        }}
+        onConfirm={handleConfirmDeleteTestimonial}
+        itemType="testimonial"
+        itemName={deletingTestimonial?.author}
+        isDeleting={Boolean(deletingId)}
+        error={deleteError}
+      />
     </div>
   );
 }

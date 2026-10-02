@@ -1033,3 +1033,106 @@ export async function setPrimaryProductImageAction(
     };
   }
 }
+
+/**
+ * Deletes a product safely.
+ * Checks for dependent order items and cleans up database records and Cloudinary images.
+ */
+export async function deleteProductAction(
+  productId: string
+): Promise<ProductActionResult> {
+  const { user, isAdmin } = await getAdminSession();
+  if (!user || !isAdmin) {
+    return { success: false, error: "Unauthorized: Admin privileges required." };
+  }
+
+  if (!productId) {
+    return { success: false, error: "Product ID is required for deletion." };
+  }
+
+  try {
+    const supabase = await createClient();
+
+    // Check if product exists
+    const { data: product, error: fetchErr } = await supabase
+      .from("products")
+      .select("id, slug, name")
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (fetchErr || !product) {
+      return { success: false, error: "Product not found." };
+    }
+
+    // Check if product is referenced in order_items
+    const { data: orderRefs } = await supabase
+      .from("order_items")
+      .select("id")
+      .eq("product_id", productId)
+      .limit(1);
+
+    if (orderRefs && orderRefs.length > 0) {
+      return {
+        success: false,
+        error:
+          "Cannot delete this product because it has associated customer orders. Please deactivate it instead.",
+      };
+    }
+
+    // Fetch images to destroy on Cloudinary after successful DB deletion
+    const { data: productImages } = await supabase
+      .from("product_images")
+      .select("cloudinary_public_id, image_url")
+      .eq("product_id", productId);
+
+    // Step 1: Delete product images records
+    await supabase.from("product_images").delete().eq("product_id", productId);
+
+    // Step 2: Delete product
+    const { error: deleteErr } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", productId);
+
+    if (deleteErr) {
+      const isFkey =
+        deleteErr.code === "23503" ||
+        deleteErr.message?.includes("foreign key") ||
+        deleteErr.message?.includes("order_items");
+      return {
+        success: false,
+        error: isFkey
+          ? "Cannot delete this product because it is referenced in orders. Please deactivate it instead."
+          : deleteErr.message || "Failed to delete product.",
+      };
+    }
+
+    // Step 3: Cleanup Cloudinary assets safely
+    if (productImages && productImages.length > 0) {
+      for (const img of productImages) {
+        const pubId =
+          img.cloudinary_public_id || extractCloudinaryPublicId(img.image_url);
+        if (pubId && !pubId.startsWith("external_url_")) {
+          await destroyCloudinaryAsset(pubId).catch(() => {});
+        }
+      }
+    }
+
+    // Step 4: Revalidate cached pages
+    revalidatePath("/admin/products");
+    revalidatePath("/shop");
+    revalidatePath(`/products/${product.slug}`);
+    revalidatePath("/");
+
+    return { success: true, productId };
+  } catch (err) {
+    return {
+      success: false,
+      error:
+        err instanceof Error
+          ? err.message
+          : "Unexpected server error while deleting product.",
+    };
+  }
+}
+

@@ -44,7 +44,18 @@ export function ProductActions({ product }: ProductActionsProps) {
   const handleBuyNow = () => {
     if (isOutOfStock) return;
     setBuyNowItem(product, quantity);
-    router.push("/checkout?mode=buy-now");
+    let stateParam = "";
+    try {
+      const saved =
+        localStorage.getItem("ajvas_selected_state") ||
+        sessionStorage.getItem("ajvas_selected_state");
+      if (saved) {
+        stateParam = `&state=${encodeURIComponent(saved)}`;
+      }
+    } catch {
+      // ignore
+    }
+    router.push(`/checkout?mode=buy-now${stateParam}`);
   };
 
   return (
@@ -94,7 +105,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           onClick={handleAddToBag}
           className="flex-1 min-h-[40px] py-2 text-[11px] font-bold uppercase tracking-wider shadow-md bg-[#fb0b88] text-white hover:bg-[#d90974] active:bg-[#b0075e] rounded-sm flex items-center justify-center gap-2 border-none"
         >
-          <ShoppingBag className="w-3.5 h-3.5" />
+          {/* <ShoppingBag className="w-3.5 h-3.5" /> */}
           <span>{isOutOfStock ? "Sold Out" : "Add to Bag"}</span>
         </Button>
 
@@ -107,7 +118,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           onClick={handleBuyNow}
           className="flex-1 min-h-[40px] py-2 text-[11px] font-bold uppercase tracking-wider bg-[#1b0e0a] border border-[#c99d52] text-[#c99d52] hover:bg-[#c99d52] hover:text-[#120805] rounded-sm flex items-center justify-center gap-2 transition-all"
         >
-          <Zap className="w-3.5 h-3.5 text-[#c99d52] group-hover:text-[#120805]" />
+          {/* <Zap className="w-3.5 h-3.5 text-[#c99d52] group-hover:text-white" /> */}
           <span>{isOutOfStock ? "Unavailable" : "Buy Now"}</span>
         </Button>
       </div>

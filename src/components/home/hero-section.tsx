@@ -37,7 +37,7 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
       return (
         <>
           {firstPart}{" "}
-          <span className="font-heading font-normal text-amber-200">{lastPart}</span>
+          <span className="font-heading font-normal !font-bold text-amber-200">{lastPart}</span>
         </>
       );
     }
@@ -75,14 +75,14 @@ export function HeroSection({ banner, banners }: HeroSectionProps) {
         />
       )}
 
-      {/* Even overlay so text stays readable */}
-      <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+      {/* Black shade on content side only (bottom gradient); rest of banner remains normal/clear */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 via-40% to-transparent pointer-events-none" />
 
       {/* Content: bottom center */}
       <Container className="relative z-10 pt-4 pb-8 sm:pt-10 sm:pb-14">
         <div className="mx-auto max-w-3xl flex flex-col items-center text-center">
           {rawTitle && (
-            <h1 className="font-heading whitespace-normal sm:whitespace-nowrap text-3xl sm:text-[clamp(1.5rem,6.5vw,3.75rem)] tracking-tight text-white leading-[1.1] mb-3 sm:mb-4 [text-shadow:_0_2px_16px_rgba(0,0,0,0.8)] ">
+            <h1 className="font-heading whitespace-normal sm:whitespace-nowrap text-3xl font-bold sm:text-[clamp(1.5rem,6.5vw,3.75rem)] tracking-tight text-white leading-[1.1] mb-3 sm:mb-4 [text-shadow:_0_2px_16px_rgba(0,0,0,0.8)] ">
               {renderFormattedTitle(rawTitle)}
             </h1>
           )}

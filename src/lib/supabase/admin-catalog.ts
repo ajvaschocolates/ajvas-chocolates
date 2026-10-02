@@ -31,6 +31,9 @@ export async function getAllAdminProducts(): Promise<Product[]> {
         length_cm,
         width_cm,
         height_cm,
+        shipping_kerala,
+        shipping_tn_kar,
+        shipping_other,
         created_at,
         updated_at,
         category:categories (
@@ -99,6 +102,9 @@ export async function getAdminProductById(
         length_cm,
         width_cm,
         height_cm,
+        shipping_kerala,
+        shipping_tn_kar,
+        shipping_other,
         created_at,
         updated_at,
         category:categories (

@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { HeroBanner, HomepageSection } from "@/types/cms";
 import ProductSingleImageUploader from "@/components/admin/ProductSingleImageUploader";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 import {
   getCloudinaryCmsUploadSignatureAction,
   createHeroBannerAction,
@@ -223,15 +224,20 @@ export default function HomepageCmsClient({
     });
   }
 
+  const [deletingBanner, setDeletingBanner] = useState<HeroBanner | null>(null);
+  const [bannerDeleteError, setBannerDeleteError] = useState<string | null>(null);
+
   // Delete Hero Banner
-  async function handleDeleteBanner(bannerId: string) {
-    if (!confirm("Are you sure you want to delete this hero banner?")) return;
+  async function handleConfirmDeleteBanner() {
+    if (!deletingBanner) return;
+    setBannerDeleteError(null);
     startTransition(async () => {
-      const res = await deleteHeroBannerAction(bannerId);
+      const res = await deleteHeroBannerAction(deletingBanner.id);
       if (res.success) {
-        setBanners((prev) => prev.filter((b) => b.id !== bannerId));
+        setBanners((prev) => prev.filter((b) => b.id !== deletingBanner.id));
+        setDeletingBanner(null);
       } else {
-        alert(res.error || "Failed to delete banner.");
+        setBannerDeleteError(res.error || "Failed to delete banner.");
       }
     });
   }
@@ -501,8 +507,13 @@ export default function HomepageCmsClient({
                       </button>
 
                       <button
-                        onClick={() => handleDeleteBanner(banner.id)}
+                        type="button"
+                        onClick={() => {
+                          setBannerDeleteError(null);
+                          setDeletingBanner(banner);
+                        }}
                         className="px-2.5 py-1.5 rounded text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 text-xs font-medium inline-flex items-center transition-colors"
+                        title="Delete Banner"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -1160,6 +1171,22 @@ export default function HomepageCmsClient({
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deletingBanner)}
+        onClose={() => {
+          if (!isPending) {
+            setDeletingBanner(null);
+            setBannerDeleteError(null);
+          }
+        }}
+        onConfirm={handleConfirmDeleteBanner}
+        itemType="hero banner"
+        itemName={deletingBanner?.title || deletingBanner?.eyebrow || undefined}
+        isDeleting={isPending}
+        error={bannerDeleteError}
+      />
     </div>
   );
 }

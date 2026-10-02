@@ -16,7 +16,7 @@ export interface CuratedCollectionsSectionProps {
 }
 
 const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1549007994-cb92caebd54b?q=80&w=600&auto=format&fit=crop";
+  "/trolly.png";
 
 /* ─── White product card: image on top, centered name + price below ─── */
 function ProductCard({
@@ -95,7 +95,7 @@ function ProductCard({
             setIsLiked(!isLiked);
           }}
           aria-label="Add to wishlist"
-          className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-white/85 flex items-center justify-center hover:scale-110 transition-transform shadow-sm"
+          className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-sm"
         >
           <Heart className={`w-4 h-4 ${isLiked ? "fill-[#fb0b88] text-[#fb0b88]" : "text-[#3a2a26]"}`} />
         </button>
@@ -176,18 +176,13 @@ function PromoTile({ image }: { image: string }) {
         className="absolute inset-0 w-full h-full object-cover"
         loading="lazy"
       />
-      <div className="absolute inset-0 bg-[#5a3d38]/60" />
+      <div className="absolute inset-0 bg-[#5a3d38]/40" />
       <h3 className="relative font-heading text-xl sm:text-2xl uppercase tracking-wide text-white leading-snug">
         Popular in
         <br />
         our shop
       </h3>
-      <Link
-        href="/shop"
-        className="relative mt-8 font-sans text-[10px] font-bold uppercase tracking-widest text-white hover:text-amber-200 transition-colors"
-      >
-        View more
-      </Link>
+ 
     </div>
   );
 }

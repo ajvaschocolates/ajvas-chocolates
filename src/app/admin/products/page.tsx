@@ -13,6 +13,10 @@ export default async function AdminProductsPage() {
   ]);
 
   return (
-    <ProductListClient initialProducts={products} categories={categories} />
+    <ProductListClient
+      key={products.map((p) => p.id + (p.updated_at || "")).join(",")}
+      initialProducts={products}
+      categories={categories}
+    />
   );
 }
