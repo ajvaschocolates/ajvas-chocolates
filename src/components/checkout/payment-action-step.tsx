@@ -222,23 +222,23 @@ export function PaymentActionStep({
       <Button
         type="button"
         variant="primary"
-        size="lg"
+        size="md"
         disabled={
           !canProceed ||
           totalAmount === null ||
           paymentState === "processing"
         }
         onClick={handlePayClick}
-        className="w-full min-h-[52px] py-3.5 text-xs font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 bg-[#fb0b88] text-white hover:bg-[#d90974] rounded-full shadow-md shadow-[#fb0b88]/20 transition-all border-none"
+        className="w-full min-h-[46px] py-2.5 text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-[#fb0b88] text-white hover:bg-[#d90974] rounded-md shadow-md shadow-[#fb0b88]/20 transition-all border-none"
       >
         {paymentState === "processing" ? (
           <>
-            <Loader2 className="w-4 h-4 text-white animate-spin" />
+            <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
             <span>Processing Payment...</span>
           </>
         ) : (
           <>
-            <CreditCard className="w-4 h-4 text-white" />
+            <CreditCard className="w-3.5 h-3.5 text-white" />
             <span>
               {totalAmount !== null
                 ? `PAY ₹${totalAmount.toLocaleString("en-IN")}`

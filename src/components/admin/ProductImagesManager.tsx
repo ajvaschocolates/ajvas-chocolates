@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { ProductImage } from "@/types/catalog";
 import CloudinaryImageUploader from "./CloudinaryImageUploader";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 import {
   addProductImageAction,
   updateProductImageAction,
@@ -18,8 +19,6 @@ import {
   Plus,
   Trash2,
   Star,
-  ArrowUp,
-  ArrowDown,
   Image as ImageIcon,
   Loader2,
   Check,
@@ -616,51 +615,31 @@ export default function ProductImagesManager({
                           Primary Image
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-parchment-surface px-2.5 py-0.5 font-mono text-[10px] text-cocoa-600 border border-cocoa-200">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-parchment-surface px-2.5 py-0.5 font-mono text-[10px] font-bold text-cocoa-700 border border-cocoa-200">
                           #{index + 1}
                         </span>
                       )}
-
-                      {isCloudinaryAsset ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 font-mono text-[9px] font-medium text-blue-800 border border-blue-200">
-                          Cloudinary Media
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-parchment-surface px-2 py-0.5 font-mono text-[9px] font-medium text-cocoa-600 border border-cocoa-200">
-                          External Link
-                        </span>
-                      )}
                     </div>
 
-                    {/* Reordering Controls */}
-                    <div className="flex items-center gap-1">
+                    {!isPrimary && (
                       <button
                         type="button"
-                        onClick={() => handleMove(index, "up")}
-                        disabled={index === 0 || isPending}
-                        aria-label={`Move image #${index + 1} up`}
-                        title="Move Image Up"
-                        className="rounded p-1 text-cocoa-600 hover:bg-parchment-hover focus:ring-1 focus:ring-gold-500 focus:outline-none disabled:opacity-30"
+                        onClick={() => handleSetPrimary(img)}
+                        disabled={isPending}
+                        aria-label={`Set image #${index + 1} as primary`}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-gold-700 hover:text-gold-900 focus:outline-none disabled:opacity-50 transition-colors"
+                        title="Designate as primary image"
                       >
-                        <ArrowUp className="h-3.5 w-3.5" />
+                        <Sparkles className="h-3 w-3" />
+                        <span>Set as Primary</span>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMove(index, "down")}
-                        disabled={index === images.length - 1 || isPending}
-                        aria-label={`Move image #${index + 1} down`}
-                        title="Move Image Down"
-                        className="rounded p-1 text-cocoa-600 hover:bg-parchment-hover focus:ring-1 focus:ring-gold-500 focus:outline-none disabled:opacity-30"
-                      >
-                        <ArrowDown className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                    )}
                   </div>
 
                   {/* Thumbnail & Info Body */}
-                  <div className="flex gap-4 pt-3">
+                  <div className="flex gap-3.5 pt-3 items-center">
                     {/* Thumbnail Box */}
-                    <div className="h-24 w-28 rounded-lg border border-cocoa-200 bg-parchment-muted overflow-hidden flex items-center justify-center shrink-0 relative">
+                    <div className="h-20 w-24 rounded-lg border border-cocoa-200 bg-parchment-muted overflow-hidden flex items-center justify-center shrink-0 relative shadow-2xs">
                       {!hasFailed ? (
                         <img
                           src={isEditing ? editUrl : img.image_url}
@@ -670,14 +649,14 @@ export default function ProductImagesManager({
                         />
                       ) : (
                         <div className="flex flex-col items-center gap-1 text-amber-700 p-1 text-center">
-                          <AlertTriangle className="h-5 w-5" />
+                          <AlertTriangle className="h-4 w-4" />
                           <span className="text-[9px] leading-tight font-medium">Load Error</span>
                         </div>
                       )}
                     </div>
 
                     {/* Image Details / Edit Form */}
-                    <div className="flex-1 space-y-2 min-w-0">
+                    <div className="flex-1 space-y-1.5 min-w-0">
                       {isEditing ? (
                         <div className="space-y-2">
                           {editError && (
@@ -737,10 +716,10 @@ export default function ProductImagesManager({
                       ) : (
                         <>
                           <div>
-                            <span className="block text-[10px] font-mono uppercase text-cocoa-500">
+                            <span className="block text-[10px] font-mono uppercase tracking-wider text-cocoa-500">
                               Alt Text
                             </span>
-                            <p className="text-xs font-semibold text-cocoa-950 truncate">
+                            <p className="text-xs font-semibold text-cocoa-950 truncate" title={img.alt_text || ""}>
                               {img.alt_text || (
                                 <span className="italic text-cocoa-400">No alt text specified</span>
                               )}
@@ -748,7 +727,7 @@ export default function ProductImagesManager({
                           </div>
 
                           <div>
-                            <span className="block text-[10px] font-mono uppercase text-cocoa-500">
+                            <span className="block text-[10px] font-mono uppercase tracking-wider text-cocoa-500">
                               Asset Key / URL
                             </span>
                             <p
@@ -763,44 +742,27 @@ export default function ProductImagesManager({
                     </div>
                   </div>
 
-                  {/* Card Action Footer */}
+                  {/* Card Action Footer: Full-Width Edit and Delete Buttons */}
                   {!isEditing && (
-                    <div className="flex items-center justify-between pt-3 mt-3 border-t border-cocoa-100/80">
-                      <div>
-                        {!isPrimary && (
-                          <button
-                            type="button"
-                            onClick={() => handleSetPrimary(img)}
-                            disabled={isPending}
-                            aria-label={`Set image #${index + 1} as primary`}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-gold-700 hover:text-gold-900 focus:outline-none disabled:opacity-50"
-                          >
-                            <Sparkles className="h-3.5 w-3.5" />
-                            Set as Primary
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleStartEdit(img)}
-                          disabled={isPending}
-                          className="inline-flex items-center gap-1 text-xs text-cocoa-700 hover:text-cocoa-950 focus:outline-none disabled:opacity-50"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeletingImage(img)}
-                          disabled={isPending}
-                          className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-800 focus:outline-none disabled:opacity-50"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                          Remove
-                        </button>
-                      </div>
+                    <div className="grid grid-cols-2 gap-2.5 pt-3 mt-3 border-t border-cocoa-100">
+                      <button
+                        type="button"
+                        onClick={() => handleStartEdit(img)}
+                        disabled={isPending}
+                        className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-cocoa-200 bg-parchment-surface text-xs font-semibold text-cocoa-800 hover:bg-parchment-hover hover:text-cocoa-950 focus:outline-none disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeletingImage(img)}
+                        disabled={isPending}
+                        className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-rose-200 bg-rose-50/50 text-xs font-semibold text-rose-600 hover:bg-rose-100/70 hover:text-rose-800 focus:outline-none disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Delete</span>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -811,83 +773,37 @@ export default function ProductImagesManager({
       )}
 
       {/* Accessible Delete Confirmation Modal */}
-      {deletingImage && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete_modal_title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-        >
-          <div className="w-full max-w-md rounded-2xl border border-rose-200 bg-parchment-card p-6 shadow-xl">
-            <div className="flex items-center justify-between pb-2">
-              <div className="flex items-center gap-3 text-rose-700">
-                <div className="rounded-full bg-rose-100 p-2 text-rose-600">
-                  <AlertTriangle className="h-5 w-5" />
-                </div>
-                <h3 id="delete_modal_title" className="font-sans text-lg font-bold text-cocoa-950">
-                  Remove Product Image
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setDeletingImage(null)}
-                aria-label="Close dialog"
-                className="rounded p-1 text-cocoa-400 hover:text-cocoa-700 focus:outline-none"
-              >
-                <X className="h-4 w-4" />
-              </button>
+      <DeleteConfirmModal
+        isOpen={Boolean(deletingImage)}
+        onClose={() => {
+          if (!isPending) setDeletingImage(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Remove Product Image"
+        confirmText="Remove Image"
+        description="Are you sure you want to remove this image from the product gallery?"
+        isDeleting={isPending}
+      >
+        {deletingImage && (
+          <div className="mt-4 flex items-center gap-3 p-3 rounded-lg border border-cocoa-200 bg-parchment-surface">
+            <div className="h-14 w-16 rounded overflow-hidden bg-parchment-muted shrink-0">
+              <img
+                src={deletingImage.image_url}
+                alt={deletingImage.alt_text || "Delete preview"}
+                className="h-full w-full object-cover"
+              />
             </div>
-
-            <div className="mt-4 flex items-center gap-3 p-3 rounded-lg border border-cocoa-200 bg-parchment-surface">
-              <div className="h-14 w-16 rounded overflow-hidden bg-parchment-muted shrink-0">
-                <img
-                  src={deletingImage.image_url}
-                  alt={deletingImage.alt_text || "Delete preview"}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <div className="text-xs text-cocoa-800 min-w-0">
-                <p className="font-semibold truncate">
-                  {deletingImage.alt_text || "Product Image"}
-                </p>
-                <p className="font-mono text-[10px] text-cocoa-500 truncate">
-                  {deletingImage.cloudinary_public_id || deletingImage.image_url}
-                </p>
-              </div>
-            </div>
-
-            <p className="mt-3 text-xs text-cocoa-700 leading-relaxed">
-              Are you sure you want to remove this image from the product gallery?
-            </p>
-
-            <div className="flex items-center justify-end gap-3 pt-6 border-t border-cocoa-100 mt-6">
-              <button
-                type="button"
-                onClick={() => setDeletingImage(null)}
-                disabled={isPending}
-                className="rounded-lg border border-cocoa-200 px-4 py-2 font-mono text-xs text-cocoa-700 hover:bg-parchment-hover focus:outline-none disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                disabled={isPending}
-                className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 focus:ring-2 focus:ring-rose-500 focus:outline-none disabled:opacity-50"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Removing...
-                  </>
-                ) : (
-                  "Remove Image"
-                )}
-              </button>
+            <div className="text-xs text-cocoa-800 min-w-0">
+              <p className="font-semibold truncate">
+                {deletingImage.alt_text || "Product Image"}
+              </p>
+              <p className="font-mono text-[10px] text-cocoa-500 truncate">
+                {deletingImage.cloudinary_public_id || deletingImage.image_url}
+              </p>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </DeleteConfirmModal>
     </section>
   );
 }

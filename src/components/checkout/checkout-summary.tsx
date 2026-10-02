@@ -111,7 +111,7 @@ export function CheckoutSummary({
             <span className="text-[#d1c2b9] flex items-center gap-1.5">
               <span>Delivery Fee</span>
               {shippingZone && (
-                <span className="px-2 py-0.5 text-[10px] font-mono bg-[#3d101e] text-[#fb0b88] border border-[#fb0b88]/30 rounded font-semibold">
+                <span className="px-2 py-0.5 text-[10px] font-mono text-white font-semibold">
                   {getZoneLabel(shippingZone)}
                 </span>
               )}

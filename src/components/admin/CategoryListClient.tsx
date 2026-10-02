@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { CategoryWithCount } from "@/lib/supabase/admin-catalog";
 import ProductSingleImageUploader from "@/components/admin/ProductSingleImageUploader";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 import { getCloudinaryCmsUploadSignatureAction } from "@/app/admin/homepage/actions";
 import {
   createCategoryAction,
@@ -719,63 +720,20 @@ export default function CategoryListClient({
       )}
 
       {/* Delete Confirmation Modal */}
-      {mounted && deletingCategory && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-parchment-border bg-white p-6 shadow-2xl">
-            <div className="flex items-center gap-3">
-              <div className="rounded-full bg-rose-100 p-2 text-rose-600">
-                <AlertTriangle className="h-5 w-5" />
-              </div>
-              <h3 className="font-serif text-lg font-bold text-cocoa-950">
-                Delete Category
-              </h3>
-            </div>
-
-            <p className="mt-3 text-xs text-cocoa-700 leading-relaxed">
-              Are you sure you want to delete category{" "}
-              <span className="font-bold text-cocoa-950">
-                &ldquo;{deletingCategory.name}&rdquo;
-              </span>
-              ? This action cannot be undone.
-            </p>
-
-            {/* Error Banner inside Delete Modal */}
-            {deleteError && (
-              <div className="mt-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
-                <XCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
-                <div>{deleteError}</div>
-              </div>
-            )}
-
-            <div className="flex items-center justify-end gap-3 pt-5 border-t border-parchment-border mt-6">
-              <button
-                type="button"
-                onClick={() => setDeletingCategory(null)}
-                disabled={isPending}
-                className="px-4 py-2 rounded-lg border border-parchment-border bg-white text-xs font-semibold text-cocoa-800 hover:bg-parchment-muted transition shadow-2xs disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                disabled={isPending}
-                className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition disabled:opacity-50"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Deleting...</span>
-                  </>
-                ) : (
-                  "Delete Category"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+      <DeleteConfirmModal
+        isOpen={Boolean(deletingCategory)}
+        onClose={() => {
+          if (!isPending) {
+            setDeletingCategory(null);
+            setDeleteError(null);
+          }
+        }}
+        onConfirm={handleConfirmDelete}
+        itemType="category"
+        itemName={deletingCategory?.name}
+        isDeleting={isPending}
+        error={deleteError}
+      />
     </div>
   );
 }
