@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
+import { Truck } from "lucide-react";
 import { GuestCustomerFormData } from "@/types/checkout";
 import { INDIA_STATES_DISTRICTS } from "@/data/india-states-districts";
+import { getDeliveryEstimateForState, saveSelectedState } from "@/lib/delivery-estimate";
 
 interface CustomerAddressStepProps {
   formData: GuestCustomerFormData;
@@ -24,8 +26,13 @@ export function CustomerAddressStep({
     return entry ? entry.districts : [];
   }, [formData.state]);
 
+  const deliveryEstimate = useMemo(() => {
+    return getDeliveryEstimateForState(formData.state);
+  }, [formData.state]);
+
   const handleStateChange = (newState: string) => {
     onChange("state", newState);
+    saveSelectedState(newState);
     onChange("district", ""); // Reset district when state changes
   };
 
@@ -157,6 +164,20 @@ export function CustomerAddressStep({
             ))}
           </select>
           {errors.state && <p className="text-[#fb0b88] text-[11px]">{errors.state}</p>}
+          {deliveryEstimate.isKnownState ? (
+            <div className="mt-1.5 p-2.5 bg-[#140b07] border border-[#3d1c12] rounded-md flex items-center gap-2 text-xs font-sans text-[#faf4f0]">
+              <Truck className="w-4 h-4 text-[#c99d52] shrink-0" aria-hidden="true" />
+              <div>
+                <span className="text-[#a39085]">Estimated Delivery: </span>
+                <strong className="text-[#c99d52] font-bold">{deliveryEstimate.days}</strong>
+                <span className="text-[#a39085] ml-1 text-[11px]">({deliveryEstimate.badgeLabel})</span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-[11px] text-[#a39085] mt-1">
+              Select state to see estimated delivery time.
+            </p>
+          )}
         </div>
 
         {/* District Selection Dropdown (Dependent on State) */}

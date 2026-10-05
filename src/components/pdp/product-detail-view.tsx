@@ -8,7 +8,7 @@ import { ProductGallery } from "./product-gallery";
 import { ProductInfo } from "./product-info";
 import { ProductActions } from "./product-actions";
 import { ProductPackageSpecs } from "./product-package-specs";
-import { ProductPincodeChecker } from "./product-pincode-checker";
+import { ProductDeliveryEstimate } from "./product-delivery-estimate";
 
 interface ProductDetailViewProps {
   product: Product;
@@ -102,7 +102,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
 
               <div>
                 <h2 className={sectionLabel}>Delivery</h2>
-                <ProductPincodeChecker />
+                <ProductDeliveryEstimate />
               </div>
             </div>
           </div>
