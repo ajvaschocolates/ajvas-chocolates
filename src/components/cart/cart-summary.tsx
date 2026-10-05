@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Truck, PackageCheck } from "lucide-react";
 import { CartItem } from "@/types/cart";
+import { useDeliveryState } from "@/lib/delivery-estimate";
 
 interface CartSummaryProps {
   items: CartItem[];
 }
 
 export function CartSummary({ items }: CartSummaryProps) {
+  const { estimate } = useDeliveryState();
+
   const subtotal = items.reduce((acc, item) => {
     const price = item.discountedUnitPrice ?? item.unitPrice;
     return acc + price * item.quantity;
@@ -32,17 +35,36 @@ export function CartSummary({ items }: CartSummaryProps) {
           <span className="font-extrabold text-base text-[#faf4f0]">₹{subtotal.toLocaleString("en-IN")}</span>
         </div>
 
-        {/* Delivery */}
+        {/* Delivery Fee */}
         <div className="flex flex-col gap-1 pt-1">
           <div className="flex items-center justify-between text-[#faf4f0]">
-            <span className="text-[#d1c2b9] font-medium">Delivery</span>
+            <span className="text-[#d1c2b9] font-medium">Shipping</span>
             <span className="text-xs font-bold text-[#c99d52] uppercase tracking-wider">
               Calculated at checkout
             </span>
           </div>
           <p className="text-[11px] text-[#a39085] leading-tight font-medium">
-            Single consolidated package shipment computed from destination pincode and courier service.
+            Per-unit regional shipping calculated at checkout based on state.
           </p>
+        </div>
+
+        {/* Estimated Delivery */}
+        <div className="flex flex-col gap-1 pt-2 border-t border-[#3d1c12]/60">
+          <div className="flex items-center justify-between text-[#faf4f0]">
+            <span className="text-[#d1c2b9] font-medium">Estimated Delivery</span>
+            {estimate.isKnownState && (
+              <span className="font-bold text-[#c99d52]">{estimate.days}</span>
+            )}
+          </div>
+          {estimate.isKnownState ? (
+            <p className="text-[11px] text-[#a39085] leading-tight font-medium text-right">
+              {estimate.badgeLabel}
+            </p>
+          ) : (
+            <p className="text-[11px] text-[#a39085] leading-tight font-medium">
+              Estimated delivery time will be shown after selecting your delivery state.
+            </p>
+          )}
         </div>
       </div>
 

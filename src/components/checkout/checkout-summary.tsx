@@ -2,6 +2,7 @@ import { Package, ShieldCheck, Truck, Scale } from "lucide-react";
 import { CartItem } from "@/types/cart";
 import { ShippingCalculationState, ShippingZone } from "@/types/checkout";
 import { BrandLogo } from "@/components/layout/brand-logo";
+import { useDeliveryState, getDeliveryEstimateForState } from "@/lib/delivery-estimate";
 
 interface CheckoutSummaryProps {
   items: CartItem[];
@@ -11,6 +12,7 @@ interface CheckoutSummaryProps {
   shippingState: ShippingCalculationState;
   totalWeightGrams: number;
   isBuyNowMode?: boolean;
+  selectedState?: string;
 }
 
 export function CheckoutSummary({
@@ -21,7 +23,12 @@ export function CheckoutSummary({
   shippingState,
   totalWeightGrams,
   isBuyNowMode,
+  selectedState,
 }: CheckoutSummaryProps) {
+  const { selectedState: storedState } = useDeliveryState();
+  const activeState = selectedState || storedState;
+  const estimate = getDeliveryEstimateForState(activeState);
+
   const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const finalTotal = shippingAmount !== null ? subtotal + shippingAmount : null;
 
@@ -105,7 +112,7 @@ export function CheckoutSummary({
           <span className="font-bold text-base">₹{subtotal.toLocaleString("en-IN")}</span>
         </div>
 
-        {/* Delivery */}
+        {/* Delivery Fee */}
         <div className="flex flex-col gap-1 pt-1">
           <div className="flex items-center justify-between text-[#faf4f0]">
             <span className="text-[#d1c2b9] flex items-center gap-1.5">
@@ -141,6 +148,23 @@ export function CheckoutSummary({
           <p className="text-[11px] text-[#a39085] leading-tight">
             Per-unit regional shipping calculated automatically based on destination state.
           </p>
+        </div>
+
+        {/* Estimated Delivery */}
+        <div className="flex flex-col gap-0.5 pt-2 border-t border-[#3d1c12]/60">
+          <div className="flex items-center justify-between text-[#faf4f0]">
+            <span className="text-[#d1c2b9]">Estimated Delivery</span>
+            {estimate.isKnownState ? (
+              <span className="font-bold text-[#c99d52]">{estimate.days}</span>
+            ) : (
+              <span className="text-xs text-[#a39085]">Select State in Step 1</span>
+            )}
+          </div>
+          {estimate.isKnownState && (
+            <p className="text-[11px] text-[#a39085] leading-tight text-right">
+              {estimate.badgeLabel}
+            </p>
+          )}
         </div>
 
         {/* Final Total / Order Subtotal */}

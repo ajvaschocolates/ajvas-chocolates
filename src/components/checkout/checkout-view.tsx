@@ -413,6 +413,7 @@ export function CheckoutView() {
                   shippingState={shippingState}
                   totalWeightGrams={totalWeightGrams}
                   isBuyNowMode={isBuyNowMode}
+                  selectedState={formData.state}
                 />
                 <p className="mt-1 flex items-center gap-2 font-sans text-[11px] text-[#d0c4b8]/60">
                   <Lock className="h-3.5 w-3.5 text-[#fb0b88]" />
