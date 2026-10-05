@@ -4,13 +4,36 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { getPageSections } from "@/lib/supabase/page-sections";
 
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE } from "@/lib/seo";
+
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Shipping & Delivery — AJVAS CHOCOLATES",
+  title: "Shipping & Delivery Policy",
   description:
     "Learn about AJVAS Chocolates' shipping policy, delivery timelines, and how we ensure your chocolates arrive safely across India.",
+  alternates: {
+    canonical: `${SITE_URL}/shipping-delivery`,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: `${SITE_URL}/shipping-delivery`,
+    siteName: BRAND_NAME,
+    title: `Shipping & Delivery Policy | ${BRAND_NAME}`,
+    description:
+      "Learn about AJVAS Chocolates' shipping policy, delivery timelines, and how we ensure your chocolates arrive safely across India.",
+    images: [{ url: DEFAULT_OG_IMAGE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Shipping & Delivery Policy | ${BRAND_NAME}`,
+    description:
+      "Learn about AJVAS Chocolates' shipping policy, delivery timelines, and how we ensure your chocolates arrive safely across India.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
+
 
 export default async function ShippingDeliveryPage() {
   const sections = await getPageSections("shipping-delivery");

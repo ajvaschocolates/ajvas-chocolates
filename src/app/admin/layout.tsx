@@ -1,8 +1,18 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { getAdminSession } from "@/lib/supabase/auth";
 import AdminLayoutClient from "@/components/admin/AdminLayoutClient";
 
+export const metadata: Metadata = {
+  title: "Admin CMS",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default async function AdminLayout({
+
   children,
 }: {
   children: React.ReactNode;

@@ -7,13 +7,43 @@ import {
   getActiveProductsResult 
 } from "@/lib/supabase/catalog";
 
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE } from "@/lib/seo";
+
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Shop & Collections — AJVAS CHOCOLATES",
+  title: "Shop Premium Chocolates & Gift Hampers",
   description:
-    "Explore chocolate gift hampers, keepsake boxes, and curated confections for celebrations and memorable moments. Pan-India courier delivery.",
+    "Explore chocolate gift hampers, keepsake boxes, artisanal truffles, and curated confections for celebrations and memorable moments. Pan-India courier delivery.",
+  alternates: {
+    canonical: `${SITE_URL}/shop`,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: `${SITE_URL}/shop`,
+    siteName: BRAND_NAME,
+    title: "Shop Premium Chocolates & Gift Hampers | AJVAS Chocolates",
+    description:
+      "Explore chocolate gift hampers, keepsake boxes, artisanal truffles, and curated confections for celebrations and memorable moments. Pan-India courier delivery.",
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "Shop AJVAS Chocolates Collections & Hampers",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Shop Premium Chocolates & Gift Hampers | AJVAS Chocolates",
+    description:
+      "Explore chocolate gift hampers, keepsake boxes, artisanal truffles, and curated confections for celebrations and memorable moments. Pan-India courier delivery.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
+
 
 export default async function ShopPage({
   searchParams,

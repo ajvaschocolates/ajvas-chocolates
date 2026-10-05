@@ -4,13 +4,36 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { getPageSections } from "@/lib/supabase/page-sections";
 
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE } from "@/lib/seo";
+
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Care & Instructions — AJVAS CHOCOLATES",
+  title: "Care & Instructions",
   description:
     "How to store, handle, and enjoy your AJVAS Chocolates to keep them fresh and delicious.",
+  alternates: {
+    canonical: `${SITE_URL}/care-instructions`,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: `${SITE_URL}/care-instructions`,
+    siteName: BRAND_NAME,
+    title: `Care & Instructions | ${BRAND_NAME}`,
+    description:
+      "How to store, handle, and enjoy your AJVAS Chocolates to keep them fresh and delicious.",
+    images: [{ url: DEFAULT_OG_IMAGE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Care & Instructions | ${BRAND_NAME}`,
+    description:
+      "How to store, handle, and enjoy your AJVAS Chocolates to keep them fresh and delicious.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
+
 
 export default async function CareInstructionsPage() {
   const sections = await getPageSections("care-instructions");
