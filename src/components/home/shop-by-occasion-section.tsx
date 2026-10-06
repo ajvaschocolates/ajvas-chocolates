@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { Category } from "@/types/catalog";
 import { Container } from "@/components/ui/container";
+import { slugifyCategoryName } from "@/lib/seo";
 
 export interface ShopByOccasionSectionProps {
   categories?: Category[];
@@ -91,7 +92,7 @@ export function ShopByOccasionSection({ categories }: ShopByOccasionSectionProps
               return (
                 <Link
                   key={item.id}
-                  href={`/shop?category=${encodeURIComponent(item.id)}`}
+                  href={`/shop/${slugifyCategoryName(item.name)}`}
                   // Mobile: calc(50% - gap/2) so exactly 2 cards fit on screen
                   // Desktop: sm:w-[260px] lg:w-[300px] as before
                   className="group relative rounded-sm overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-[calc(50%-6px)] sm:w-[260px] lg:w-[300px] shrink-0 snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] aspect-[4/3]"

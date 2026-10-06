@@ -40,3 +40,18 @@ export function truncateDescription(
 export function serializeJsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
+
+/**
+ * Deterministically converts a category name into a clean URL slug.
+ * e.g., "Box Hampers" -> "box-hampers", "Trolly Hampers" -> "trolly-hampers"
+ */
+export function slugifyCategoryName(name: string): string {
+  if (!name) return "";
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+

@@ -11,6 +11,7 @@ import { ProductPackageSpecs } from "./product-package-specs";
 import { ProductDeliveryEstimate } from "./product-delivery-estimate";
 
 import { RelatedProductsSection } from "./related-products-section";
+import { slugifyCategoryName } from "@/lib/seo";
 
 interface ProductDetailViewProps {
   product: Product;
@@ -58,7 +59,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
                     </li>
                     <li>
                       <Link
-                        href={`/shop?category=${encodeURIComponent(product.category.id)}`}
+                        href={`/shop/${slugifyCategoryName(product.category.name)}`}
                         className={crumbLink}
                       >
                         {product.category.name}

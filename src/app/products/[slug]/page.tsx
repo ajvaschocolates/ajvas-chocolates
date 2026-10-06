@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProductDetailView } from "@/components/pdp/product-detail-view";
 import { getProductBySlugResult, getRelatedProducts } from "@/lib/supabase/catalog";
-import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE, truncateDescription } from "@/lib/seo";
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE, truncateDescription, slugifyCategoryName } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/json-ld";
 
 export const revalidate = 60;
@@ -137,7 +137,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       "@type": "ListItem",
       position: 3,
       name: product.category.name,
-      item: `${SITE_URL}/shop?category=${encodeURIComponent(product.category.id)}`,
+      item: `${SITE_URL}/shop/${slugifyCategoryName(product.category.name)}`,
     });
     breadcrumbItems.push({
       "@type": "ListItem",

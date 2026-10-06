@@ -7,6 +7,7 @@ import { Container } from "@/components/ui/container";
 import { BrandLogo } from "./brand-logo";
 import { getActiveCategories } from "@/lib/supabase/catalog";
 import { Category } from "@/types/catalog";
+import { slugifyCategoryName } from "@/lib/seo";
 
 const socials = [
   {
@@ -110,7 +111,7 @@ export function Footer({ categories: propCategories }: FooterProps = {}) {
         { label: "All Products", href: "/shop" },
         ...categories.map((cat) => ({
           label: cat.name,
-          href: `/shop?category=${encodeURIComponent(cat.id)}`,
+          href: `/shop/${slugifyCategoryName(cat.name)}`,
         })),
       ];
     }
