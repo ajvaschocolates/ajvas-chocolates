@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getActiveProducts } from "@/lib/supabase/catalog";
 import {
   getActiveHeroBanners,
@@ -13,9 +14,44 @@ import { CuratedCollectionsSection } from "@/components/home/curated-collections
 import { GiftingExperienceSection } from "@/components/home/gifting-experience-section";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { GiftingCtaSection } from "@/components/home/gifting-cta-section";
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: "AJVAS Chocolates — Premium Chocolate Gifting",
+  description:
+    "Discover premium handcrafted chocolates, luxury gift hampers and elegant chocolate gifts from AJVAS Chocolates. Shop curated chocolate gifting across India.",
+  alternates: {
+    canonical: SITE_URL,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: SITE_URL,
+    siteName: BRAND_NAME,
+    title: "AJVAS Chocolates — Premium Chocolate Gifting",
+    description:
+      "Discover premium handcrafted chocolates, luxury gift hampers and elegant chocolate gifts from AJVAS Chocolates. Shop curated chocolate gifting across India.",
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "AJVAS Chocolates Brand Logo & Luxury Gifting",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AJVAS Chocolates — Premium Chocolate Gifting",
+    description:
+      "Discover premium handcrafted chocolates, luxury gift hampers and elegant chocolate gifts from AJVAS Chocolates. Shop curated chocolate gifting across India.",
+    images: [DEFAULT_OG_IMAGE],
+  },
+};
 
 // Use Incremental Static Regeneration (ISR) with on-demand cache revalidation via CMS server actions
 export const revalidate = 60;
+
 
 export default async function HomePage() {
   const [products, heroBanners, sections, categories] = await Promise.all([

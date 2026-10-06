@@ -4,13 +4,36 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { getPageSections } from "@/lib/supabase/page-sections";
 
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE } from "@/lib/seo";
+
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — AJVAS CHOCOLATES",
+  title: "Privacy Policy",
   description:
     "Read the privacy policy for AJVAS Chocolates to understand how we collect, use, and protect your personal information.",
+  alternates: {
+    canonical: `${SITE_URL}/privacy-policy`,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: `${SITE_URL}/privacy-policy`,
+    siteName: BRAND_NAME,
+    title: `Privacy Policy | ${BRAND_NAME}`,
+    description:
+      "Read the privacy policy for AJVAS Chocolates to understand how we collect, use, and protect your personal information.",
+    images: [{ url: DEFAULT_OG_IMAGE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Privacy Policy | ${BRAND_NAME}`,
+    description:
+      "Read the privacy policy for AJVAS Chocolates to understand how we collect, use, and protect your personal information.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
+
 
 export default async function PrivacyPolicyPage() {
   const sections = await getPageSections("privacy-policy");

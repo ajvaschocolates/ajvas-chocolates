@@ -4,13 +4,36 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { getPageSections } from "@/lib/supabase/page-sections";
 
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE } from "@/lib/seo";
+
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions — AJVAS CHOCOLATES",
+  title: "Terms & Conditions",
   description:
     "Read the terms and conditions for using the AJVAS Chocolates website and placing orders with us.",
+  alternates: {
+    canonical: `${SITE_URL}/terms-conditions`,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: `${SITE_URL}/terms-conditions`,
+    siteName: BRAND_NAME,
+    title: `Terms & Conditions | ${BRAND_NAME}`,
+    description:
+      "Read the terms and conditions for using the AJVAS Chocolates website and placing orders with us.",
+    images: [{ url: DEFAULT_OG_IMAGE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Terms & Conditions | ${BRAND_NAME}`,
+    description:
+      "Read the terms and conditions for using the AJVAS Chocolates website and placing orders with us.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
+
 
 export default async function TermsConditionsPage() {
   const sections = await getPageSections("terms-conditions");

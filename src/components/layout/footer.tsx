@@ -33,10 +33,6 @@ const footerSections = [
     title: "Shop",
     links: [
       { label: "All Products", href: "/shop" },
-      { label: "Gift Hampers", href: "/shop?category=gift-hampers" },
-      { label: "Truffle Collections", href: "/shop?category=truffle-collections" },
-      { label: "Box Hampers", href: "/shop?category=box-hampers" },
-      { label: "Festive Specials", href: "/shop?category=festive-specials" },
     ],
   },
   {
@@ -112,14 +108,15 @@ export function Footer({ categories: propCategories }: FooterProps = {}) {
     if (categories.length > 0) {
       return [
         { label: "All Products", href: "/shop" },
-        ...categories.slice(0, 6).map((cat) => ({
+        ...categories.map((cat) => ({
           label: cat.name,
           href: `/shop?category=${encodeURIComponent(cat.id)}`,
         })),
       ];
     }
-    return footerSections[0].links;
+    return [{ label: "All Products", href: "/shop" }];
   }, [categories]);
+
 
   const toggleSection = (sectionKey: string) => {
     setOpenSections((prev) => ({

@@ -6,10 +6,15 @@ import { CheckoutView } from "@/components/checkout/checkout-view";
 import CheckoutLoading from "./loading";
 
 export const metadata: Metadata = {
-  title: "Guest Checkout — AJVAS CHOCOLATES",
+  title: "Guest Checkout",
   description:
     "Complete your chocolate gift order with dynamic pincode delivery and secure online payment. Pan-India courier delivery.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
+
 
 export default function CheckoutPage() {
   return (
