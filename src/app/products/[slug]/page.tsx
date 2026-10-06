@@ -3,11 +3,12 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProductDetailView } from "@/components/pdp/product-detail-view";
-import { getProductBySlugResult } from "@/lib/supabase/catalog";
+import { getProductBySlugResult, getRelatedProducts } from "@/lib/supabase/catalog";
 import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE, truncateDescription } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/json-ld";
 
 export const revalidate = 60;
+
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -159,15 +160,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
     itemListElement: breadcrumbItems,
   };
 
+  const relatedProducts = await getRelatedProducts(product.id, product.category_id, 3);
+
   return (
     <div className="flex min-h-screen flex-col bg-[#120805] text-[#faf4f0]">
       <JsonLd data={[productSchema, breadcrumbSchema]} />
       <Header />
       <main id="main-content" className="flex-1">
-        <ProductDetailView product={product} />
+        <ProductDetailView product={product} relatedProducts={relatedProducts} />
       </main>
       <Footer />
     </div>
   );
 }
+
 

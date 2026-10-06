@@ -194,3 +194,37 @@ export async function getProductBySlugResult(slug: string): Promise<CatalogQuery
   }
 }
 
+/**
+ * Fetches up to `limit` related active products for a given product.
+ * Prioritizes products from the same category, excluding the current product.
+ */
+export async function getRelatedProducts(
+  currentProductId: string,
+  categoryId?: string | null,
+  limit: number = 3
+): Promise<Product[]> {
+  try {
+    const allActive = await getActiveProducts(20);
+    const candidateProducts = allActive.filter((p) => p.id !== currentProductId);
+
+    if (candidateProducts.length === 0) return [];
+
+    let sameCategory: Product[] = [];
+    let otherCategory: Product[] = [];
+
+    if (categoryId) {
+      sameCategory = candidateProducts.filter((p) => p.category_id === categoryId);
+      otherCategory = candidateProducts.filter((p) => p.category_id !== categoryId);
+    } else {
+      otherCategory = candidateProducts;
+    }
+
+    const combined = [...sameCategory, ...otherCategory];
+    return combined.slice(0, limit);
+  } catch (err) {
+    console.warn("Error fetching related products:", err);
+    return [];
+  }
+}
+
+
