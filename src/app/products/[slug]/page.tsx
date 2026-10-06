@@ -26,17 +26,20 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 
   const product = productRes.data;
-  const description = truncateDescription(
-    product.description ||
-      `Explore ${product.name}, curated with precision for celebrations and gifting. Pan-India courier delivery.`,
-    155
-  );
+  const rawDescription =
+    product.description && product.description.trim().length > 0
+      ? product.description
+      : `Explore ${product.name}${product.category?.name ? ` in ${product.category.name}` : ""}, curated with precision for celebrations and artisanal chocolate gifting. Pan-India courier delivery.`;
+  const description = truncateDescription(rawDescription, 155);
 
   const productUrl = `${SITE_URL}/products/${product.slug}`;
   const primaryImage = product.images?.[0]?.image_url || DEFAULT_OG_IMAGE;
+  const pageTitle = product.category?.name
+    ? `${product.name} — ${product.category.name} | ${BRAND_NAME}`
+    : `${product.name} | ${BRAND_NAME}`;
 
   return {
-    title: product.name,
+    title: pageTitle,
     description,
     alternates: {
       canonical: productUrl,
@@ -46,18 +49,18 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       locale: "en_IN",
       url: productUrl,
       siteName: BRAND_NAME,
-      title: `${product.name} | ${BRAND_NAME}`,
+      title: pageTitle,
       description,
       images: [
         {
           url: primaryImage,
-          alt: product.name,
+          alt: `${product.name} — ${product.category?.name || "Artisanal Chocolate"} | ${BRAND_NAME}`,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.name} | ${BRAND_NAME}`,
+      title: pageTitle,
       description,
       images: [primaryImage],
     },
@@ -115,6 +118,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
       availability: availabilityUrl,
       url: productUrl,
     },
+    ...(product.weight_grams && product.weight_grams > 0
+      ? {
+          weight: {
+            "@type": "QuantitativeValue",
+            value: product.weight_grams,
+            unitCode: "GRM",
+          },
+        }
+      : {}),
   };
 
   const breadcrumbItems = [

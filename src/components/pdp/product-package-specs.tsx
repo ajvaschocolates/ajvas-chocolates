@@ -1,4 +1,4 @@
-import { Package } from "lucide-react";
+import { Package, Scale } from "lucide-react";
 
 interface ProductPackageSpecsProps {
   weightGrams?: number | null;
@@ -8,34 +8,57 @@ interface ProductPackageSpecsProps {
 }
 
 export function ProductPackageSpecs({
+  weightGrams,
   lengthCm,
   widthCm,
   heightCm,
 }: ProductPackageSpecsProps) {
   const hasDimensions = Boolean(lengthCm && widthCm && heightCm);
+  const hasWeight = Boolean(weightGrams && weightGrams > 0);
 
-  if (!hasDimensions) {
+  if (!hasDimensions && !hasWeight) {
     return null;
   }
+
+  const formattedWeight = weightGrams
+    ? weightGrams >= 1000
+      ? `${(weightGrams / 1000).toFixed(1)} kg`
+      : `${weightGrams} g`
+    : null;
 
   return (
     <div className="bg-[#1b0e0a] rounded-sm border border-[#3d1c12] p-3 flex flex-col gap-2.5">
       <h3 className="font-pally text-xs tracking-wider font-bold text-[#c99d52]">
-        Package Specifications
+        Product Specifications
       </h3>
-      <div className="grid grid-cols-1 gap-2.5 text-xs font-sans">
-        <div className="flex items-center gap-2 text-[#faf4f0]">
-          <div className="w-7 h-7 rounded-sm bg-[#140b07] border border-[#3d1c12] flex items-center justify-center text-[#c99d52] shrink-0">
-            <Package className="w-3.5 h-3.5" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-sans">
+        {hasWeight && (
+          <div className="flex items-center gap-2 text-[#faf4f0]">
+            <div className="w-7 h-7 rounded-sm bg-[#140b07] border border-[#3d1c12] flex items-center justify-center text-[#c99d52] shrink-0">
+              <Scale className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <span className="text-[#a39085] block text-[10px]">Net weight</span>
+              <span className="font-medium text-xs text-[#faf4f0]">
+                {formattedWeight}
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="text-[#a39085] block text-[10px]">Package size</span>
-            <span className="font-medium text-xs text-[#faf4f0]">
-              {lengthCm} × {widthCm} × {heightCm} cm
-            </span>
+        )}
+        {hasDimensions && (
+          <div className="flex items-center gap-2 text-[#faf4f0]">
+            <div className="w-7 h-7 rounded-sm bg-[#140b07] border border-[#3d1c12] flex items-center justify-center text-[#c99d52] shrink-0">
+              <Package className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <span className="text-[#a39085] block text-[10px]">Package size</span>
+              <span className="font-medium text-xs text-[#faf4f0]">
+                {lengthCm} × {widthCm} × {heightCm} cm
+              </span>
+            </div>
           </div>
-        </div>
-        </div>
+        )}
+      </div>
     </div>
   );
 }
