@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProductDetailView } from "@/components/pdp/product-detail-view";
 import { getProductBySlugResult, getRelatedProducts } from "@/lib/supabase/catalog";
-import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE, truncateDescription } from "@/lib/seo";
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE, truncateDescription, slugifyCategoryName } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/json-ld";
 
 export const revalidate = 60;
@@ -26,17 +26,20 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 
   const product = productRes.data;
-  const description = truncateDescription(
-    product.description ||
-      `Explore ${product.name}, curated with precision for celebrations and gifting. Pan-India courier delivery.`,
-    155
-  );
+  const rawDescription =
+    product.description && product.description.trim().length > 0
+      ? product.description
+      : `Explore ${product.name}${product.category?.name ? ` in ${product.category.name}` : ""}, curated with precision for celebrations and artisanal chocolate gifting. Pan-India courier delivery.`;
+  const description = truncateDescription(rawDescription, 155);
 
   const productUrl = `${SITE_URL}/products/${product.slug}`;
   const primaryImage = product.images?.[0]?.image_url || DEFAULT_OG_IMAGE;
+  const pageTitle = product.category?.name
+    ? `${product.name} — ${product.category.name} | ${BRAND_NAME}`
+    : `${product.name} | ${BRAND_NAME}`;
 
   return {
-    title: product.name,
+    title: pageTitle,
     description,
     alternates: {
       canonical: productUrl,
@@ -46,18 +49,18 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       locale: "en_IN",
       url: productUrl,
       siteName: BRAND_NAME,
-      title: `${product.name} | ${BRAND_NAME}`,
+      title: pageTitle,
       description,
       images: [
         {
           url: primaryImage,
-          alt: product.name,
+          alt: `${product.name} — ${product.category?.name || "Artisanal Chocolate"} | ${BRAND_NAME}`,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.name} | ${BRAND_NAME}`,
+      title: pageTitle,
       description,
       images: [primaryImage],
     },
@@ -115,6 +118,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
       availability: availabilityUrl,
       url: productUrl,
     },
+    ...(product.weight_grams && product.weight_grams > 0
+      ? {
+          weight: {
+            "@type": "QuantitativeValue",
+            value: product.weight_grams,
+            unitCode: "GRM",
+          },
+        }
+      : {}),
   };
 
   const breadcrumbItems = [
@@ -137,7 +149,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       "@type": "ListItem",
       position: 3,
       name: product.category.name,
-      item: `${SITE_URL}/shop?category=${encodeURIComponent(product.category.id)}`,
+      item: `${SITE_URL}/shop/${slugifyCategoryName(product.category.name)}`,
     });
     breadcrumbItems.push({
       "@type": "ListItem",

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/seo";
-import { getActiveProducts } from "@/lib/supabase/catalog";
+import { SITE_URL, slugifyCategoryName } from "@/lib/seo";
+import { getActiveProducts, getActiveCategories } from "@/lib/supabase/catalog";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -67,7 +67,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const products = await getActiveProducts(1000);
+    const [products, categories] = await Promise.all([
+      getActiveProducts(1000),
+      getActiveCategories(),
+    ]);
+
+    const categoryRoutes: MetadataRoute.Sitemap = categories.map((category) => ({
+      url: `${SITE_URL}/shop/${slugifyCategoryName(category.name)}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    }));
+
     const productRoutes: MetadataRoute.Sitemap = products
       .filter((product) => Boolean(product.slug))
       .map((product) => {
@@ -83,9 +94,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         };
       });
 
-    return [...staticRoutes, ...productRoutes];
+    return [...staticRoutes, ...categoryRoutes, ...productRoutes];
   } catch (error) {
-    console.error("Error generating dynamic sitemap product entries:", error);
+    console.error("Error generating dynamic sitemap entries:", error);
     return staticRoutes;
   }
 }

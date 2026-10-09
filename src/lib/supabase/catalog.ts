@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { getSupabaseEnv } from "./env";
 import { Product, Category } from "@/types/catalog";
+import { slugifyCategoryName } from "@/lib/seo";
 
 function getPublicCatalogClient() {
   const { supabaseUrl, supabasePublishableKey } = getSupabaseEnv();
@@ -43,6 +44,39 @@ export async function getActiveCategoriesResult(): Promise<CatalogQueryResult<Ca
     return { data: [], error: err instanceof Error ? err.message : "Unknown error", success: false };
   }
 }
+
+/**
+ * Fetches an active category matching a derived URL slug or ID.
+ */
+export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  try {
+    const categories = await getActiveCategories();
+    const cleanSlug = (slug || "").toLowerCase().trim();
+    if (!cleanSlug) return null;
+
+    const match = categories.find(
+      (c) => slugifyCategoryName(c.name) === cleanSlug || c.id === cleanSlug
+    );
+    return match || null;
+  } catch (err) {
+    console.warn("Error fetching category by slug:", err);
+    return null;
+  }
+}
+
+/**
+ * Fetches active products belonging to a specific category ID.
+ */
+export async function getProductsByCategoryId(categoryId: string): Promise<Product[]> {
+  try {
+    const products = await getActiveProducts(100);
+    return products.filter((p) => p.category_id === categoryId);
+  } catch (err) {
+    console.warn("Error fetching products by category ID:", err);
+    return [];
+  }
+}
+
 
 /**
  * Fetches active products with their images and category relation.

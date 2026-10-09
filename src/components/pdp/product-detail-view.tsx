@@ -11,6 +11,7 @@ import { ProductPackageSpecs } from "./product-package-specs";
 import { ProductDeliveryEstimate } from "./product-delivery-estimate";
 
 import { RelatedProductsSection } from "./related-products-section";
+import { slugifyCategoryName } from "@/lib/seo";
 
 interface ProductDetailViewProps {
   product: Product;
@@ -58,7 +59,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
                     </li>
                     <li>
                       <Link
-                        href={`/shop?category=${encodeURIComponent(product.category.id)}`}
+                        href={`/shop/${slugifyCategoryName(product.category.name)}`}
                         className={crumbLink}
                       >
                         {product.category.name}
@@ -91,10 +92,11 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
               <div className="flex flex-col gap-4 lg:col-span-5 lg:max-w-md">
                 <ProductInfo product={product} />
 
-                {Boolean(product.length_cm && product.width_cm && product.height_cm) && (
+                {Boolean((product.length_cm && product.width_cm && product.height_cm) || (product.weight_grams && product.weight_grams > 0)) && (
                   <div>
-                    <h2 className={sectionLabel}>Package Details</h2>
+                    <h2 className={sectionLabel}>Product Specifications</h2>
                     <ProductPackageSpecs
+                      weightGrams={product.weight_grams}
                       lengthCm={product.length_cm}
                       widthCm={product.width_cm}
                       heightCm={product.height_cm}
@@ -113,7 +115,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
                 <div className="pt-4 border-t border-[#3d1c12]/70 flex flex-col gap-2.5 font-sans text-xs text-[#d0c4b8]/80">
                   {product.category && (
                     <Link
-                      href={`/shop?category=${encodeURIComponent(product.category.id)}`}
+                      href={`/shop/${slugifyCategoryName(product.category.name)}`}
                       className="inline-flex items-center gap-1.5 text-[#fb0b88] hover:underline focus-visible:outline-none"
                     >
                       <span>Explore all confections in <strong className="font-semibold text-white">{product.category.name}</strong></span>

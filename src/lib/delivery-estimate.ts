@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { INDIA_STATES_DISTRICTS } from "@/data/india-states-districts";
-
 export const DELIVERY_STATE_STORAGE_KEY = "ajvas_selected_state";
 export const DELIVERY_STATE_EVENT_NAME = "ajvas_delivery_state_change";
 
