@@ -97,8 +97,11 @@ export function CartView() {
             {/* Left: Cart Items List */}
             <div className="lg:col-span-8 flex flex-col">
               <div className="divide-y divide-transparent">
-                {items.map((item) => (
-                  <CartItemRow key={item.productId} item={item} />
+                {items.map((item, idx) => (
+                  <CartItemRow
+                    key={`${item.productId}-${item.customization || "default"}-${idx}`}
+                    item={item}
+                  />
                 ))}
               </div>
 
