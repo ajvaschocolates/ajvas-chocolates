@@ -11,6 +11,7 @@ export interface CartItem {
   heightCm?: number | null;
   imageUrl?: string;
   categoryName?: string;
+  customization?: string;
 }
 
 export interface CartContextValue {
@@ -18,36 +19,44 @@ export interface CartContextValue {
   totalItemsCount: number;
   subtotal: number;
   isHydrated: boolean;
-  addItem: (product: {
-    id: string;
-    slug: string;
-    name: string;
-    price: number;
-    discount_type: "none" | "percentage" | "fixed";
-    discount_value: number;
-    weight_grams: number;
-    length_cm?: number | null;
-    width_cm?: number | null;
-    height_cm?: number | null;
-    images?: Array<{ image_url: string }>;
-    category?: { name: string } | null;
-  }, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  setBuyNowItem: (product: {
-    id: string;
-    slug: string;
-    name: string;
-    price: number;
-    discount_type: "none" | "percentage" | "fixed";
-    discount_value: number;
-    weight_grams: number;
-    length_cm?: number | null;
-    width_cm?: number | null;
-    height_cm?: number | null;
-    images?: Array<{ image_url: string }>;
-    category?: { name: string } | null;
-  }, quantity?: number) => void;
+  addItem: (
+    product: {
+      id: string;
+      slug: string;
+      name: string;
+      price: number;
+      discount_type: "none" | "percentage" | "fixed";
+      discount_value: number;
+      weight_grams: number;
+      length_cm?: number | null;
+      width_cm?: number | null;
+      height_cm?: number | null;
+      images?: Array<{ image_url: string }>;
+      category?: { name: string } | null;
+    },
+    quantity?: number,
+    customization?: string
+  ) => void;
+  removeItem: (productId: string, customization?: string) => void;
+  updateQuantity: (productId: string, quantity: number, customization?: string) => void;
+  setBuyNowItem: (
+    product: {
+      id: string;
+      slug: string;
+      name: string;
+      price: number;
+      discount_type: "none" | "percentage" | "fixed";
+      discount_value: number;
+      weight_grams: number;
+      length_cm?: number | null;
+      width_cm?: number | null;
+      height_cm?: number | null;
+      images?: Array<{ image_url: string }>;
+      category?: { name: string } | null;
+    },
+    quantity?: number,
+    customization?: string
+  ) => void;
   buyNowItem: CartItem | null;
   lastAddedItem: CartItem | null;
   clearLastAddedItem: () => void;

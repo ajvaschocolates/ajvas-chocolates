@@ -70,6 +70,17 @@ export function CartItemRow({ item }: CartItemRowProps) {
               </span>
             )}
           </div>
+
+          {item.customization && (
+            <div className="mt-2 p-2 rounded bg-[#140b07] border border-[#3d1c12] text-xs max-w-md">
+              <span className="text-[10px] font-sans uppercase font-bold tracking-wider text-[#c99d52] block">
+                Gift Personalization
+              </span>
+              <p className="text-[#faf4f0] text-xs mt-0.5 break-words font-sans italic">
+                &ldquo;{item.customization}&rdquo;
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -79,7 +90,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
         <div className="flex items-center border border-[#3d1c12] bg-[#140b07] rounded-full p-1 shrink-0">
           <button
             type="button"
-            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+            onClick={() => updateQuantity(item.productId, item.quantity - 1, item.customization)}
             disabled={item.quantity <= 1}
             aria-label={`Decrease quantity for ${item.name}`}
             className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-[#faf4f0] hover:text-[#fb0b88] disabled:opacity-30 disabled:hover:text-[#faf4f0] transition-colors rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
@@ -95,7 +106,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
           </span>
           <button
             type="button"
-            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+            onClick={() => updateQuantity(item.productId, item.quantity + 1, item.customization)}
             aria-label={`Increase quantity for ${item.name}`}
             className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-[#faf4f0] hover:text-[#fb0b88] transition-colors rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88]"
           >
@@ -113,7 +124,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
         {/* Remove Button */}
         <button
           type="button"
-          onClick={() => removeItem(item.productId)}
+          onClick={() => removeItem(item.productId, item.customization)}
           aria-label={`Remove ${item.name} from bag`}
           className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#a39085] hover:text-[#fb0b88] transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fb0b88] shrink-0"
         >
