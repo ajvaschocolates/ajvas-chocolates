@@ -8,7 +8,6 @@ import {
   addProductImageAction,
   updateProductImageAction,
   deleteProductImageAction,
-  reorderProductImagesAction,
   setPrimaryProductImageAction,
   cleanupOrphanedAssetAction,
 } from "@/app/admin/products/actions";
@@ -241,42 +240,6 @@ export default function ProductImagesManager({
         setStatusMessage({
           type: "error",
           text: res.error || "Failed to set primary image. Order restored.",
-        });
-      }
-    });
-  }
-
-  // Handle Move Up / Move Down with Optimistic Rollback
-  function handleMove(index: number, direction: "up" | "down") {
-    if (isPending) return;
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= images.length) return;
-
-    setStatusMessage(null);
-    setWarningMessage(null);
-
-    const previousImages = [...images];
-
-    const newOrder = [...images];
-    const temp = newOrder[index];
-    newOrder[index] = newOrder[targetIndex];
-    newOrder[targetIndex] = temp;
-
-    const reindexed = newOrder.map((item, idx) => ({ ...item, sort_order: idx }));
-    notifyParent(reindexed);
-
-    startTransition(async () => {
-      const orderedIds = reindexed.map((img) => img.id);
-      const res = await reorderProductImagesAction(productId, orderedIds);
-
-      if (res.success && res.images) {
-        notifyParent(res.images);
-      } else {
-        // Rollback optimistic update on error
-        notifyParent(previousImages);
-        setStatusMessage({
-          type: "error",
-          text: res.error || "Failed to reorder images. Order restored.",
         });
       }
     });
@@ -593,10 +556,6 @@ export default function ProductImagesManager({
               const isPrimary = index === 0;
               const isEditing = editingImageId === img.id;
               const hasFailed = failedImageIds[img.id];
-              const isCloudinaryAsset =
-                img.cloudinary_public_id &&
-                !img.cloudinary_public_id.startsWith("external_url_");
-
               return (
                 <div
                   key={img.id}

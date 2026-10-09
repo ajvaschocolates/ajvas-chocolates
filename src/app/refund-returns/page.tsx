@@ -4,13 +4,36 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { getPageSections } from "@/lib/supabase/page-sections";
 
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE } from "@/lib/seo";
+
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Refund & Returns — AJVAS CHOCOLATES",
+  title: "Refund & Returns Policy",
   description:
     "Understand the refund and returns policy for AJVAS Chocolates orders. We're committed to your satisfaction.",
+  alternates: {
+    canonical: `${SITE_URL}/refund-returns`,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: `${SITE_URL}/refund-returns`,
+    siteName: BRAND_NAME,
+    title: `Refund & Returns Policy | ${BRAND_NAME}`,
+    description:
+      "Understand the refund and returns policy for AJVAS Chocolates orders. We're committed to your satisfaction.",
+    images: [{ url: DEFAULT_OG_IMAGE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Refund & Returns Policy | ${BRAND_NAME}`,
+    description:
+      "Understand the refund and returns policy for AJVAS Chocolates orders. We're committed to your satisfaction.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
+
 
 export default async function RefundReturnsPage() {
   const sections = await getPageSections("refund-returns");

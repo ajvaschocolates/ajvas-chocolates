@@ -3,20 +3,60 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { getPageSections } from "@/lib/supabase/page-sections";
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/json-ld";
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "FAQ — AJVAS CHOCOLATES",
+  title: "Frequently Asked Questions",
   description:
-    "Frequently asked questions about AJVAS Chocolates — orders, delivery, gifting, and more.",
+    "Frequently asked questions about AJVAS Chocolates — orders, delivery, gifting, and storage guidance.",
+  alternates: {
+    canonical: `${SITE_URL}/faq`,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: `${SITE_URL}/faq`,
+    siteName: BRAND_NAME,
+    title: `Frequently Asked Questions | ${BRAND_NAME}`,
+    description:
+      "Frequently asked questions about AJVAS Chocolates — orders, delivery, gifting, and storage guidance.",
+    images: [{ url: DEFAULT_OG_IMAGE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Frequently Asked Questions | ${BRAND_NAME}`,
+    description:
+      "Frequently asked questions about AJVAS Chocolates — orders, delivery, gifting, and storage guidance.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 export default async function FAQPage() {
   const sections = await getPageSections("faq");
 
+  const faqSchema =
+    sections.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: sections.map((item) => ({
+            "@type": "Question",
+            name: item.title,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: item.content,
+            },
+          })),
+        }
+      : null;
+
+
   return (
     <div className="flex min-h-screen flex-col bg-[#120805] text-[#faf4f0]">
+      {faqSchema && <JsonLd data={faqSchema} />}
       <Header />
       <main className="flex-1 pt-24 sm:pt-28 pb-16 sm:pb-20">
         <Container>

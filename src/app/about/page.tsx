@@ -5,13 +5,36 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { getPageSections } from "@/lib/supabase/page-sections";
 
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE } from "@/lib/seo";
+
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "About Us — AJVAS CHOCOLATES",
+  title: "About Us",
   description:
     "Discover the story behind AJVAS Chocolates — curated confections and luxury gift hampers crafted for life's sweetest celebrations.",
+  alternates: {
+    canonical: `${SITE_URL}/about`,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: `${SITE_URL}/about`,
+    siteName: BRAND_NAME,
+    title: `About Us | ${BRAND_NAME}`,
+    description:
+      "Discover the story behind AJVAS Chocolates — curated confections and luxury gift hampers crafted for life's sweetest celebrations.",
+    images: [{ url: DEFAULT_OG_IMAGE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `About Us | ${BRAND_NAME}`,
+    description:
+      "Discover the story behind AJVAS Chocolates — curated confections and luxury gift hampers crafted for life's sweetest celebrations.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
+
 
 export default async function AboutPage() {
   const sections = await getPageSections("about");

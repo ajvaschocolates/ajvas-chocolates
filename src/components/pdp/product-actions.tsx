@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Minus, ShoppingBag, Zap, Check } from "lucide-react";
+import { Plus, Minus, Check } from "lucide-react";
 import { Product } from "@/types/catalog";
 import { useCart } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
