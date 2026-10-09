@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { getSupabaseEnv } from "./env";
 import { Product, Category } from "@/types/catalog";
+import { slugifyCategoryName } from "@/lib/seo";
 
 function getPublicCatalogClient() {
   const { supabaseUrl, supabasePublishableKey } = getSupabaseEnv();
@@ -43,6 +44,39 @@ export async function getActiveCategoriesResult(): Promise<CatalogQueryResult<Ca
     return { data: [], error: err instanceof Error ? err.message : "Unknown error", success: false };
   }
 }
+
+/**
+ * Fetches an active category matching a derived URL slug or ID.
+ */
+export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  try {
+    const categories = await getActiveCategories();
+    const cleanSlug = (slug || "").toLowerCase().trim();
+    if (!cleanSlug) return null;
+
+    const match = categories.find(
+      (c) => slugifyCategoryName(c.name) === cleanSlug || c.id === cleanSlug
+    );
+    return match || null;
+  } catch (err) {
+    console.warn("Error fetching category by slug:", err);
+    return null;
+  }
+}
+
+/**
+ * Fetches active products belonging to a specific category ID.
+ */
+export async function getProductsByCategoryId(categoryId: string): Promise<Product[]> {
+  try {
+    const products = await getActiveProducts(100);
+    return products.filter((p) => p.category_id === categoryId);
+  } catch (err) {
+    console.warn("Error fetching products by category ID:", err);
+    return [];
+  }
+}
+
 
 /**
  * Fetches active products with their images and category relation.
@@ -193,4 +227,38 @@ export async function getProductBySlugResult(slug: string): Promise<CatalogQuery
     return { data: null, error: err instanceof Error ? err.message : "Unknown error", success: false };
   }
 }
+
+/**
+ * Fetches up to `limit` related active products for a given product.
+ * Prioritizes products from the same category, excluding the current product.
+ */
+export async function getRelatedProducts(
+  currentProductId: string,
+  categoryId?: string | null,
+  limit: number = 3
+): Promise<Product[]> {
+  try {
+    const allActive = await getActiveProducts(20);
+    const candidateProducts = allActive.filter((p) => p.id !== currentProductId);
+
+    if (candidateProducts.length === 0) return [];
+
+    let sameCategory: Product[] = [];
+    let otherCategory: Product[] = [];
+
+    if (categoryId) {
+      sameCategory = candidateProducts.filter((p) => p.category_id === categoryId);
+      otherCategory = candidateProducts.filter((p) => p.category_id !== categoryId);
+    } else {
+      otherCategory = candidateProducts;
+    }
+
+    const combined = [...sameCategory, ...otherCategory];
+    return combined.slice(0, limit);
+  } catch (err) {
+    console.warn("Error fetching related products:", err);
+    return [];
+  }
+}
+
 

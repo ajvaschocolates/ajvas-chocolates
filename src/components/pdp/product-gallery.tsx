@@ -76,7 +76,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
       >
         <img
           src={currentImage.image_url}
-          alt={currentImage.alt_text || productName}
+          alt={currentImage.alt_text || `${productName} — AJVAS Chocolates`}
           className="max-h-[640px] sm:max-h-[680px] w-auto max-w-full object-contain pointer-events-none block"
         />
 

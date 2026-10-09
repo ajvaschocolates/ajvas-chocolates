@@ -28,7 +28,7 @@ export function ProductCard({
   const primaryImage =
     product.images?.[0]?.image_url ||
     "https://images.unsplash.com/photo-1549007994-cb92caebd54b?q=80&w=600&auto=format&fit=crop";
-  const imageAlt = product.images?.[0]?.alt_text || product.name;
+  const imageAlt = product.images?.[0]?.alt_text || `${product.name} — AJVAS Chocolates`;
 
   // Calculate final discounted price if applicable
   let finalPrice = product.price;

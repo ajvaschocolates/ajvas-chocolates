@@ -243,7 +243,21 @@ export function ShopCollectionsClient({
           {/* Category Navigation Pills & Counter */}
           <section className="w-full pt-20 sm:pt-24 lg:pt-28 pb-1">
             <Container>
+              {/* Editorial Shop Header / Intro */}
+              <div className="mb-6 sm:mb-8 text-left max-w-3xl">
+                <span className="font-sans text-xs uppercase tracking-widest font-semibold text-[#fb0b88] block mb-2">
+                  Artisanal Confections & Gifting
+                </span>
+                <h1 className="font-pally text-3xl sm:text-4xl text-[#faf4f0] leading-tight mb-3 font-bold">
+                  Shop Luxury Chocolate Hampers
+                </h1>
+                <p className="font-sans text-xs sm:text-sm text-[#d0c4b8]/85 leading-relaxed">
+                  Discover hand-curated chocolate gift hampers, keepsake presentation boxes, and artisanal confections crafted with precision. Perfect for celebrations, milestone moments, and thoughtful gifting across India.
+                </p>
+              </div>
+
               <div className="flex flex-wrap items-center justify-between gap-y-3 gap-x-4 py-1.5">
+
                 <nav
                   aria-label="Category filter"
                   className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none w-full sm:w-auto"

@@ -4,13 +4,36 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { getPageSections } from "@/lib/supabase/page-sections";
 
+import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE } from "@/lib/seo";
+
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Contact Us — AJVAS CHOCOLATES",
+  title: "Contact Us",
   description:
     "Get in touch with AJVAS Chocolates for orders, bulk gifting enquiries, or any assistance you need.",
+  alternates: {
+    canonical: `${SITE_URL}/contact`,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: `${SITE_URL}/contact`,
+    siteName: BRAND_NAME,
+    title: `Contact Us | ${BRAND_NAME}`,
+    description:
+      "Get in touch with AJVAS Chocolates for orders, bulk gifting enquiries, or any assistance you need.",
+    images: [{ url: DEFAULT_OG_IMAGE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Contact Us | ${BRAND_NAME}`,
+    description:
+      "Get in touch with AJVAS Chocolates for orders, bulk gifting enquiries, or any assistance you need.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
+
 
 export default async function ContactPage() {
   const sections = await getPageSections("contact");
