@@ -1,6 +1,7 @@
 import { Product } from "@/types/catalog";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
+import Link from "next/link";
 
 export interface CuratedProductsGridProps {
   products: Product[];
@@ -21,9 +22,9 @@ export function CuratedProductsGrid({ products }: CuratedProductsGridProps) {
             </p>
           </div>
           <div className="flex items-center gap-3 self-end">
-            <a href="/shop" className="font-sans text-xs uppercase tracking-widest font-bold text-brand-navy hover:text-brand-pink transition-colors">
+            <Link href="/shop" className="font-sans text-xs uppercase tracking-widest font-bold text-brand-navy hover:text-brand-pink transition-colors">
               View All →
-            </a>
+            </Link>
             <div className="flex items-center gap-1.5 ml-2">
               <button aria-label="Previous product" className="w-8 h-8 rounded-full border border-brand-sand flex items-center justify-center text-brand-navy hover:border-brand-pink hover:text-brand-pink transition-colors text-xs font-bold bg-white">
                 ‹
