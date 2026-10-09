@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Clock,
   ArrowRight,
+  Package,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -144,6 +145,9 @@ export default async function AdminDashboardPage() {
                     Order #
                   </th>
                   <th scope="col" className="py-3 px-4 font-semibold">
+                    Product
+                  </th>
+                  <th scope="col" className="py-3 px-4 font-semibold">
                     Customer
                   </th>
                   <th scope="col" className="py-3 px-4 font-semibold">
@@ -167,19 +171,54 @@ export default async function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-parchment-border bg-parchment-surface">
-                {metrics.recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-parchment-muted/40 transition-colors">
-                    <td className="py-3.5 px-4 sm:px-6 font-mono font-bold text-cocoa-950">
-                      {order.order_number}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-medium text-cocoa-950">
-                        {order.customer_name || "Guest Customer"}
-                      </div>
-                      <div className="text-[11px] text-cocoa-600 font-mono">
-                        {order.customer_phone || "—"}
-                      </div>
-                    </td>
+                {metrics.recentOrders.map((order) => {
+                  const firstItem = order.items?.[0];
+                  const imageUrl = firstItem?.product?.images?.[0]?.image_url;
+                  const productName = firstItem?.product_name || firstItem?.product?.name;
+                  const extraCount = (order.items?.length || 0) - 1;
+
+                  return (
+                    <tr key={order.id} className="hover:bg-parchment-muted/40 transition-colors">
+                      <td className="py-3.5 px-4 sm:px-6 font-mono font-bold text-cocoa-950">
+                        {order.order_number}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative w-11 h-11 rounded-md overflow-hidden bg-white border border-parchment-border shrink-0 flex items-center justify-center shadow-2xs">
+                            {imageUrl ? (
+                              <img
+                                src={imageUrl}
+                                alt={productName || "Product"}
+                                className="w-full h-full object-contain p-0.5"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-parchment-muted text-cocoa-400">
+                                <Package className="w-4 h-4 stroke-[1.5]" />
+                              </div>
+                            )}
+                          </div>
+                          {productName && (
+                            <div className="min-w-0 max-w-[130px]">
+                              <div className="font-semibold text-cocoa-950 truncate text-xs" title={productName}>
+                                {productName}
+                              </div>
+                              {extraCount > 0 && (
+                                <span className="text-[10px] text-cocoa-600 font-mono block">
+                                  +{extraCount} more item{extraCount > 1 ? "s" : ""}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-medium text-cocoa-950">
+                          {order.customer_name || "Guest Customer"}
+                        </div>
+                        <div className="text-[11px] text-cocoa-600 font-mono">
+                          {order.customer_phone || "—"}
+                        </div>
+                      </td>
                     <td className="py-3.5 px-4">
                       <div className="font-medium text-cocoa-950">
                         {[order.shipping_district || order.shipping_city, order.shipping_state]
@@ -227,7 +266,8 @@ export default async function AdminDashboardPage() {
                       </Link>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

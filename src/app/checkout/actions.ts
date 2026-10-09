@@ -298,6 +298,10 @@ export async function verifyAndCreateOrderAction(
     if (input.items && input.items.length > 0) {
       const itemsToInsert = input.items.map((item) => {
         const unitPrice = item.discountedUnitPrice ?? item.unitPrice ?? 0;
+        const cleanCustomization = item.customization
+          ? item.customization.trim().slice(0, 500)
+          : null;
+
         return {
           order_id: order.id,
           product_id: item.productId || null,
@@ -308,6 +312,7 @@ export async function verifyAndCreateOrderAction(
           discount_amount: 0,
           line_total: unitPrice * item.quantity,
           weight_grams: item.weightGrams || 500,
+          customization: cleanCustomization,
         };
       });
 
@@ -317,14 +322,38 @@ export async function verifyAndCreateOrderAction(
 
       if (itemsErr) {
         console.warn("[Orders] Order items insert warning:", itemsErr.message);
+        // Resilient fallback: if the database schema does not yet have 'customization' column,
+        // retry insert without that column so the payment and order are never lost
+        if (itemsErr.code === "PGRST204" || itemsErr.message?.includes("customization")) {
+          const fallbackItems = itemsToInsert.map((item) => {
+            const { ...copy } = item;
+            delete (copy as { customization?: unknown }).customization;
+            return copy;
+          });
+          const { error: retryErr } = await supabase
+            .from("order_items")
+            .insert(fallbackItems);
+          if (retryErr) {
+            console.error("[Orders] Fallback items insert failed:", retryErr.message);
+          }
+        }
       }
     }
 
-    // 6. Log initial order timeline status
+    // 6. Log initial order timeline status (including customer gift request audit snapshot)
+    const customizedItems = input.items.filter((i) => i.customization?.trim());
+    let statusNote = `Online payment of ₹${input.totalAmount} confirmed via Razorpay (ID: ${input.razorpayPaymentId})`;
+    if (customizedItems.length > 0) {
+      const giftNotes = customizedItems
+        .map((i) => `${i.name}: "${i.customization!.trim().slice(0, 150)}"`)
+        .join("; ");
+      statusNote += ` | Gift Requests: ${giftNotes}`;
+    }
+
     await supabase.from("order_status_history").insert({
       order_id: order.id,
       status: "processing",
-      note: `Online payment of ₹${input.totalAmount} confirmed via Razorpay (ID: ${input.razorpayPaymentId})`,
+      note: statusNote.slice(0, 1000),
     });
 
     revalidatePath("/admin/orders");

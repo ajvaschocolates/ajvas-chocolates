@@ -124,6 +124,7 @@ export function CheckoutView() {
           quantity: effectiveBuyNowItem.quantity,
           weightGrams: effectiveBuyNowItem.weightGrams ?? 500,
           imageUrl: effectiveBuyNowItem.imageUrl,
+          customization: effectiveBuyNowItem.customization,
         },
       ];
     }

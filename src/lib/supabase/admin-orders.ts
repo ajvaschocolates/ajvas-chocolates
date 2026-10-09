@@ -49,7 +49,22 @@ export async function getAllAdminOrders(limit = 100): Promise<Order[]> {
         courier_service_name,
         awb_number,
         tracking_url,
-        created_at
+        created_at,
+        items:order_items (
+          id,
+          product_id,
+          product_name,
+          product_slug,
+          quantity,
+          product:products (
+            id,
+            name,
+            images:product_images (
+              image_url,
+              sort_order
+            )
+          )
+        )
       `)
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -59,7 +74,18 @@ export async function getAllAdminOrders(limit = 100): Promise<Order[]> {
       return [];
     }
 
-    return (data as Order[]) || [];
+    const orders = (data as unknown as Order[]) || [];
+    orders.forEach((o) => {
+      if (o.items && Array.isArray(o.items)) {
+        o.items.forEach((item) => {
+          if (item.product?.images && Array.isArray(item.product.images)) {
+            item.product.images.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+          }
+        });
+      }
+    });
+
+    return orders;
   } catch (err) {
     console.error("Error fetching admin orders:", err);
     return [];
@@ -78,7 +104,21 @@ export async function getAdminOrderById(id: string): Promise<Order | null> {
       .from("orders")
       .select(`
         *,
-        items:order_items (*),
+        items:order_items (
+          *,
+          product:products (
+            id,
+            name,
+            weight_grams,
+            length_cm,
+            width_cm,
+            height_cm,
+            images:product_images (
+              image_url,
+              sort_order
+            )
+          )
+        ),
         status_history:order_status_history (*)
       `)
       .eq("id", id)
@@ -93,6 +133,49 @@ export async function getAdminOrderById(id: string): Promise<Order | null> {
       order.status_history.sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
+    }
+
+    // Sort product images and resolve any missing product by product_slug if needed
+    if (order.items && Array.isArray(order.items)) {
+      const missingSlugItems = order.items.filter((i) => !i.product && i.product_slug);
+      if (missingSlugItems.length > 0) {
+        try {
+          const slugs = Array.from(new Set(missingSlugItems.map((i) => i.product_slug!)));
+          const { data: fallbackProducts } = await supabase
+            .from("products")
+            .select(`
+              id,
+              name,
+              slug,
+              weight_grams,
+              length_cm,
+              width_cm,
+              height_cm,
+              images:product_images (
+                image_url,
+                sort_order
+              )
+            `)
+            .in("slug", slugs);
+
+          if (fallbackProducts && fallbackProducts.length > 0) {
+            const productBySlug = new Map(fallbackProducts.map((p) => [p.slug, p]));
+            order.items.forEach((item) => {
+              if (!item.product && item.product_slug && productBySlug.has(item.product_slug)) {
+                item.product = productBySlug.get(item.product_slug)!;
+              }
+            });
+          }
+        } catch (slugErr) {
+          console.warn("Fallback slug lookup warning:", slugErr);
+        }
+      }
+
+      order.items.forEach((item) => {
+        if (item.product?.images && Array.isArray(item.product.images)) {
+          item.product.images.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+        }
+      });
     }
 
     return order;
@@ -139,7 +222,38 @@ export async function getAdminDashboardMetrics(): Promise<DashboardMetrics> {
     ] = await Promise.all([
       supabase
         .from("orders")
-        .select("id, order_number, customer_name, customer_phone, customer_email, shipping_city, shipping_district, shipping_state, shipping_pincode, total_amount, payment_status, order_status, courier_partner, awb_number, created_at")
+        .select(`
+          id,
+          order_number,
+          customer_name,
+          customer_phone,
+          customer_email,
+          shipping_city,
+          shipping_district,
+          shipping_state,
+          shipping_pincode,
+          total_amount,
+          payment_status,
+          order_status,
+          courier_partner,
+          awb_number,
+          created_at,
+          items:order_items (
+            id,
+            product_id,
+            product_name,
+            product_slug,
+            quantity,
+            product:products (
+              id,
+              name,
+              images:product_images (
+                image_url,
+                sort_order
+              )
+            )
+          )
+        `)
         .order("created_at", { ascending: false })
         .limit(200),
       supabase
@@ -157,7 +271,16 @@ export async function getAdminDashboardMetrics(): Promise<DashboardMetrics> {
     if (ordersErr) console.warn("Dashboard orders metrics warning:", ordersErr.message);
     if (prodsErr) console.warn("Dashboard products metrics warning:", prodsErr.message);
 
-    const allOrders = (orders as Order[]) || [];
+    const allOrders = (orders as unknown as Order[]) || [];
+    allOrders.forEach((o) => {
+      if (o.items && Array.isArray(o.items)) {
+        o.items.forEach((item) => {
+          if (item.product?.images && Array.isArray(item.product.images)) {
+            item.product.images.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+          }
+        });
+      }
+    });
     const allProducts = products || [];
 
     const now = new Date();

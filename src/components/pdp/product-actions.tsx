@@ -6,6 +6,7 @@ import { Plus, Minus, Check } from "lucide-react";
 import { Product } from "@/types/catalog";
 import { useCart } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
+import { GiftCustomizationField } from "./gift-customization-field";
 
 interface ProductActionsProps {
   product: Product;
@@ -14,6 +15,7 @@ interface ProductActionsProps {
 export function ProductActions({ product }: ProductActionsProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
+  const [customization, setCustomization] = useState("");
   const [feedback, setFeedback] = useState<{ type: "bag" | "buy"; text: string } | null>(null);
   const { addItem, setBuyNowItem } = useCart();
 
@@ -31,7 +33,7 @@ export function ProductActions({ product }: ProductActionsProps) {
 
   const handleAddToBag = () => {
     if (isOutOfStock) return;
-    addItem(product, quantity);
+    addItem(product, quantity, customization);
     setFeedback({
       type: "bag",
       text: `Added ${quantity} ${quantity === 1 ? "item" : "items"} to your bag.`,
@@ -43,7 +45,7 @@ export function ProductActions({ product }: ProductActionsProps) {
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;
-    setBuyNowItem(product, quantity);
+    setBuyNowItem(product, quantity, customization);
     let stateParam = "";
     try {
       const saved =
@@ -60,6 +62,13 @@ export function ProductActions({ product }: ProductActionsProps) {
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Personalized Gift Request Section */}
+      <GiftCustomizationField
+        value={customization}
+        onChange={setCustomization}
+        disabled={isOutOfStock}
+      />
+
       {/* Quantity Stepper Row */}
       <div className="flex flex-col gap-1.5">
         <span className="font-sans text-[11px] uppercase tracking-wider font-semibold text-[#a39085]">

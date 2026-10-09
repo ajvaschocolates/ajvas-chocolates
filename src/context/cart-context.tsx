@@ -74,7 +74,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         images?: Array<{ image_url: string }>;
         category?: { name: string } | null;
       },
-      quantity: number = 1
+      quantity: number = 1,
+      customization?: string
     ) => {
       const validQty = Math.max(1, Math.floor(quantity));
       const discounted = calculateDiscountedPrice(
@@ -84,9 +85,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       );
       const imageUrl = product.images && product.images.length > 0 ? product.images[0].image_url : undefined;
       const categoryName = product.category?.name;
+      const cleanCustomization = customization?.trim() || undefined;
 
       setItems((prev) => {
-        const existingIdx = prev.findIndex((item) => item.productId === product.id);
+        const existingIdx = prev.findIndex(
+          (item) =>
+            item.productId === product.id &&
+            (item.customization || undefined) === cleanCustomization
+        );
         if (existingIdx > -1) {
           const updated = [...prev];
           updated[existingIdx] = {
@@ -110,6 +116,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             heightCm: product.height_cm,
             imageUrl,
             categoryName,
+            customization: cleanCustomization,
           },
         ];
       });
@@ -127,27 +134,45 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         heightCm: product.height_cm,
         imageUrl,
         categoryName,
+        customization: cleanCustomization,
       };
       setLastAddedItem(addedItemObj);
     },
     []
   );
 
-  const removeItem = useCallback((productId: string) => {
-    setItems((prev) => prev.filter((item) => item.productId !== productId));
+  const removeItem = useCallback((productId: string, customization?: string) => {
+    setItems((prev) =>
+      prev.filter((item) => {
+        if (item.productId !== productId) return true;
+        if (customization !== undefined) {
+          return (item.customization || undefined) !== (customization?.trim() || undefined);
+        }
+        return false;
+      })
+    );
   }, []);
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(productId);
-      return;
-    }
-    setItems((prev) =>
-      prev.map((item) =>
-        item.productId === productId ? { ...item, quantity: Math.floor(quantity) } : item
-      )
-    );
-  }, [removeItem]);
+  const updateQuantity = useCallback(
+    (productId: string, quantity: number, customization?: string) => {
+      if (quantity <= 0) {
+        removeItem(productId, customization);
+        return;
+      }
+      setItems((prev) =>
+        prev.map((item) => {
+          if (item.productId !== productId) return item;
+          if (customization !== undefined) {
+            if ((item.customization || undefined) !== (customization?.trim() || undefined)) {
+              return item;
+            }
+          }
+          return { ...item, quantity: Math.floor(quantity) };
+        })
+      );
+    },
+    [removeItem]
+  );
 
   const setBuyNowItem = useCallback(
     (
@@ -165,7 +190,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         images?: Array<{ image_url: string }>;
         category?: { name: string } | null;
       },
-      quantity: number = 1
+      quantity: number = 1,
+      customization?: string
     ) => {
       const validQty = Math.max(1, Math.floor(quantity));
       const discounted = calculateDiscountedPrice(
@@ -175,6 +201,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       );
       const imageUrl = product.images && product.images.length > 0 ? product.images[0].image_url : undefined;
       const categoryName = product.category?.name;
+      const cleanCustomization = customization?.trim() || undefined;
 
       const item: CartItem = {
         productId: product.id,
@@ -189,6 +216,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         heightCm: product.height_cm,
         imageUrl,
         categoryName,
+        customization: cleanCustomization,
       };
 
       setBuyNowItemState(item);

@@ -16,7 +16,20 @@ export interface OrderItem {
   length_cm?: number | null;
   width_cm?: number | null;
   height_cm?: number | null;
+  customization?: string | null;
   created_at: string;
+  product?: {
+    id: string;
+    name: string;
+    weight_grams?: number | null;
+    length_cm?: number | null;
+    width_cm?: number | null;
+    height_cm?: number | null;
+    images?: Array<{
+      image_url: string;
+      sort_order?: number;
+    }>;
+  } | null;
 }
 
 export interface OrderStatusHistory {

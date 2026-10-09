@@ -8,6 +8,7 @@ import {
   ShoppingBag,
   RotateCcw,
   Eye,
+  Package,
 } from "lucide-react";
 
 interface OrderListClientProps {
@@ -34,7 +35,10 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
       const matchName = o.customer_name.toLowerCase().includes(q);
       const matchPhone = o.customer_phone.toLowerCase().includes(q);
       const matchPin = o.shipping_pincode.toLowerCase().includes(q);
-      if (!matchNum && !matchName && !matchPhone && !matchPin) return false;
+      const matchProduct = o.items?.some((item) =>
+        item.product_name.toLowerCase().includes(q)
+      );
+      if (!matchNum && !matchName && !matchPhone && !matchPin && !matchProduct) return false;
     }
 
     if (statusFilter !== "ALL" && o.order_status !== statusFilter) return false;
@@ -162,6 +166,7 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
               <thead>
                 <tr className="bg-parchment-muted/60 border-b border-parchment-border text-[11px] font-bold uppercase tracking-wider text-cocoa-600">
                   <th scope="col" className="py-3.5 pl-4 pr-3">Order Number</th>
+                  <th scope="col" className="py-3.5 px-3">Product</th>
                   <th scope="col" className="py-3.5 px-3">Customer</th>
                   <th scope="col" className="py-3.5 px-3">Destination</th>
                   <th scope="col" className="py-3.5 px-3">Date</th>
@@ -172,16 +177,51 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
                 </tr>
               </thead>
               <tbody className="divide-y divide-parchment-border">
-                {filteredOrders.map((o) => (
-                  <tr key={o.id} className="hover:bg-parchment-muted/30 transition-colors">
-                    <td className="py-3.5 pl-4 pr-3 font-mono font-bold text-cocoa-950">
-                      {o.order_number}
-                    </td>
-                    <td className="py-3.5 px-3">
-                      <div className="font-semibold text-cocoa-950">{o.customer_name}</div>
-                      <div className="text-[11px] text-cocoa-600 font-mono">{o.customer_phone}</div>
-                    </td>
-                    <td className="py-3.5 px-3 text-cocoa-800">
+                {filteredOrders.map((o) => {
+                  const firstItem = o.items?.[0];
+                  const imageUrl = firstItem?.product?.images?.[0]?.image_url;
+                  const productName = firstItem?.product_name || firstItem?.product?.name;
+                  const extraCount = (o.items?.length || 0) - 1;
+
+                  return (
+                    <tr key={o.id} className="hover:bg-parchment-muted/30 transition-colors">
+                      <td className="py-3.5 pl-4 pr-3 font-mono font-bold text-cocoa-950">
+                        {o.order_number}
+                      </td>
+                      <td className="py-3.5 px-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative w-11 h-11 rounded-md overflow-hidden bg-white border border-parchment-border shrink-0 flex items-center justify-center shadow-2xs">
+                            {imageUrl ? (
+                              <img
+                                src={imageUrl}
+                                alt={productName || "Product"}
+                                className="w-full h-full object-contain p-0.5"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-parchment-muted text-cocoa-400">
+                                <Package className="w-4 h-4 stroke-[1.5]" />
+                              </div>
+                            )}
+                          </div>
+                          {productName && (
+                            <div className="min-w-0 max-w-[140px]">
+                              <div className="font-semibold text-cocoa-950 truncate text-xs" title={productName}>
+                                {productName}
+                              </div>
+                              {extraCount > 0 && (
+                                <span className="text-[10px] text-cocoa-600 font-mono block">
+                                  +{extraCount} more item{extraCount > 1 ? "s" : ""}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-3">
+                        <div className="font-semibold text-cocoa-950">{o.customer_name}</div>
+                        <div className="text-[11px] text-cocoa-600 font-mono">{o.customer_phone}</div>
+                      </td>
+                      <td className="py-3.5 px-3 text-cocoa-800">
                       <div>{o.shipping_district}, {o.shipping_state}</div>
                       <div className="text-[11px] text-cocoa-600 font-mono">{o.shipping_pincode}</div>
                     </td>
@@ -223,7 +263,8 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
                       </Link>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
