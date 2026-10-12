@@ -36,9 +36,12 @@ export async function getAllAdminOrders(limit = 100): Promise<Order[]> {
         customer_name,
         customer_phone,
         customer_email,
-        shipping_pincode,
+        shipping_address_line1,
+        shipping_address_line2,
         shipping_city,
+        shipping_district,
         shipping_state,
+        shipping_pincode,
         total_amount,
         subtotal,
         shipping_amount,
@@ -184,6 +187,66 @@ export async function getAdminOrderById(id: string): Promise<Order | null> {
     return null;
   }
 }
+
+/**
+ * Fetches multiple orders by their IDs for printing and bulk operations.
+ */
+export async function getAdminOrdersByIds(ids: string[]): Promise<Order[]> {
+  if (!ids || ids.length === 0) return [];
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("orders")
+      .select(`
+        id,
+        order_number,
+        customer_name,
+        customer_phone,
+        customer_email,
+        shipping_address_line1,
+        shipping_address_line2,
+        shipping_city,
+        shipping_district,
+        shipping_state,
+        shipping_pincode,
+        total_amount,
+        subtotal,
+        shipping_amount,
+        order_status,
+        payment_status,
+        payment_provider,
+        courier_partner,
+        courier_service_name,
+        awb_number,
+        tracking_url,
+        created_at
+      `)
+      .in("id", ids);
+
+    if (error) {
+      console.warn("Supabase admin orders by IDs warning:", error.message);
+      return [];
+    }
+
+    const orderMap = new Map<string, Order>();
+    ((data as unknown as Order[]) || []).forEach((o) => orderMap.set(o.id, o));
+
+    // Preserve original ID order and deduplicate
+    const result: Order[] = [];
+    const seen = new Set<string>();
+    for (const id of ids) {
+      if (!seen.has(id) && orderMap.has(id)) {
+        seen.add(id);
+        result.push(orderMap.get(id)!);
+      }
+    }
+    return result;
+  } catch (err) {
+    console.error("Error fetching admin orders by IDs:", err);
+    return [];
+  }
+}
+
 
 /**
  * Computes authoritative real-time metrics for the Admin Triage Dashboard from Supabase in parallel.

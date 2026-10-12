@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Order } from "@/types/orders";
 import {
@@ -9,7 +9,12 @@ import {
   RotateCcw,
   Eye,
   Package,
+  Printer,
+  AlertTriangle,
+  X,
 } from "lucide-react";
+import AddressSlipPrintModal from "./AddressSlipPrintModal";
+import { hasValidDeliveryAddress, validateOrderForSlip } from "@/lib/orders/slip-utils";
 
 interface OrderListClientProps {
   initialOrders: Order[];
@@ -20,6 +25,19 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [paymentFilter, setPaymentFilter] = useState("ALL");
+
+  // Selection & Print State
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+  const [ordersToPrint, setOrdersToPrint] = useState<Order[]>([]);
+  const [autoTriggerPrint, setAutoTriggerPrint] = useState(false);
+  const [validationError, setValidationError] = useState<{
+    orderId?: string;
+    orderNumber?: string;
+    message: string;
+  } | null>(null);
+
+  const selectAllRef = useRef<HTMLInputElement>(null);
 
   // Metrics
   const totalCount = orders.length;
@@ -47,6 +65,92 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
     return true;
   });
 
+  // Selection helpers
+  const isAllFilteredSelected = useMemo(() => {
+    return (
+      filteredOrders.length > 0 &&
+      filteredOrders.every((o) => selectedOrderIds.has(o.id))
+    );
+  }, [filteredOrders, selectedOrderIds]);
+
+  const isSomeFilteredSelected = useMemo(() => {
+    return filteredOrders.some((o) => selectedOrderIds.has(o.id));
+  }, [filteredOrders, selectedOrderIds]);
+
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate =
+        isSomeFilteredSelected && !isAllFilteredSelected;
+    }
+  }, [isSomeFilteredSelected, isAllFilteredSelected]);
+
+  function toggleSelectOrder(orderId: string) {
+    setSelectedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelectedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (isAllFilteredSelected) {
+        // Deselect displayed orders
+        filteredOrders.forEach((o) => next.delete(o.id));
+      } else {
+        // Select displayed orders
+        filteredOrders.forEach((o) => next.add(o.id));
+      }
+      return next;
+    });
+  }
+
+  function clearSelection() {
+    setSelectedOrderIds(new Set());
+  }
+
+  // Print Handlers
+  function handlePrintSingleOrder(order: Order) {
+    const check = validateOrderForSlip(order);
+    if (!check.isValid) {
+      setValidationError({
+        orderId: order.id,
+        orderNumber: order.order_number,
+        message: `Cannot print address slip for Order #${order.order_number}: ${check.reason}`,
+      });
+      return;
+    }
+    setValidationError(null);
+    setOrdersToPrint([order]);
+    setAutoTriggerPrint(true);
+    setPrintModalOpen(true);
+  }
+
+  function handlePrintSelected() {
+    const selected = orders.filter((o) => selectedOrderIds.has(o.id));
+    if (selected.length === 0) return;
+
+    const valid = selected.filter((o) => validateOrderForSlip(o).isValid);
+    if (valid.length === 0) {
+      setValidationError({
+        orderId: selected[0]?.id,
+        orderNumber: selected[0]?.order_number,
+        message: `None of the ${selected.length} selected orders have a valid 6-digit PIN code and street address. Please update their addresses before printing.`,
+      });
+      return;
+    }
+
+    setValidationError(null);
+    setOrdersToPrint(selected);
+    setAutoTriggerPrint(true);
+    setPrintModalOpen(true);
+  }
+
   function resetFilters() {
     setSearchQuery("");
     setStatusFilter("ALL");
@@ -55,6 +159,31 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
+      {/* Graceful Validation Error Notification */}
+      {validationError && (
+        <div className="p-4 bg-amber-50 border border-amber-300 rounded-lg flex items-center justify-between text-amber-950 text-xs shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2 flex-wrap">
+            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>{validationError.message}</span>
+            {validationError.orderId && (
+              <Link
+                href={`/admin/orders/${validationError.orderId}`}
+                className="font-bold underline text-amber-900 hover:text-amber-950 inline-flex items-center gap-1 ml-1"
+              >
+                <span>Open Order #{validationError.orderNumber} to Update Address ➔</span>
+              </Link>
+            )}
+          </div>
+          <button
+            onClick={() => setValidationError(null)}
+            className="text-amber-800 hover:text-amber-950 p-1 shrink-0"
+            aria-label="Dismiss alert"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-parchment-border">
         <div>
@@ -69,6 +198,37 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
           <p className="text-sm text-cocoa-600 mt-0.5">
             Manage guest checkout orders, shipping dispatch, and order fulfillment.
           </p>
+        </div>
+
+        {/* Action Button Strip */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handlePrintSelected}
+            disabled={selectedOrderIds.size === 0}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-xs font-semibold bg-cocoa-950 hover:bg-cocoa-900 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs min-h-[44px]"
+            title={
+              selectedOrderIds.size === 0
+                ? "Select one or more orders to print address slips"
+                : `Print address slips for ${selectedOrderIds.size} selected order(s)`
+            }
+          >
+            <Printer className="w-4 h-4" />
+            <span>
+              Print Selected Address Slips
+              {selectedOrderIds.size > 0 ? ` (${selectedOrderIds.size})` : ""}
+            </span>
+          </button>
+
+          {selectedOrderIds.size > 0 && (
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="px-3 py-2.5 text-xs font-medium text-cocoa-600 hover:text-cocoa-950 bg-parchment-muted rounded border border-parchment-line transition-colors min-h-[44px]"
+            >
+              Deselect ({selectedOrderIds.size})
+            </button>
+          )}
         </div>
       </div>
 
@@ -165,7 +325,17 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-parchment-muted/60 border-b border-parchment-border text-[11px] font-bold uppercase tracking-wider text-cocoa-600">
-                  <th scope="col" className="py-3.5 pl-4 pr-3">Order Number</th>
+                  <th scope="col" className="py-3.5 pl-4 pr-1 w-10 text-center">
+                    <input
+                      type="checkbox"
+                      ref={selectAllRef}
+                      checked={isAllFilteredSelected}
+                      onChange={toggleSelectAll}
+                      aria-label="Select all displayed orders"
+                      className="w-4 h-4 rounded border-parchment-border text-cocoa-950 focus:ring-cocoa-950 cursor-pointer accent-[#140c08]"
+                    />
+                  </th>
+                  <th scope="col" className="py-3.5 pl-2 pr-3">Order Number</th>
                   <th scope="col" className="py-3.5 px-3">Product</th>
                   <th scope="col" className="py-3.5 px-3">Customer</th>
                   <th scope="col" className="py-3.5 px-3">Destination</th>
@@ -182,10 +352,25 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
                   const imageUrl = firstItem?.product?.images?.[0]?.image_url;
                   const productName = firstItem?.product_name || firstItem?.product?.name;
                   const extraCount = (o.items?.length || 0) - 1;
+                  const isSelected = selectedOrderIds.has(o.id);
 
                   return (
-                    <tr key={o.id} className="hover:bg-parchment-muted/30 transition-colors">
-                      <td className="py-3.5 pl-4 pr-3 font-mono font-bold text-cocoa-950">
+                    <tr
+                      key={o.id}
+                      className={`hover:bg-parchment-muted/30 transition-colors ${
+                        isSelected ? "bg-amber-50/40" : ""
+                      }`}
+                    >
+                      <td className="py-3.5 pl-4 pr-1 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectOrder(o.id)}
+                          aria-label={`Select order ${o.order_number}`}
+                          className="w-4 h-4 rounded border-parchment-border text-cocoa-950 focus:ring-cocoa-950 cursor-pointer accent-[#140c08]"
+                        />
+                      </td>
+                      <td className="py-3.5 pl-2 pr-3 font-mono font-bold text-cocoa-950">
                         {o.order_number}
                       </td>
                       <td className="py-3.5 px-3">
@@ -222,47 +407,62 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
                         <div className="text-[11px] text-cocoa-600 font-mono">{o.customer_phone}</div>
                       </td>
                       <td className="py-3.5 px-3 text-cocoa-800">
-                      <div>{o.shipping_district}, {o.shipping_state}</div>
-                      <div className="text-[11px] text-cocoa-600 font-mono">{o.shipping_pincode}</div>
-                    </td>
-                    <td className="py-3.5 px-3 text-cocoa-700 whitespace-nowrap font-mono">
-                      {new Date(o.created_at).toLocaleDateString("en-IN", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="py-3.5 px-3 text-right font-mono font-bold text-cocoa-950">
-                      ₹{Number(o.total_amount || 0).toLocaleString("en-IN")}
-                    </td>
-                    <td className="py-3.5 px-3 text-center">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
-                          o.payment_status === "paid"
-                            ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
-                            : o.payment_status === "failed"
-                            ? "bg-rose-100 text-rose-900 border border-rose-300"
-                            : "bg-amber-100 text-amber-900 border border-amber-300"
-                        }`}
-                      >
-                        {o.payment_status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-3 text-center">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-parchment-muted text-cocoa-900 border border-parchment-border">
-                        {o.order_status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 pl-3 pr-4 text-right">
-                      <Link
-                        href={`/admin/orders/${o.id}`}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded border border-parchment-line bg-parchment-surface hover:bg-parchment-muted text-xs font-semibold text-cocoa-950 transition-colors"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        View
-                      </Link>
-                    </td>
-                  </tr>
+                        <div>
+                          {[o.shipping_district || o.shipping_city, o.shipping_state]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </div>
+                        <div className="text-[11px] text-cocoa-600 font-mono">{o.shipping_pincode}</div>
+                      </td>
+                      <td className="py-3.5 px-3 text-cocoa-700 whitespace-nowrap font-mono">
+                        {new Date(o.created_at).toLocaleDateString("en-IN", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="py-3.5 px-3 text-right font-mono font-bold text-cocoa-950">
+                        ₹{Number(o.total_amount || 0).toLocaleString("en-IN")}
+                      </td>
+                      <td className="py-3.5 px-3 text-center">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                            o.payment_status === "paid"
+                              ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
+                              : o.payment_status === "failed"
+                              ? "bg-rose-100 text-rose-900 border border-rose-300"
+                              : "bg-amber-100 text-amber-900 border border-amber-300"
+                          }`}
+                        >
+                          {o.payment_status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-3 text-center">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-parchment-muted text-cocoa-900 border border-parchment-border">
+                          {o.order_status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 pl-3 pr-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handlePrintSingleOrder(o)}
+                            title="Print Address Slip for this order"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-cocoa-800/30 bg-cocoa-950 hover:bg-cocoa-900 text-white text-xs font-semibold transition-colors shadow-2xs whitespace-nowrap"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>Print Slip</span>
+                          </button>
+                          <Link
+                            href={`/admin/orders/${o.id}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-parchment-line bg-parchment-surface hover:bg-parchment-muted text-xs font-semibold text-cocoa-950 transition-colors whitespace-nowrap"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>View</span>
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })}
               </tbody>
@@ -270,6 +470,15 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
           </div>
         </div>
       )}
+
+      {/* Address Slip Print Dialog & Printable Sheets */}
+      <AddressSlipPrintModal
+        isOpen={printModalOpen}
+        onClose={() => setPrintModalOpen(false)}
+        orders={ordersToPrint}
+        onPrintComplete={clearSelection}
+        autoTriggerPrint={autoTriggerPrint}
+      />
     </div>
   );
 }

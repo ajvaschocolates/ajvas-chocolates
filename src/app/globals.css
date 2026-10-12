@@ -76,3 +76,104 @@
     font-family: 'Pally', '_Pally_Variable', sans-serif;
   }
 }
+
+/* ========================================================
+   AJVAS CHOCOLATES — A4 Address Slip Printing (8-per-sheet)
+   ======================================================== */
+
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    width: 210mm !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide everything on the page except the active print container */
+  body > *:not(#ajvas-print-portal):not(#ajvas-print-page) {
+    display: none !important;
+  }
+
+  /* Screen-only UI chrome elements */
+  .screen-only,
+  .no-print,
+  header,
+  nav,
+  aside,
+  button,
+  footer {
+    display: none !important;
+  }
+
+  #ajvas-print-portal,
+  #ajvas-print-page {
+    display: block !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    background: #ffffff !important;
+  }
+
+  .ajvas-print-area {
+    display: block !important;
+    width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  /* Exact A4 Portrait Sheets */
+  .address-sheet {
+    width: 210mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+    min-height: 297mm !important;
+    display: grid !important;
+    grid-template-columns: 105mm 105mm !important;
+    grid-template-rows: 74.25mm 74.25mm 74.25mm 74.25mm !important;
+    gap: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    background: #ffffff !important;
+  }
+
+  /* Prevent trailing blank page after the final sheet */
+  .address-sheet:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  /* Exact 1/8 A4 Slips */
+  .address-slip {
+    width: 105mm !important;
+    height: 74.25mm !important;
+    max-width: 105mm !important;
+    max-height: 74.25mm !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background: #ffffff !important;
+  }
+
+  .address-slip.empty-cell .empty-cell-text {
+    display: none !important;
+  }
+}
+
