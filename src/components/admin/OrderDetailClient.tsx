@@ -27,7 +27,12 @@ import {
   Eye,
   EyeOff,
   Save,
+  Printer,
+  AlertTriangle,
+  X,
 } from "lucide-react";
+import AddressSlipPrintModal from "./AddressSlipPrintModal";
+import { validateOrderForSlip } from "@/lib/orders/slip-utils";
 
 interface OrderDetailClientProps {
   initialOrder: Order;
@@ -35,6 +40,8 @@ interface OrderDetailClientProps {
 
 export default function OrderDetailClient({ initialOrder }: OrderDetailClientProps) {
   const [order, setOrder] = useState<Order>(initialOrder);
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+  const [printAddressError, setPrintAddressError] = useState<string | null>(null);
   const [targetStatus, setTargetStatus] = useState<OrderStatus>(order.order_status);
   const [statusNote, setStatusNote] = useState("");
 
@@ -225,9 +232,43 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
         <div className="lg:col-span-7 space-y-6">
           {/* Customer & Address Card */}
           <div className="bg-parchment-surface border border-parchment-border rounded-xl p-5 shadow-2xs space-y-4">
-            <h2 className="text-sm font-serif font-bold text-cocoa-950 flex items-center gap-2">
-              <User className="w-4 h-4 text-cocoa-600" /> Customer &amp; Address Information
-            </h2>
+            {printAddressError && (
+              <div className="p-3 bg-amber-50 border border-amber-300 rounded text-amber-950 text-xs flex items-center justify-between shadow-2xs animate-in fade-in">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>{printAddressError}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPrintAddressError(null)}
+                  className="text-amber-800 hover:text-amber-950 p-1"
+                  aria-label="Dismiss alert"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-serif font-bold text-cocoa-950 flex items-center gap-2">
+                <User className="w-4 h-4 text-cocoa-600" /> Customer &amp; Address Information
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setPrintAddressError(null);
+                  const check = validateOrderForSlip(order);
+                  if (!check.isValid) {
+                    setPrintAddressError(`Cannot print address slip: ${check.reason}.`);
+                    return;
+                  }
+                  setPrintModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-cocoa-950 hover:bg-cocoa-900 text-white text-xs font-semibold transition-colors shadow-2xs"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print Address Slip</span>
+              </button>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
                 <span className="block text-[11px] text-cocoa-600 font-mono uppercase">Recipient Name</span>
@@ -710,6 +751,15 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
           )}
         </div>
       </div>
+
+      {/* Address Slip Print Dialog */}
+      <AddressSlipPrintModal
+        isOpen={printModalOpen}
+        onClose={() => setPrintModalOpen(false)}
+        orders={[order]}
+        autoTriggerPrint={true}
+      />
     </div>
   );
 }
+
