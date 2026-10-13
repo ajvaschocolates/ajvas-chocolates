@@ -19,6 +19,9 @@ interface PaymentActionStepProps {
   items: CartItem[];
   subtotal: number;
   shippingAmount: number;
+  giftPurpose?: string | null;
+  giftPurposeFee?: number | null;
+  customGiftPurposeDescription?: string | null;
 }
 
 function loadRazorpayScript(): Promise<boolean> {
@@ -49,6 +52,9 @@ export function PaymentActionStep({
   items,
   subtotal,
   shippingAmount,
+  giftPurpose,
+  giftPurposeFee,
+  customGiftPurposeDescription,
 }: PaymentActionStepProps) {
   const router = useRouter();
   const [paymentState, setPaymentState] = useState<PaymentState>("ready");
@@ -78,12 +84,15 @@ export function PaymentActionStep({
         return;
       }
 
-      // 2. Create Razorpay order on server with verified items and metadata
+      // 2. Create Razorpay order on server with verified items, shipping, and gift purpose
       const orderRes = await createRazorpayOrderAction({
         amount: totalAmount,
         items,
         shippingAmount: shippingAmount ?? 0,
         customerData: formData,
+        giftPurpose: giftPurpose || undefined,
+        giftPurposeFee: giftPurposeFee ?? 0,
+        customGiftPurposeDescription: customGiftPurposeDescription || undefined,
       });
       if (!orderRes.success || !orderRes.orderId || !orderRes.keyId) {
         setPaymentState("ready");
@@ -131,6 +140,9 @@ export function PaymentActionStep({
             items,
             subtotal,
             shippingAmount,
+            giftPurpose: giftPurpose || undefined,
+            giftPurposeFee: giftPurposeFee ?? 0,
+            customGiftPurposeDescription: customGiftPurposeDescription || undefined,
             totalAmount,
           });
 

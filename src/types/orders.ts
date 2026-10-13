@@ -1,4 +1,12 @@
-export type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+export type ActiveOrderStatus = "pending" | "processing" | "shipped" | "delivered";
+export const ACTIVE_ORDER_STATUSES: readonly ActiveOrderStatus[] = [
+  "pending",
+  "processing",
+  "shipped",
+  "delivered",
+] as const;
+
+export type OrderStatus = ActiveOrderStatus | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed";
 export type RefundStatus = "none" | "partial" | "full";
 
@@ -62,6 +70,10 @@ export interface Order {
   discount_amount: number;
   shipping_amount: number;
   total_amount: number;
+  gift_purpose?: string | null;
+  gift_purpose_fee?: number | null;
+  custom_gift_purpose_description?: string | null;
+  gift_purpose_description?: string | null;
   currency: string;
   order_status: OrderStatus;
   payment_status: PaymentStatus;

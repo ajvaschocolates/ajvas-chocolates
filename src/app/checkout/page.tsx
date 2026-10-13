@@ -16,13 +16,17 @@ export const metadata: Metadata = {
 };
 
 
-export default function CheckoutPage() {
+import { getGiftPurposeConfig } from "@/lib/supabase/gift-purposes";
+
+export default async function CheckoutPage() {
+  const giftPurposeConfig = await getGiftPurposeConfig();
+
   return (
     <div className="flex min-h-screen flex-col bg-[#120805] text-[#faf4f0]">
       <Header />
       <main id="main-content" className="flex-1">
         <Suspense fallback={<CheckoutLoading />}>
-          <CheckoutView />
+          <CheckoutView giftPurposeConfig={giftPurposeConfig} />
         </Suspense>
       </main>
       <Footer />

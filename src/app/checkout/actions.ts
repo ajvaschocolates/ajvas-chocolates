@@ -53,6 +53,11 @@ import { GuestCustomerFormData } from "@/types/checkout";
 import { CartItem } from "@/types/cart";
 import { revalidatePath } from "next/cache";
 
+import {
+  getGiftPurposeConfig,
+  validateGiftPurposeSelection,
+} from "@/lib/supabase/gift-purposes";
+
 export interface CreateRazorpayOrderResult {
   success: boolean;
   orderId?: string;
@@ -70,6 +75,10 @@ export interface VerifyOrderInput {
   items: CartItem[];
   subtotal: number;
   shippingAmount: number;
+  giftPurpose?: string;
+  giftPurposeFee?: number;
+  customGiftPurposeDescription?: string;
+  giftPurposeDescription?: string;
   totalAmount: number;
 }
 
@@ -85,6 +94,10 @@ export interface CreateRazorpayOrderInput {
   items?: CartItem[];
   shippingAmount?: number;
   customerData?: GuestCustomerFormData;
+  giftPurpose?: string;
+  giftPurposeFee?: number;
+  customGiftPurposeDescription?: string;
+  giftPurposeDescription?: string;
 }
 
 /**
@@ -106,7 +119,16 @@ export async function createRazorpayOrderAction(
 
     let verifiedAmount = rawAmount;
 
-    // Server-Side Price Recalculation (Fraud & Tamper Prevention)
+    // Server-Side Price & Gift Purpose Recalculation (Fraud & Tamper Prevention)
+    const rawGiftPurpose = typeof input === "object" ? input.giftPurpose : undefined;
+    const rawGiftDesc = typeof input === "object" ? (input.customGiftPurposeDescription ?? input.giftPurposeDescription) : undefined;
+    const giftConfig = await getGiftPurposeConfig();
+    const giftValidation = validateGiftPurposeSelection(rawGiftPurpose, giftConfig, rawGiftDesc);
+    if (!giftValidation.isValid) {
+      return { success: false, error: giftValidation.error || "Invalid gift purpose selection." };
+    }
+    const authoritativeCustomFee = giftValidation.fee;
+
     if (items && items.length > 0) {
       const productIds = items.map((i) => i.productId).filter(Boolean);
       if (productIds.length > 0) {
@@ -135,9 +157,13 @@ export async function createRazorpayOrderAction(
             }
           }
 
-          verifiedAmount = calculatedSubtotal + shipping;
+          // Authoritative order total: subtotal + shipping + custom fee (applied strictly ONCE per order)
+          verifiedAmount = calculatedSubtotal + shipping + authoritativeCustomFee;
         }
       }
+    } else if (typeof input === "object" && input.amount) {
+      // Direct buy / amount input with fee
+      verifiedAmount = rawAmount;
     }
 
     if (!verifiedAmount || verifiedAmount <= 0) {
@@ -159,6 +185,8 @@ export async function createRazorpayOrderAction(
         shipping_state: customer?.state?.slice(0, 30) || "",
         shipping_pincode: customer?.pincode?.slice(0, 10) || "",
         items_count: String(items?.length || 0),
+        gift_purpose: giftValidation.normalizedPurpose?.slice(0, 40) || "None",
+        custom_fee: String(authoritativeCustomFee),
       },
     });
 
@@ -255,43 +283,92 @@ export async function verifyAndCreateOrderAction(
       0
     );
 
-    const { data: order, error: orderErr } = await supabase
+    // Authoritative Server-Side Validation for Gift Purpose & Total
+    const giftConfig = await getGiftPurposeConfig();
+    const rawGiftDesc = input.customGiftPurposeDescription ?? input.giftPurposeDescription;
+    const giftValidation = validateGiftPurposeSelection(input.giftPurpose, giftConfig, rawGiftDesc);
+    if (!giftValidation.isValid) {
+      return { success: false, error: giftValidation.error || "Invalid gift purpose." };
+    }
+    const authoritativeCustomFee = giftValidation.fee;
+    const authoritativeTotal = input.subtotal + input.shippingAmount + authoritativeCustomFee;
+
+    const orderPayload = {
+      order_number: orderNumber,
+      customer_name: input.customerData.fullName.trim(),
+      customer_phone: input.customerData.phone.trim(),
+      customer_email: input.customerData.email?.trim() || null,
+      shipping_address_line1: input.customerData.addressLine1.trim(),
+      shipping_address_line2: input.customerData.addressLine2?.trim() || null,
+      shipping_city: input.customerData.city?.trim() || input.customerData.district.trim(),
+      shipping_state: input.customerData.state.trim(),
+      shipping_district: input.customerData.district.trim(),
+      shipping_pincode: input.customerData.pincode.trim(),
+      subtotal: input.subtotal,
+      discount_amount: 0,
+      shipping_amount: input.shippingAmount,
+      total_amount: authoritativeTotal,
+      gift_purpose: giftValidation.normalizedPurpose,
+      gift_purpose_fee: authoritativeCustomFee,
+      custom_gift_purpose_description: giftValidation.normalizedDescription || null,
+      currency: "INR",
+      order_status: "processing" as const,
+      payment_status: "paid" as const,
+      payment_provider: "razorpay",
+      razorpay_order_id: input.razorpayOrderId,
+      razorpay_payment_id: input.razorpayPaymentId,
+      razorpay_signature: input.razorpaySignature,
+      payment_method: "online",
+      package_weight_grams: totalWeight,
+      placed_at: new Date().toISOString(),
+    };
+
+    let order: { id: string; order_number: string } | null = null;
+    const { data: insertedOrder, error: orderErr } = await supabase
       .from("orders")
-      .insert({
-        order_number: orderNumber,
-        customer_name: input.customerData.fullName.trim(),
-        customer_phone: input.customerData.phone.trim(),
-        customer_email: input.customerData.email?.trim() || null,
-        shipping_address_line1: input.customerData.addressLine1.trim(),
-        shipping_address_line2: input.customerData.addressLine2?.trim() || null,
-        shipping_city: input.customerData.city?.trim() || input.customerData.district.trim(),
-        shipping_state: input.customerData.state.trim(),
-        shipping_district: input.customerData.district.trim(),
-        shipping_pincode: input.customerData.pincode.trim(),
-        subtotal: input.subtotal,
-        discount_amount: 0,
-        shipping_amount: input.shippingAmount,
-        total_amount: input.totalAmount,
-        currency: "INR",
-        order_status: "processing",
-        payment_status: "paid",
-        payment_provider: "razorpay",
-        razorpay_order_id: input.razorpayOrderId,
-        razorpay_payment_id: input.razorpayPaymentId,
-        razorpay_signature: input.razorpaySignature,
-        payment_method: "online",
-        package_weight_grams: totalWeight,
-        placed_at: new Date().toISOString(),
-      })
+      .insert(orderPayload)
       .select("id, order_number")
       .single();
 
-    if (orderErr || !order) {
-      console.error("[Orders] Database order insert failed:", orderErr);
-      return {
-        success: false,
-        error: orderErr?.message || "Failed to record order in database.",
-      };
+    if (orderErr) {
+      // Resilient fallback: if the database schema does not yet have 'gift_purpose' or description columns,
+      // retry insert without those columns so the payment and order are never lost
+      if (
+        orderErr.code === "PGRST204" ||
+        orderErr.message?.includes("gift_purpose") ||
+        orderErr.message?.includes("custom_gift_purpose_description")
+      ) {
+        const fallbackPayload = { ...orderPayload };
+        delete (fallbackPayload as { custom_gift_purpose_description?: unknown }).custom_gift_purpose_description;
+        delete (fallbackPayload as { gift_purpose?: unknown }).gift_purpose;
+        delete (fallbackPayload as { gift_purpose_fee?: unknown }).gift_purpose_fee;
+        const { data: retryOrder, error: retryErr } = await supabase
+          .from("orders")
+          .insert(fallbackPayload)
+          .select("id, order_number")
+          .single();
+
+        if (retryErr || !retryOrder) {
+          console.error("[Orders] Fallback order insert failed:", retryErr);
+          return {
+            success: false,
+            error: retryErr?.message || "Failed to record order in database.",
+          };
+        }
+        order = retryOrder;
+      } else {
+        console.error("[Orders] Database order insert failed:", orderErr);
+        return {
+          success: false,
+          error: orderErr?.message || "Failed to record order in database.",
+        };
+      }
+    } else {
+      order = insertedOrder;
+    }
+
+    if (!order) {
+      return { success: false, error: "Failed to record order in database." };
     }
 
     // 5. Insert order items
@@ -342,12 +419,18 @@ export async function verifyAndCreateOrderAction(
 
     // 6. Log initial order timeline status (including customer gift request audit snapshot)
     const customizedItems = input.items.filter((i) => i.customization?.trim());
-    let statusNote = `Online payment of ₹${input.totalAmount} confirmed via Razorpay (ID: ${input.razorpayPaymentId})`;
+    let statusNote = `Online payment of ₹${authoritativeTotal} confirmed via Razorpay (ID: ${input.razorpayPaymentId})`;
+    if (giftValidation.normalizedPurpose) {
+      statusNote += ` | Gift Purpose: "${giftValidation.normalizedPurpose}" (Fee: ₹${authoritativeCustomFee})`;
+      if (giftValidation.normalizedDescription) {
+        statusNote += ` - "${giftValidation.normalizedDescription}"`;
+      }
+    }
     if (customizedItems.length > 0) {
       const giftNotes = customizedItems
         .map((i) => `${i.name}: "${i.customization!.trim().slice(0, 150)}"`)
         .join("; ");
-      statusNote += ` | Gift Requests: ${giftNotes}`;
+      statusNote += ` | Item Gift Requests: ${giftNotes}`;
     }
 
     await supabase.from("order_status_history").insert({
