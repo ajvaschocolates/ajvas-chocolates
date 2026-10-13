@@ -8,6 +8,7 @@ import {
   Clock,
   ArrowRight,
   Package,
+  Gift,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -100,6 +101,30 @@ export default async function AdminDashboardPage() {
             Awaiting fulfillment
           </p>
         </div>
+      </section>
+
+      {/* Gift Purpose & Custom Fee Management Banner */}
+      <section className="bg-parchment-surface border border-parchment-border rounded-xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-brand-pink/10 border border-brand-pink/20 flex items-center justify-center text-brand-pink shrink-0">
+            <Gift className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="font-serif font-bold text-sm text-cocoa-950">
+              Gift Purpose &amp; Custom Fee Settings
+            </h2>
+            <p className="font-sans text-xs text-cocoa-600 mt-0.5">
+              Manage standard occasions (Happy Birthday, Anniversary, etc.) and configure the once-per-order Custom Fee.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/admin/gift-purposes"
+          className="px-4 py-2 bg-brand-pink hover:bg-brand-pink/90 text-white font-bold text-xs rounded-xl transition-colors shrink-0 shadow-xs flex items-center gap-1.5 self-start sm:self-auto"
+        >
+          <span>Manage Settings</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
       </section>
 
       {/* Recent Orders Section */}

@@ -75,7 +75,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         category?: { name: string } | null;
       },
       quantity: number = 1,
-      customization?: string
+      customization?: string,
+      customDescription?: string
     ) => {
       const validQty = Math.max(1, Math.floor(quantity));
       const discounted = calculateDiscountedPrice(
@@ -86,12 +87,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const imageUrl = product.images && product.images.length > 0 ? product.images[0].image_url : undefined;
       const categoryName = product.category?.name;
       const cleanCustomization = customization?.trim() || undefined;
+      const cleanCustomDescription = customDescription?.trim() || undefined;
 
       setItems((prev) => {
         const existingIdx = prev.findIndex(
           (item) =>
             item.productId === product.id &&
-            (item.customization || undefined) === cleanCustomization
+            (item.customization || undefined) === cleanCustomization &&
+            (item.customDescription || undefined) === cleanCustomDescription
         );
         if (existingIdx > -1) {
           const updated = [...prev];
@@ -117,6 +120,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             imageUrl,
             categoryName,
             customization: cleanCustomization,
+            customDescription: cleanCustomDescription,
           },
         ];
       });
@@ -135,18 +139,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         imageUrl,
         categoryName,
         customization: cleanCustomization,
+        customDescription: cleanCustomDescription,
       };
       setLastAddedItem(addedItemObj);
     },
     []
   );
 
-  const removeItem = useCallback((productId: string, customization?: string) => {
+  const removeItem = useCallback((productId: string, customization?: string, customDescription?: string) => {
     setItems((prev) =>
       prev.filter((item) => {
         if (item.productId !== productId) return true;
         if (customization !== undefined) {
-          return (item.customization || undefined) !== (customization?.trim() || undefined);
+          const sameCustomization = (item.customization || undefined) === (customization?.trim() || undefined);
+          if (customDescription !== undefined) {
+            const sameDescription = (item.customDescription || undefined) === (customDescription?.trim() || undefined);
+            return !(sameCustomization && sameDescription);
+          }
+          return !sameCustomization;
         }
         return false;
       })
@@ -154,9 +164,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateQuantity = useCallback(
-    (productId: string, quantity: number, customization?: string) => {
+    (productId: string, quantity: number, customization?: string, customDescription?: string) => {
       if (quantity <= 0) {
-        removeItem(productId, customization);
+        removeItem(productId, customization, customDescription);
         return;
       }
       setItems((prev) =>
@@ -165,6 +175,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           if (customization !== undefined) {
             if ((item.customization || undefined) !== (customization?.trim() || undefined)) {
               return item;
+            }
+            if (customDescription !== undefined) {
+              if ((item.customDescription || undefined) !== (customDescription?.trim() || undefined)) {
+                return item;
+              }
             }
           }
           return { ...item, quantity: Math.floor(quantity) };
@@ -191,7 +206,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         category?: { name: string } | null;
       },
       quantity: number = 1,
-      customization?: string
+      customization?: string,
+      customDescription?: string
     ) => {
       const validQty = Math.max(1, Math.floor(quantity));
       const discounted = calculateDiscountedPrice(
@@ -202,6 +218,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const imageUrl = product.images && product.images.length > 0 ? product.images[0].image_url : undefined;
       const categoryName = product.category?.name;
       const cleanCustomization = customization?.trim() || undefined;
+      const cleanCustomDescription = customDescription?.trim() || undefined;
 
       const item: CartItem = {
         productId: product.id,
@@ -217,6 +234,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         imageUrl,
         categoryName,
         customization: cleanCustomization,
+        customDescription: cleanCustomDescription,
       };
 
       setBuyNowItemState(item);

@@ -8,18 +8,56 @@ import { useCart } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
 import { GiftCustomizationField } from "./gift-customization-field";
 
+import { GiftPurposeConfig } from "@/types/gift-purpose";
+
 interface ProductActionsProps {
   product: Product;
+  giftPurposeConfig?: GiftPurposeConfig;
 }
 
-export function ProductActions({ product }: ProductActionsProps) {
+export function ProductActions({ product, giftPurposeConfig }: ProductActionsProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [customization, setCustomization] = useState("");
+  const [customDescription, setCustomDescription] = useState("");
+  const [descriptionError, setDescriptionError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: "bag" | "buy"; text: string } | null>(null);
   const { addItem, setBuyNowItem } = useCart();
 
   const isOutOfStock = product.availability === "out_of_stock";
+
+  const isCustomSelected =
+    customization === "Custom" || customization.toLowerCase().startsWith("custom");
+
+  const handlePurposeChange = (purpose: string) => {
+    setCustomization(purpose);
+    setDescriptionError(null);
+  };
+
+  const handleDescriptionChange = (desc: string) => {
+    setCustomDescription(desc);
+    if (desc.trim().length > 0) {
+      setDescriptionError(null);
+    }
+  };
+
+  const validateCustomGiftDescription = (): boolean => {
+    if (isCustomSelected) {
+      const trimmed = customDescription.trim();
+      if (!trimmed) {
+        setDescriptionError("Please describe your custom gift purpose.");
+        const el = document.getElementById("gift-purpose-dropdown-custom-description");
+        el?.focus();
+        return false;
+      }
+      if (trimmed.length > 300) {
+        setDescriptionError("Custom description must be 300 characters or less.");
+        return false;
+      }
+    }
+    setDescriptionError(null);
+    return true;
+  };
 
   const handleDecrement = () => {
     if (quantity > 1) {
@@ -33,7 +71,14 @@ export function ProductActions({ product }: ProductActionsProps) {
 
   const handleAddToBag = () => {
     if (isOutOfStock) return;
-    addItem(product, quantity, customization);
+    if (!validateCustomGiftDescription()) return;
+
+    addItem(
+      product,
+      quantity,
+      customization,
+      isCustomSelected ? customDescription.trim() : undefined
+    );
     setFeedback({
       type: "bag",
       text: `Added ${quantity} ${quantity === 1 ? "item" : "items"} to your bag.`,
@@ -45,7 +90,14 @@ export function ProductActions({ product }: ProductActionsProps) {
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;
-    setBuyNowItem(product, quantity, customization);
+    if (!validateCustomGiftDescription()) return;
+
+    setBuyNowItem(
+      product,
+      quantity,
+      customization,
+      isCustomSelected ? customDescription.trim() : undefined
+    );
     let stateParam = "";
     try {
       const saved =
@@ -65,7 +117,11 @@ export function ProductActions({ product }: ProductActionsProps) {
       {/* Personalized Gift Request Section */}
       <GiftCustomizationField
         value={customization}
-        onChange={setCustomization}
+        onChange={handlePurposeChange}
+        descriptionValue={customDescription}
+        onDescriptionChange={handleDescriptionChange}
+        descriptionError={descriptionError}
+        config={giftPurposeConfig}
         disabled={isOutOfStock}
       />
 

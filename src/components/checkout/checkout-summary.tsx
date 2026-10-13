@@ -13,6 +13,9 @@ interface CheckoutSummaryProps {
   totalWeightGrams: number;
   isBuyNowMode?: boolean;
   selectedState?: string;
+  giftPurpose?: string | null;
+  giftPurposeFee?: number | null;
+  giftPurposeDescription?: string | null;
 }
 
 export function CheckoutSummary({
@@ -24,13 +27,17 @@ export function CheckoutSummary({
   totalWeightGrams,
   isBuyNowMode,
   selectedState,
+  giftPurpose,
+  giftPurposeFee,
+  giftPurposeDescription,
 }: CheckoutSummaryProps) {
   const { selectedState: storedState } = useDeliveryState();
   const activeState = selectedState || storedState;
   const estimate = getDeliveryEstimateForState(activeState);
 
   const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
-  const finalTotal = shippingAmount !== null ? subtotal + shippingAmount : null;
+  const effectiveGiftFee = Number(giftPurposeFee || 0);
+  const finalTotal = shippingAmount !== null ? subtotal + shippingAmount + effectiveGiftFee : null;
 
   const formattedWeight =
     totalWeightGrams >= 1000
@@ -74,7 +81,7 @@ export function CheckoutSummary({
           const effectivePrice = item.discountedUnitPrice ?? item.unitPrice;
           const lineTotal = effectivePrice * item.quantity;
           return (
-            <div key={`${item.productId}-${item.customization || "default"}-${idx}`} className="py-3 flex items-center justify-between gap-3 text-xs font-sans">
+            <div key={`${item.productId}-${item.customization || "default"}-${item.customDescription || "nodesc"}-${idx}`} className="py-3 flex items-center justify-between gap-3 text-xs font-sans">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-12 h-12 rounded-sm bg-[#140b07] overflow-hidden shrink-0 flex items-center justify-center">
                   {item.imageUrl ? (
@@ -95,9 +102,16 @@ export function CheckoutSummary({
                     Qty: {item.quantity} × ₹{effectivePrice.toLocaleString("en-IN")}
                   </p>
                   {item.customization && (
-                    <p className="text-[#c99d52] text-[10px] truncate font-medium mt-0.5" title={item.customization}>
-                      Gift: &ldquo;{item.customization}&rdquo;
-                    </p>
+                    <div className="text-[10px] truncate font-medium mt-0.5">
+                      <span className="text-[#c99d52]" title={item.customization}>
+                        Gift: &ldquo;{item.customization}&rdquo;
+                      </span>
+                      {item.customDescription && (
+                        <p className="text-[#d0c4b8] text-[9.5px] truncate italic" title={item.customDescription}>
+                          &ldquo;{item.customDescription}&rdquo;
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -172,6 +186,36 @@ export function CheckoutSummary({
           )}
         </div>
 
+        {/* Gift Purpose Line Item */}
+        {giftPurpose && (
+          <div className="flex flex-col gap-0.5 pt-2 border-t border-[#3d1c12]/60">
+            <div className="flex items-center justify-between text-[#faf4f0]">
+              <span className="text-[#d1c2b9]">Gift Purpose</span>
+              <span className="font-semibold text-xs text-[#c99d52] truncate max-w-[170px]" title={giftPurpose}>
+                {giftPurpose}
+              </span>
+            </div>
+            {giftPurposeDescription && (
+              <p className="text-[10px] text-[#d0c4b8] italic truncate text-right" title={giftPurposeDescription}>
+                &ldquo;{giftPurposeDescription}&rdquo;
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Custom Purpose Fee Line Item (Charged once per order) */}
+        {effectiveGiftFee > 0 && (
+          <div className="flex items-center justify-between text-[#faf4f0] pt-1">
+            <div className="flex flex-col">
+              <span className="text-[#d1c2b9]">Custom Purpose Fee</span>
+              <span className="text-[10px] text-[#a39085]">Fixed fee (applied once per order)</span>
+            </div>
+            <span className="font-mono font-bold text-[#faf4f0]">
+              ₹{effectiveGiftFee.toLocaleString("en-IN")}
+            </span>
+          </div>
+        )}
+
         {/* Final Total / Order Subtotal */}
         <div className="flex items-center justify-between text-[#faf4f0] pt-3 border-t border-[#3d1c12]">
           <div>
@@ -186,7 +230,7 @@ export function CheckoutSummary({
           </div>
           <div className="text-right">
             <span className="font-bold text-xl text-[#c99d52]">
-              ₹{(finalTotal ?? subtotal ?? 0).toLocaleString("en-IN")}
+              ₹{(finalTotal ?? (subtotal + effectiveGiftFee)).toLocaleString("en-IN")}
             </span>
             {finalTotal === null && (
               <span className="block text-[10px] uppercase font-sans tracking-wider text-[#a39085] font-semibold">

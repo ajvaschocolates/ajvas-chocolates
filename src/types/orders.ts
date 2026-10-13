@@ -70,6 +70,10 @@ export interface Order {
   discount_amount: number;
   shipping_amount: number;
   total_amount: number;
+  gift_purpose?: string | null;
+  gift_purpose_fee?: number | null;
+  custom_gift_purpose_description?: string | null;
+  gift_purpose_description?: string | null;
   currency: string;
   order_status: OrderStatus;
   payment_status: PaymentStatus;

@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProductDetailView } from "@/components/pdp/product-detail-view";
 import { getProductBySlugResult, getRelatedProducts } from "@/lib/supabase/catalog";
+import { getGiftPurposeConfig } from "@/lib/supabase/gift-purposes";
 import { SITE_URL, BRAND_NAME, DEFAULT_OG_IMAGE, truncateDescription, slugifyCategoryName } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/json-ld";
 
@@ -172,14 +173,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
     itemListElement: breadcrumbItems,
   };
 
-  const relatedProducts = await getRelatedProducts(product.id, product.category_id, 3);
+  const [relatedProducts, giftPurposeConfig] = await Promise.all([
+    getRelatedProducts(product.id, product.category_id, 3),
+    getGiftPurposeConfig(),
+  ]);
 
   return (
     <div className="flex min-h-screen flex-col bg-[#120805] text-[#faf4f0]">
       <JsonLd data={[productSchema, breadcrumbSchema]} />
       <Header />
       <main id="main-content" className="flex-1">
-        <ProductDetailView product={product} relatedProducts={relatedProducts} />
+        <ProductDetailView
+          product={product}
+          relatedProducts={relatedProducts}
+          giftPurposeConfig={giftPurposeConfig}
+        />
       </main>
       <Footer />
     </div>

@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useMemo } from "react";
 import Link from "next/link";
-import { Order, OrderStatus, ActiveOrderStatus } from "@/types/orders";
+import { Order, ActiveOrderStatus } from "@/types/orders";
 import { updateOrderStatusAction, updateOrderTrackingAction } from "@/app/admin/orders/actions";
 import OrderStatusBadge from "./OrderStatusBadge";
 import {
@@ -10,7 +10,6 @@ import {
   openWhatsAppChat,
   normalizeWhatsAppPhone,
   TRACKING_LABEL_OPTIONS,
-  buildWhatsAppChatUrl,
 } from "@/lib/whatsapp/order-message";
 import {
   ArrowLeft,
@@ -79,11 +78,6 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
       trackingUrl: trackingUrlInput.trim(),
     });
   }, [order, effectiveLabel, trackingValue, trackingUrlInput]);
-
-  const directWhatsAppUrl = useMemo(() => {
-    if (!normalizedPhone) return null;
-    return buildWhatsAppChatUrl(normalizedPhone, liveWhatsAppMessage);
-  }, [normalizedPhone, liveWhatsAppMessage]);
 
   function handleStatusUpdate(e: React.FormEvent) {
     e.preventDefault();
@@ -316,6 +310,67 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
             </div>
           </div>
 
+          {/* Dedicated Gift Personalization Section */}
+          {order.gift_purpose && (
+            <div className="bg-parchment-surface border border-parchment-border rounded-xl p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-serif font-bold text-cocoa-950 flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-cocoa-600" /> Gift Personalization
+                </h2>
+                {(order.gift_purpose === "Custom" || order.gift_purpose.toLowerCase().startsWith("custom")) && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-50 text-amber-900 border border-amber-200">
+                    Custom Order Occasion
+                  </span>
+                )}
+              </div>
+
+              {(order.gift_purpose === "Custom" || order.gift_purpose.toLowerCase().startsWith("custom")) ? (
+                <div className="space-y-3 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <span className="block text-[11px] text-cocoa-600 font-mono uppercase">
+                        Gift Purpose
+                      </span>
+                      <span className="font-semibold text-cocoa-950 font-sans">
+                        {order.gift_purpose}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-[11px] text-cocoa-600 font-mono uppercase">
+                        Custom Purpose Fee
+                      </span>
+                      <span className="font-semibold text-cocoa-950 font-mono">
+                        ₹{Number(order.gift_purpose_fee ?? 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-parchment-border pt-3">
+                    <span className="block text-[11px] text-cocoa-600 font-mono uppercase mb-1">
+                      Custom Description
+                    </span>
+                    <p className="font-sans text-xs text-cocoa-950 whitespace-pre-wrap leading-relaxed break-words bg-white/70 p-3 rounded-lg border border-parchment-line font-medium">
+                      {order.custom_gift_purpose_description ||
+                        order.gift_purpose_description ||
+                        "No description provided"}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-xs">
+                  <div>
+                    <span className="block text-[11px] text-cocoa-600 font-mono uppercase">
+                      Gift Purpose
+                    </span>
+                    <span className="font-semibold text-cocoa-950 font-sans">
+                      {order.gift_purpose}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Order Items List */}
           <div className="bg-parchment-surface border border-parchment-border rounded-xl p-5 shadow-2xs space-y-4">
             <h2 className="text-sm font-serif font-bold text-cocoa-950 flex items-center gap-2">
@@ -469,6 +524,23 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
                 <span>Shipping Fee</span>
                 <span className="font-mono">₹{Number(order.shipping_amount || 0).toLocaleString("en-IN")}</span>
               </div>
+              {order.gift_purpose && (
+                <div className="flex justify-between text-cocoa-700">
+                  <span className="flex items-center gap-1">
+                    <Gift className="w-3.5 h-3.5 text-brand-pink" />
+                    <span>Gift Purpose</span>
+                  </span>
+                  <span className="font-semibold text-cocoa-950">{order.gift_purpose}</span>
+                </div>
+              )}
+              {Number(order.gift_purpose_fee || 0) > 0 && (
+                <div className="flex justify-between text-cocoa-700">
+                  <span>Custom Purpose Fee</span>
+                  <span className="font-mono font-bold text-cocoa-950">
+                    ₹{Number(order.gift_purpose_fee).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              )}
               {Number(order.discount_amount) > 0 && (
                 <div className="flex justify-between text-emerald-800">
                   <span>Discount</span>

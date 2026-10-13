@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, ShoppingBag, Lock, CreditCard } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Lock, CreditCard, Gift, Sparkles, ChevronDown, AlertCircle } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import type { CartItem } from "@/types/cart";
 import { Container } from "@/components/ui/container";
@@ -12,16 +12,26 @@ import {
   ShippingCalculationState,
   ShippingZone,
 } from "@/types/checkout";
+import {
+  GiftPurposeConfig,
+  CUSTOM_GIFT_PURPOSE_VALUE,
+  DEFAULT_STANDARD_GIFT_PURPOSES,
+  DEFAULT_GIFT_PURPOSE_SETTINGS,
+} from "@/types/gift-purpose";
+import { resolveInitialGiftSelection } from "@/lib/gift-purpose-selection";
 import { calculateStateShippingAction } from "@/app/checkout/actions";
 import { CustomerAddressStep } from "./customer-address-step";
 import { PaymentActionStep } from "./payment-action-step";
 import { CheckoutSummary } from "./checkout-summary";
 
-
 const stepLabel =
   "font-pally text-xs font-bold uppercase tracking-[0.2em] text-[#d9b8ab]/80";
 
-export function CheckoutView() {
+interface CheckoutViewProps {
+  giftPurposeConfig?: GiftPurposeConfig;
+}
+
+export function CheckoutView({ giftPurposeConfig }: CheckoutViewProps = {}) {
   const searchParams = useSearchParams();
   const isBuyNowMode = searchParams.get("mode") === "buy-now";
 
@@ -32,8 +42,9 @@ export function CheckoutView() {
     buyNowItem: contextBuyNowItem,
   } = useCart();
 
-  // Buy Now item state fallback initialized lazily from sessionStorage
+  // Buy Now item state fallback initialized lazily from context or sessionStorage
   const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(() => {
+    if (contextBuyNowItem) return contextBuyNowItem;
     if (typeof window !== "undefined") {
       try {
         const stored = sessionStorage.getItem("ajvas_buy_now_item");
@@ -113,20 +124,25 @@ export function CheckoutView() {
 
   // Determine active checkout items
   const activeItems = useMemo<CartItem[]>(() => {
-    if (isBuyNowMode && effectiveBuyNowItem) {
-      return [
-        {
-          productId: effectiveBuyNowItem.productId,
-          slug: effectiveBuyNowItem.slug || "",
-          name: effectiveBuyNowItem.name,
-          unitPrice: effectiveBuyNowItem.unitPrice,
-          discountedUnitPrice: effectiveBuyNowItem.discountedUnitPrice,
-          quantity: effectiveBuyNowItem.quantity,
-          weightGrams: effectiveBuyNowItem.weightGrams ?? 500,
-          imageUrl: effectiveBuyNowItem.imageUrl,
-          customization: effectiveBuyNowItem.customization,
-        },
-      ];
+    if (isBuyNowMode) {
+      if (effectiveBuyNowItem) {
+        return [
+          {
+            productId: effectiveBuyNowItem.productId,
+            slug: effectiveBuyNowItem.slug || "",
+            name: effectiveBuyNowItem.name,
+            unitPrice: effectiveBuyNowItem.unitPrice,
+            discountedUnitPrice: effectiveBuyNowItem.discountedUnitPrice,
+            quantity: effectiveBuyNowItem.quantity,
+            weightGrams: effectiveBuyNowItem.weightGrams ?? 500,
+            imageUrl: effectiveBuyNowItem.imageUrl,
+            categoryName: effectiveBuyNowItem.categoryName,
+            customization: effectiveBuyNowItem.customization,
+            customDescription: effectiveBuyNowItem.customDescription,
+          },
+        ];
+      }
+      return [];
     }
     return cartItems;
   }, [isBuyNowMode, effectiveBuyNowItem, cartItems]);
@@ -141,10 +157,13 @@ export function CheckoutView() {
 
   // Subtotal calculation
   const subtotal = useMemo(() => {
-    if (isBuyNowMode && effectiveBuyNowItem) {
-      const price =
-        effectiveBuyNowItem.discountedUnitPrice ?? effectiveBuyNowItem.unitPrice ?? 0;
-      return price * (effectiveBuyNowItem.quantity || 1);
+    if (isBuyNowMode) {
+      if (effectiveBuyNowItem) {
+        const price =
+          effectiveBuyNowItem.discountedUnitPrice ?? effectiveBuyNowItem.unitPrice ?? 0;
+        return price * (effectiveBuyNowItem.quantity || 1);
+      }
+      return 0;
     }
     return cartSubtotal ?? 0;
   }, [isBuyNowMode, effectiveBuyNowItem, cartSubtotal]);
@@ -254,12 +273,103 @@ export function CheckoutView() {
     formData.district.trim().length > 0 &&
     /^\d{6}$/.test(formData.pincode.trim());
 
+  // Resolved Gift Purpose Configuration
+  const resolvedConfig = useMemo(() => {
+    return (
+      giftPurposeConfig || {
+        options: DEFAULT_STANDARD_GIFT_PURPOSES,
+        settings: DEFAULT_GIFT_PURPOSE_SETTINGS,
+      }
+    );
+  }, [giftPurposeConfig]);
+
+  // Extract distinct purposes from active items to detect initial value or conflicts
+  const distinctItemPurposes = useMemo(() => {
+    return Array.from(
+      new Set(
+        activeItems
+          .map((item) => item.customization?.trim())
+          .filter((p): p is string => Boolean(p && p.length > 0))
+      )
+    );
+  }, [activeItems]);
+
+  const hasConflictingPurposes = distinctItemPurposes.length > 1;
+
+  // Resolve deterministic initial gift selection from active items
+  const initialGiftSelection = useMemo(() => {
+    return resolveInitialGiftSelection(activeItems);
+  }, [activeItems]);
+
+  // Selected gift purpose for this entire order
+  const [selectedGiftPurpose, setSelectedGiftPurpose] = useState<string>(
+    () => initialGiftSelection.purpose
+  );
+  const [hasManuallySetPurpose, setHasManuallySetPurpose] = useState<boolean>(false);
+  const [customGiftDescription, setCustomGiftDescription] = useState<string>(
+    () => initialGiftSelection.description
+  );
+  const [customGiftDescriptionError, setCustomGiftDescriptionError] = useState<string | null>(null);
+  const [hasManuallySetDescription, setHasManuallySetDescription] = useState<boolean>(false);
+
+  // Synchronize gift purpose from active items once available/hydrated (if customer hasn't manually changed it)
+  useEffect(() => {
+    if (!hasManuallySetPurpose) {
+      setSelectedGiftPurpose(initialGiftSelection.purpose);
+    }
+  }, [initialGiftSelection.purpose, hasManuallySetPurpose]);
+
+  // Synchronize custom description from active items once available/hydrated (if customer hasn't manually changed it)
+  useEffect(() => {
+    if (!hasManuallySetDescription) {
+      setCustomGiftDescription(initialGiftSelection.description);
+    }
+  }, [initialGiftSelection.description, hasManuallySetDescription]);
+
+  const isCustomSelected =
+    selectedGiftPurpose === CUSTOM_GIFT_PURPOSE_VALUE ||
+    selectedGiftPurpose.toLowerCase().startsWith("custom");
+
+  const customFee =
+    isCustomSelected && resolvedConfig.settings.custom_enabled
+      ? Number(resolvedConfig.settings.custom_fee || 0)
+      : 0;
+
+  // Validate form including custom gift purpose description
+  const validateFormWithGift = useCallback(() => {
+    const isCustomerValid = validateForm();
+    let isGiftValid = true;
+
+    if (isCustomSelected) {
+      const trimmed = customGiftDescription.trim();
+      if (!trimmed) {
+        setCustomGiftDescriptionError("Please describe your custom gift purpose.");
+        isGiftValid = false;
+        const descEl = document.getElementById("checkout-custom-gift-description");
+        if (descEl) {
+          descEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          descEl.focus();
+        }
+      } else if (trimmed.length > 300) {
+        setCustomGiftDescriptionError("Custom description must be 300 characters or less.");
+        isGiftValid = false;
+      } else {
+        setCustomGiftDescriptionError(null);
+      }
+    } else {
+      setCustomGiftDescriptionError(null);
+    }
+
+    return isCustomerValid && isGiftValid;
+  }, [validateForm, isCustomSelected, customGiftDescription]);
+
   const canProceedToPayment =
     isFormValid &&
     shippingAmount !== null &&
     shippingState === "calculated";
 
-  const totalPayable = shippingAmount !== null ? subtotal + shippingAmount : null;
+  const totalPayable =
+    shippingAmount !== null ? subtotal + shippingAmount + customFee : null;
 
   // Hydration Loading Skeleton
   if (!isHydrated) {
@@ -388,16 +498,195 @@ export function CheckoutView() {
                 />
               </div>
 
+              {/* Gift Purpose Order-Level Selection Card */}
+              <div className="flex flex-col gap-3">
+                <h2 className={stepLabel}>Gift Purpose for this Order</h2>
+                <div className="bg-[#1f110c] rounded-sm p-5 border border-[#3d1c12] space-y-3.5">
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor="checkout-gift-purpose"
+                      className="font-pally text-xs font-semibold uppercase tracking-wider text-[#d9b8ab]/90 flex items-center justify-between"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Gift className="w-4 h-4 text-[#c99d52]" />
+                        <span>Selected Gift Purpose</span>
+                      </span>
+                      {isCustomSelected && (
+                        <span className="text-[#c99d52] font-mono text-xs font-bold">
+                          +₹{customFee} Custom Fee
+                        </span>
+                      )}
+                    </label>
+                    <p className="font-sans text-xs text-[#a39085]">
+                      Your order is prepared under a single gift purpose. You can confirm or change it here before completing payment.
+                    </p>
+                  </div>
+
+                  {/* Conflict Notice if items had differing purposes */}
+                  {hasConflictingPurposes && (
+                    <div className="p-3 bg-[#2a170d] border border-[#c99d52]/40 rounded text-xs text-[#faf4f0] space-y-1">
+                      <p className="font-semibold text-[#c99d52] flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>Multiple product gift purposes detected</span>
+                      </p>
+                      <p className="text-[11px] text-[#d0c4b8] leading-relaxed">
+                        Different gift purposes were chosen on individual items ({distinctItemPurposes.join(", ")}). The entire order is prepared under one single primary gift purpose (currently <strong>&ldquo;{selectedGiftPurpose || "None"}&rdquo;</strong>). You can confirm or change it below before completing payment.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Dropdown Selector */}
+                  <div className="relative">
+                    <select
+                      id="checkout-gift-purpose"
+                      value={
+                        isCustomSelected
+                          ? CUSTOM_GIFT_PURPOSE_VALUE
+                          : resolvedConfig.options.find(
+                              (opt) => opt.name.toLowerCase() === selectedGiftPurpose.trim().toLowerCase()
+                            )?.name || selectedGiftPurpose
+                      }
+                      onChange={(e) => {
+                        setHasManuallySetPurpose(true);
+                        setSelectedGiftPurpose(e.target.value);
+                        setCustomGiftDescriptionError(null);
+                      }}
+                      className="w-full appearance-none rounded-sm bg-[#140b07] border border-[#3d1c12] px-3.5 py-2.5 pr-10 font-sans text-xs sm:text-sm text-[#faf4f0] focus:outline-none focus:border-[#c99d52] focus:ring-1 focus:ring-[#c99d52] transition-colors cursor-pointer"
+                    >
+                      <option value="" className="bg-[#140b07] text-[#a39085]">
+                        -- Select Gift Occasion (Optional) --
+                      </option>
+                      {resolvedConfig.options
+                        .filter((opt) => opt.is_active)
+                        .sort((a, b) => a.sort_order - b.sort_order)
+                        .map((opt) => (
+                          <option key={opt.id} value={opt.name} className="bg-[#140b07] text-[#faf4f0]">
+                            {opt.name}
+                          </option>
+                        ))}
+                      {resolvedConfig.settings.custom_enabled && (
+                        <option
+                          value={CUSTOM_GIFT_PURPOSE_VALUE}
+                          className="bg-[#1b0e0a] text-[#c99d52] font-semibold"
+                        >
+                          Custom (+₹{resolvedConfig.settings.custom_fee} Fee)
+                        </option>
+                      )}
+                      {Boolean(
+                        selectedGiftPurpose &&
+                          !isCustomSelected &&
+                          !resolvedConfig.options.some(
+                            (opt) => opt.name.toLowerCase() === selectedGiftPurpose.trim().toLowerCase()
+                          )
+                      ) && (
+                        <option value={selectedGiftPurpose} className="bg-[#140b07] text-[#faf4f0]">
+                          {selectedGiftPurpose}
+                        </option>
+                      )}
+                    </select>
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-[#a39085]"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </div>
+
+                  {/* Custom Fee Notice */}
+                  {isCustomSelected && (
+                    <div className="p-3 bg-[#22100a] border border-[#c99d52]/40 rounded text-xs text-[#faf4f0] space-y-1">
+                      <span className="font-semibold text-[#c99d52] flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-[#fb0b88]" />
+                        <span>Custom Purpose Fee</span>
+                      </span>
+                      <p className="text-[11px] text-[#d0c4b8]">
+                        A fixed custom-purpose fee of{" "}
+                        <strong className="text-white font-mono font-bold">₹{customFee}</strong>{" "}
+                        is added once for your entire order (not per item).
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Custom Description Text Field in Checkout (revealed directly below custom fee notice) */}
+                  {isCustomSelected && (
+                    <div className="flex flex-col gap-1.5 animate-in fade-in duration-200 pt-1">
+                      <div className="flex items-center justify-between">
+                        <label
+                          htmlFor="checkout-custom-gift-description"
+                          className="font-pally text-xs font-semibold uppercase tracking-wider text-[#d9b8ab]/90 flex items-center gap-1"
+                        >
+                          <span>Describe Your Gift Purpose</span>
+                          <span className="text-[#fb0b88] font-bold" aria-hidden="true">*</span>
+                        </label>
+                        <span
+                          className={`text-[10px] font-mono ${
+                            customGiftDescription.length > 300 ? "text-[#fb0b88] font-bold" : "text-[#a39085]"
+                          }`}
+                        >
+                          {customGiftDescription.length}/300
+                        </span>
+                      </div>
+
+                      <textarea
+                        id="checkout-custom-gift-description"
+                        name="custom_gift_purpose_description"
+                        rows={2}
+                        maxLength={300}
+                        required={isCustomSelected}
+                        value={customGiftDescription}
+                        onChange={(e) => {
+                          setHasManuallySetDescription(true);
+                          setCustomGiftDescription(e.target.value);
+                          if (e.target.value.trim().length > 0) {
+                            setCustomGiftDescriptionError(null);
+                          }
+                        }}
+                        placeholder="e.g., Birthday surprise for my wife, 25th wedding anniversary for my parents, or a special congratulations gift..."
+                        aria-describedby={`checkout-description-hint ${
+                          customGiftDescriptionError ? "checkout-description-error" : ""
+                        }`}
+                        aria-invalid={Boolean(customGiftDescriptionError)}
+                        className={`w-full rounded-sm bg-[#140b07] border ${
+                          customGiftDescriptionError
+                            ? "border-[#fb0b88] focus:border-[#fb0b88] focus:ring-[#fb0b88]"
+                            : "border-[#3d1c12] focus:border-[#c99d52] focus:ring-[#c99d52]"
+                        } px-3.5 py-2.5 font-sans text-xs sm:text-sm text-[#faf4f0] placeholder:text-[#a39085]/60 focus:outline-none focus:ring-1 transition-colors leading-relaxed resize-none`}
+                      />
+
+                      <p
+                        id="checkout-description-hint"
+                        className="font-sans text-[11px] text-[#d0c4b8]/75 leading-relaxed"
+                      >
+                        Tell us the occasion or purpose so our team can prepare your gift accordingly.
+                      </p>
+
+                      {customGiftDescriptionError && (
+                        <p
+                          id="checkout-description-error"
+                          role="alert"
+                          className="font-sans text-[11px] text-[#fb0b88] font-medium"
+                        >
+                          {customGiftDescriptionError}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="flex flex-col gap-3">
                 <h2 className={stepLabel}>2 · Payment</h2>
                 <PaymentActionStep
                   canProceed={canProceedToPayment}
                   totalAmount={totalPayable}
-                  onInitiatePayment={validateForm}
+                  onInitiatePayment={validateFormWithGift}
                   formData={formData}
                   items={activeItems}
                   subtotal={subtotal}
                   shippingAmount={shippingAmount || 0}
+                  giftPurpose={selectedGiftPurpose}
+                  giftPurposeFee={customFee}
+                  customGiftPurposeDescription={isCustomSelected ? customGiftDescription.trim() : undefined}
                 />
               </div>
             </div>
@@ -415,6 +704,9 @@ export function CheckoutView() {
                   totalWeightGrams={totalWeightGrams}
                   isBuyNowMode={isBuyNowMode}
                   selectedState={formData.state}
+                  giftPurpose={selectedGiftPurpose}
+                  giftPurposeFee={customFee}
+                  giftPurposeDescription={isCustomSelected ? customGiftDescription.trim() : undefined}
                 />
                 <p className="mt-1 flex items-center gap-2 font-sans text-[11px] text-[#d0c4b8]/60">
                   <Lock className="h-3.5 w-3.5 text-[#fb0b88]" />
@@ -435,7 +727,7 @@ export function CheckoutView() {
             </span>
             <div className="flex items-baseline gap-1.5">
               <span className="font-pally text-xl font-bold text-[#faf4f0]">
-                ₹{(totalPayable ?? subtotal ?? 0).toLocaleString("en-IN")}
+                ₹{(totalPayable ?? (subtotal + customFee)).toLocaleString("en-IN")}
               </span>
               {shippingAmount === null && (
                 <span className="font-sans text-[10px] text-[#fb0b88]">
@@ -448,7 +740,7 @@ export function CheckoutView() {
           <button
             type="button"
             onClick={() => {
-              const isValid = validateForm();
+              const isValid = validateFormWithGift();
               if (!isValid) {
                 const firstErr = document.querySelector<HTMLElement>(
                   "[aria-invalid='true'], input.ring-\\[\\#fb0b88\\], select.ring-\\[\\#fb0b88\\], input.border-\\[\\#fb0b88\\], select.border-\\[\\#fb0b88\\]"

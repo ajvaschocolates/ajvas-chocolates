@@ -12,10 +12,12 @@ import { ProductDeliveryEstimate } from "./product-delivery-estimate";
 
 import { RelatedProductsSection } from "./related-products-section";
 import { slugifyCategoryName } from "@/lib/seo";
+import { GiftPurposeConfig } from "@/types/gift-purpose";
 
 interface ProductDetailViewProps {
   product: Product;
   relatedProducts?: Product[];
+  giftPurposeConfig?: GiftPurposeConfig;
 }
 
 const crumbLink =
@@ -24,7 +26,11 @@ const crumbLink =
 const sectionLabel =
   "mb-2 font-pally text-[11px] font-semibold uppercase tracking-[0.2em] text-[#d9b8ab]/70";
 
-export function ProductDetailView({ product, relatedProducts }: ProductDetailViewProps) {
+export function ProductDetailView({
+  product,
+  relatedProducts,
+  giftPurposeConfig,
+}: ProductDetailViewProps) {
   return (
     <>
       <section className="relative w-full overflow-hidden [&_*]:!border-0 [&_*]:!ring-0 bg-[#260403] pt-24 sm:pt-28 lg:pt-32 pb-12 sm:pb-16 text-[#faf4f0]">
@@ -103,13 +109,14 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
                     />
                   </div>
                 )}
-
-                <ProductActions product={product} />
-
-                <div>
+                  <div>
                   <h2 className={sectionLabel}>Delivery</h2>
                   <ProductDeliveryEstimate />
                 </div>
+                <ProductActions
+                  product={product}
+                  giftPurposeConfig={giftPurposeConfig}
+                />
 
                 {/* Helpful Internal Information & Navigation Links */}
                 <div className="pt-4 border-t border-[#3d1c12]/70 flex flex-col gap-2.5 font-sans text-xs text-[#d0c4b8]/80">
@@ -155,4 +162,4 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
       <RelatedProductsSection products={relatedProducts} />
     </>
   );
-}
+}
