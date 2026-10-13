@@ -99,7 +99,7 @@ export function CartView() {
               <div className="divide-y divide-transparent">
                 {items.map((item, idx) => (
                   <CartItemRow
-                    key={`${item.productId}-${item.customization || "default"}-${idx}`}
+                    key={`${item.productId}-${item.customization || "default"}-${item.customDescription || "nodesc"}-${idx}`}
                     item={item}
                   />
                 ))}

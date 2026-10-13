@@ -11,6 +11,7 @@ import {
   X,
   MessageSquareQuote,
   BookOpen,
+  Gift,
 } from "lucide-react";
 import SignOutButton from "./SignOutButton";
 import { BrandLogo } from "@/components/layout/brand-logo";
@@ -74,6 +75,12 @@ export default function AdminSidebar({
       name: "Categories",
       href: "/admin/categories",
       icon: Tag,
+    },
+    {
+      name: "Gift Purposes",
+      href: "/admin/gift-purposes",
+      icon: Gift,
+      badge: "Fee",
     },
   ];
 

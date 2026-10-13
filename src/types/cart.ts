@@ -12,6 +12,7 @@ export interface CartItem {
   imageUrl?: string;
   categoryName?: string;
   customization?: string;
+  customDescription?: string;
 }
 
 export interface CartContextValue {
@@ -35,10 +36,11 @@ export interface CartContextValue {
       category?: { name: string } | null;
     },
     quantity?: number,
-    customization?: string
+    customization?: string,
+    customDescription?: string
   ) => void;
-  removeItem: (productId: string, customization?: string) => void;
-  updateQuantity: (productId: string, quantity: number, customization?: string) => void;
+  removeItem: (productId: string, customization?: string, customDescription?: string) => void;
+  updateQuantity: (productId: string, quantity: number, customization?: string, customDescription?: string) => void;
   setBuyNowItem: (
     product: {
       id: string;
@@ -55,7 +57,8 @@ export interface CartContextValue {
       category?: { name: string } | null;
     },
     quantity?: number,
-    customization?: string
+    customization?: string,
+    customDescription?: string
   ) => void;
   buyNowItem: CartItem | null;
   lastAddedItem: CartItem | null;

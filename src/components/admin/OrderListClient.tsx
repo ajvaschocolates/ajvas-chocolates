@@ -2,7 +2,11 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Order } from "@/types/orders";
+import { Order, ActiveOrderStatus, ACTIVE_ORDER_STATUSES } from "@/types/orders";
+import { updateOrderStatusAction } from "@/app/admin/orders/actions";
+import { getOrderStatusStyle } from "@/lib/orders/status-utils";
+import OrderStatusBadge from "./OrderStatusBadge";
+import WhatsAppShippingModal, { WhatsAppIcon } from "./WhatsAppShippingModal";
 import {
   Search,
   ShoppingBag,
@@ -11,17 +15,20 @@ import {
   Package,
   Printer,
   AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  Loader2,
   X,
 } from "lucide-react";
 import AddressSlipPrintModal from "./AddressSlipPrintModal";
-import { hasValidDeliveryAddress, validateOrderForSlip } from "@/lib/orders/slip-utils";
+import { validateOrderForSlip } from "@/lib/orders/slip-utils";
 
 interface OrderListClientProps {
   initialOrders: Order[];
 }
 
 export default function OrderListClient({ initialOrders }: OrderListClientProps) {
-  const [orders] = useState<Order[]>(initialOrders);
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [paymentFilter, setPaymentFilter] = useState("ALL");
@@ -37,7 +44,23 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
     message: string;
   } | null>(null);
 
+  // Inline Status Update State
+  const [updatingOrderIds, setUpdatingOrderIds] = useState<Set<string>>(new Set());
+  const [statusNotification, setStatusNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  // WhatsApp Shipping Modal State
+  const [whatsAppModalOpen, setWhatsAppModalOpen] = useState(false);
+  const [selectedOrderForWhatsApp, setSelectedOrderForWhatsApp] = useState<Order | null>(null);
+
   const selectAllRef = useRef<HTMLInputElement>(null);
+
+  // Keep local state in sync when server revalidates props
+  useEffect(() => {
+    setOrders(initialOrders);
+  }, [initialOrders]);
 
   // Metrics
   const totalCount = orders.length;
@@ -157,9 +180,87 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
     setPaymentFilter("ALL");
   }
 
+  // Inline Status Update Handler
+  async function handleInlineStatusChange(orderId: string, newStatus: ActiveOrderStatus) {
+    const targetOrder = orders.find((o) => o.id === orderId);
+    if (!targetOrder || targetOrder.order_status === newStatus) return;
+    if (updatingOrderIds.has(orderId)) return;
+
+    const previousStatus = targetOrder.order_status;
+    setStatusNotification(null);
+
+    // Optimistic Update
+    setOrders((prev) =>
+      prev.map((o) => (o.id === orderId ? { ...o, order_status: newStatus } : o))
+    );
+    setUpdatingOrderIds((prev) => new Set(prev).add(orderId));
+
+    try {
+      const res = await updateOrderStatusAction(orderId, newStatus);
+      if (res.success) {
+        setStatusNotification({
+          type: "success",
+          message: `Order #${targetOrder.order_number} status updated to ${newStatus.toUpperCase()}.`,
+        });
+      } else {
+        // Rollback on server rejection
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, order_status: previousStatus } : o))
+        );
+        setStatusNotification({
+          type: "error",
+          message: `Failed to update Order #${targetOrder.order_number}: ${res.error || "Server update failed"}`,
+        });
+      }
+    } catch {
+      // Rollback on network failure
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, order_status: previousStatus } : o))
+      );
+      setStatusNotification({
+        type: "error",
+        message: `Network error updating Order #${targetOrder.order_number}. Changes rolled back.`,
+      });
+    } finally {
+      setUpdatingOrderIds((prev) => {
+        const next = new Set(prev);
+        next.delete(orderId);
+        return next;
+      });
+    }
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
-      {/* Graceful Validation Error Notification */}
+      {/* Status Update Feedback Notification */}
+      {statusNotification && (
+        <div
+          role="status"
+          className={`p-4 rounded-lg flex items-center justify-between text-xs shadow-xs animate-in fade-in ${
+            statusNotification.type === "success"
+              ? "bg-emerald-50 border border-emerald-300 text-emerald-950"
+              : "bg-rose-50 border border-rose-300 text-rose-950"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {statusNotification.type === "success" ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            )}
+            <span className="font-medium">{statusNotification.message}</span>
+          </div>
+          <button
+            onClick={() => setStatusNotification(null)}
+            className="p-1 hover:opacity-70 transition-opacity shrink-0"
+            aria-label="Dismiss message"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Validation Error Notification */}
       {validationError && (
         <div className="p-4 bg-amber-50 border border-amber-300 rounded-lg flex items-center justify-between text-amber-950 text-xs shadow-xs animate-in fade-in">
           <div className="flex items-center gap-2 flex-wrap">
@@ -272,23 +373,25 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          {/* Status Filter (Excludes Cancelled) */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-2 text-xs font-medium bg-parchment-surface border border-parchment-border rounded text-cocoa-950 focus:outline-none min-h-[44px]"
+            aria-label="Filter by order status"
           >
             <option value="ALL">All Order Statuses</option>
             <option value="pending">Pending</option>
             <option value="processing">Processing</option>
             <option value="shipped">Shipped</option>
             <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
           </select>
 
           <select
             value={paymentFilter}
             onChange={(e) => setPaymentFilter(e.target.value)}
             className="px-3 py-2 text-xs font-medium bg-parchment-surface border border-parchment-border rounded text-cocoa-950 focus:outline-none min-h-[44px]"
+            aria-label="Filter by payment state"
           >
             <option value="ALL">All Payment States</option>
             <option value="pending">Payment Pending</option>
@@ -353,6 +456,8 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
                   const productName = firstItem?.product_name || firstItem?.product?.name;
                   const extraCount = (o.items?.length || 0) - 1;
                   const isSelected = selectedOrderIds.has(o.id);
+                  const isUpdatingStatus = updatingOrderIds.has(o.id);
+                  const statusStyle = getOrderStatusStyle(o.order_status);
 
                   return (
                     <tr
@@ -437,13 +542,72 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
                           {o.payment_status}
                         </span>
                       </td>
+
+                      {/* Phase 4: Inline Status Selector with Color-Coded Badges */}
                       <td className="py-3.5 px-3 text-center">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-parchment-muted text-cocoa-900 border border-parchment-border">
-                          {o.order_status}
-                        </span>
+                        {o.order_status === "cancelled" ? (
+                          <OrderStatusBadge
+                            status="cancelled"
+                            className="cursor-not-allowed opacity-80"
+                          />
+                        ) : (
+                          <div className="relative inline-flex items-center justify-center">
+                            {isUpdatingStatus ? (
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase ${statusStyle.badgeClass} opacity-80 cursor-wait`}
+                              >
+                                <Loader2 className="w-3 h-3 animate-spin text-current" />
+                                <span>Updating...</span>
+                              </span>
+                            ) : (
+                              <div className="relative inline-block">
+                                <select
+                                  value={o.order_status}
+                                  disabled={isUpdatingStatus}
+                                  onChange={(e) =>
+                                    handleInlineStatusChange(
+                                      o.id,
+                                      e.target.value as ActiveOrderStatus
+                                    )
+                                  }
+                                  aria-label={`Update status for order ${o.order_number}`}
+                                  className={`appearance-none cursor-pointer pl-2.5 pr-6 py-1 rounded text-[10px] font-mono font-bold uppercase transition-colors focus:outline-none focus:ring-1 focus:ring-cocoa-700 disabled:opacity-60 disabled:cursor-not-allowed ${statusStyle.badgeClass}`}
+                                >
+                                  {ACTIVE_ORDER_STATUSES.map((status) => (
+                                    <option
+                                      key={status}
+                                      value={status}
+                                      className="bg-white text-cocoa-950 font-sans text-xs capitalize"
+                                    >
+                                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                                    </option>
+                                  ))}
+                                </select>
+                                <ChevronDown className="w-3 h-3 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-60" />
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </td>
+
+                      {/* Phase 5: Actions Column with WhatsApp Icon Button */}
                       <td className="py-3.5 pl-3 pr-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* Row-Level WhatsApp Icon Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedOrderForWhatsApp(o);
+                              setWhatsAppModalOpen(true);
+                            }}
+                            title="Send WhatsApp shipping notification"
+                            aria-label={`Send WhatsApp shipping notification for order ${o.order_number}`}
+                            className="inline-flex items-center justify-center p-1.5 rounded bg-[#25D366] hover:bg-[#20bd5a] text-white transition-colors shadow-2xs shrink-0"
+                          >
+                            <WhatsAppIcon className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Print Address Slip Button */}
                           <button
                             type="button"
                             onClick={() => handlePrintSingleOrder(o)}
@@ -453,6 +617,8 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
                             <Printer className="w-3.5 h-3.5" />
                             <span>Print Slip</span>
                           </button>
+
+                          {/* View Order Details */}
                           <Link
                             href={`/admin/orders/${o.id}`}
                             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-parchment-line bg-parchment-surface hover:bg-parchment-muted text-xs font-semibold text-cocoa-950 transition-colors whitespace-nowrap"
@@ -470,6 +636,28 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
           </div>
         </div>
       )}
+
+      {/* WhatsApp Shipping & Tracking Modal */}
+      <WhatsAppShippingModal
+        isOpen={whatsAppModalOpen}
+        onClose={() => {
+          setWhatsAppModalOpen(false);
+          setSelectedOrderForWhatsApp(null);
+        }}
+        order={selectedOrderForWhatsApp}
+        onOrderUpdated={(updated) => {
+          setOrders((prev) =>
+            prev.map((ord) => (ord.id === updated.id ? { ...ord, ...updated } : ord))
+          );
+          setSelectedOrderForWhatsApp((prev) =>
+            prev && prev.id === updated.id ? { ...prev, ...updated } : prev
+          );
+          setStatusNotification({
+            type: "success",
+            message: `Order #${selectedOrderForWhatsApp?.order_number || ""} updated: status is now ${updated.order_status.toUpperCase()}.`,
+          });
+        }}
+      />
 
       {/* Address Slip Print Dialog & Printable Sheets */}
       <AddressSlipPrintModal

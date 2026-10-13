@@ -507,11 +507,14 @@ export function Header({
                   </div>
                 ) : (
                   <div className="flex flex-col gap-3 py-2">
-                    {cart.items.map((item) => {
+                    {cart.items.map((item, idx) => {
                       const effectivePrice = item.discountedUnitPrice ?? item.unitPrice;
                       const lineTotal = effectivePrice * item.quantity;
                       return (
-                        <div key={item.productId} className="py-3 px-3 bg-white/[0.04] rounded-sm flex gap-3.5 items-start">
+                        <div
+                          key={`${item.productId}-${item.customization || "default"}-${item.customDescription || "nodesc"}-${idx}`}
+                          className="py-3 px-3 bg-white/[0.04] rounded-sm flex gap-3.5 items-start"
+                        >
                           {/* Thumbnail */}
                           <Link
                             href={`/products/${item.slug}`}
@@ -550,7 +553,7 @@ export function Header({
                               </div>
                               <button
                                 type="button"
-                                onClick={() => cart.removeItem(item.productId)}
+                                onClick={() => cart.removeItem(item.productId, item.customization, item.customDescription)}
                                 aria-label={`Remove ${item.name}`}
                                 className="text-white/40 hover:text-[#fb0b88] transition-colors p-1 shrink-0 rounded-sm"
                               >
@@ -568,13 +571,34 @@ export function Header({
                               )}
                             </div>
 
+                            {/* Gift Personalization in Drawer */}
+                            {item.customization && (
+                              <div className="mt-1 text-[10px] leading-tight font-sans">
+                                <span className="text-[#c99d52] font-medium truncate block">
+                                  Gift: &ldquo;{item.customization}&rdquo;
+                                </span>
+                                {item.customDescription && (
+                                  <p className="text-[#d0c4b8] text-[9.5px] italic truncate mt-0.5">
+                                    &ldquo;{item.customDescription}&rdquo;
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
                             {/* Stepper & Line Total */}
                             <div className="flex items-center justify-between mt-2.5">
                               {/* Quantity Stepper */}
                               <div className="flex items-center bg-black/40 rounded-sm px-1.5 py-0.5">
                                 <button
                                   type="button"
-                                  onClick={() => cart.updateQuantity(item.productId, item.quantity - 1)}
+                                  onClick={() =>
+                                    cart.updateQuantity(
+                                      item.productId,
+                                      item.quantity - 1,
+                                      item.customization,
+                                      item.customDescription
+                                    )
+                                  }
                                   disabled={item.quantity <= 1}
                                   aria-label="Decrease quantity"
                                   className="w-5 h-5 flex items-center justify-center text-white/70 hover:text-white disabled:opacity-30 transition-colors rounded-sm"
@@ -586,7 +610,14 @@ export function Header({
                                 </span>
                                 <button
                                   type="button"
-                                  onClick={() => cart.updateQuantity(item.productId, item.quantity + 1)}
+                                  onClick={() =>
+                                    cart.updateQuantity(
+                                      item.productId,
+                                      item.quantity + 1,
+                                      item.customization,
+                                      item.customDescription
+                                    )
+                                  }
                                   aria-label="Increase quantity"
                                   className="w-5 h-5 flex items-center justify-center text-white/70 hover:text-white transition-colors rounded-sm"
                                 >

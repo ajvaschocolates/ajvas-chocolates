@@ -1,4 +1,4 @@
-import { Order } from "@/types/orders";
+import type { Order } from "@/types/orders";
 
 /**
  * Standard Tracking Labels supported in the admin UI
@@ -151,6 +151,33 @@ export function generateOrderWhatsAppMessage(
     itemLines.push("");
   }
 
+  const isCustomGift = Boolean(
+    order.gift_purpose &&
+      (order.gift_purpose === "Custom" || order.gift_purpose.trim().toLowerCase() === "custom")
+  );
+
+  const customDescription = (
+    order.custom_gift_purpose_description ||
+    order.gift_purpose_description ||
+    ""
+  ).trim();
+
+  // Gift Personalization Section (included only when relevant)
+  const giftLines: string[] = [];
+  if (isCustomGift) {
+    giftLines.push(divider);
+    giftLines.push("🎁 *GIFT PERSONALIZATION*");
+    giftLines.push(divider);
+    giftLines.push("");
+    giftLines.push(`Purpose: ${order.gift_purpose}`);
+    if (customDescription) {
+      giftLines.push(`Description: ${customDescription}`);
+    }
+    const fee = Number(order.gift_purpose_fee || 0);
+    giftLines.push(`Custom Purpose Fee: ${formatCurrency(fee, order.currency)}`);
+    giftLines.push("");
+  }
+
   // 3. Price Summary
   const priceLines = [
     divider,
@@ -172,6 +199,17 @@ export function generateOrderWhatsAppMessage(
   priceLines.push(
     `Shipping Charges: ${formatCurrency(shippingAmount, order.currency)}`
   );
+
+  // Gift Purpose & Custom Fee in Price Summary
+  if (isCustomGift) {
+    if (order.gift_purpose_fee && Number(order.gift_purpose_fee) > 0) {
+      priceLines.push(
+        `Custom Purpose Fee: ${formatCurrency(Number(order.gift_purpose_fee), order.currency)}`
+      );
+    }
+  } else if (order.gift_purpose) {
+    priceLines.push(`Gift Purpose: ${order.gift_purpose}`);
+  }
 
   // Total Amount (persisted order total)
   priceLines.push(
@@ -250,6 +288,7 @@ export function generateOrderWhatsAppMessage(
   const fullMessage = [
     ...headerLines,
     ...itemLines,
+    ...giftLines,
     ...priceLines,
     ...deliveryLines,
     ...footerLines,
@@ -263,13 +302,7 @@ export function generateOrderWhatsAppMessage(
  */
 export function buildWhatsAppChatUrl(phone: string, message: string): string {
   const cleanPhone = phone.replace(/[^0-9]/g, "");
-
-  // Ensure the message string is processed as clean UTF-8
-  const processedMessage = new TextDecoder("utf-8").decode(
-    new TextEncoder().encode(message)
-  );
-  const encoded = encodeURIComponent(processedMessage);
-
+  const encoded = encodeURIComponent(message);
   return `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encoded}`;
 }
 
