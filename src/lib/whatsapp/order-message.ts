@@ -263,13 +263,7 @@ export function generateOrderWhatsAppMessage(
  */
 export function buildWhatsAppChatUrl(phone: string, message: string): string {
   const cleanPhone = phone.replace(/[^0-9]/g, "");
-
-  // Ensure the message string is processed as clean UTF-8
-  const processedMessage = new TextDecoder("utf-8").decode(
-    new TextEncoder().encode(message)
-  );
-  const encoded = encodeURIComponent(processedMessage);
-
+  const encoded = encodeURIComponent(message);
   return `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encoded}`;
 }
 

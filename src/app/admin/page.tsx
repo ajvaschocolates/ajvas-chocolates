@@ -1,5 +1,6 @@
 import { getAdminDashboardMetrics } from "@/lib/supabase/admin-orders";
 import Link from "next/link";
+import OrderStatusBadge from "@/components/admin/OrderStatusBadge";
 import {
   ShoppingBag,
   IndianRupee,
@@ -253,9 +254,7 @@ export default async function AdminDashboardPage() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-parchment-muted text-cocoa-900 border border-parchment-border">
-                        {order.order_status}
-                      </span>
+                      <OrderStatusBadge status={order.order_status} />
                     </td>
                     <td className="py-3.5 px-4 sm:px-6 text-right">
                       <Link

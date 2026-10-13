@@ -2,8 +2,9 @@
 
 import { useState, useTransition, useMemo } from "react";
 import Link from "next/link";
-import { Order, OrderStatus } from "@/types/orders";
+import { Order, OrderStatus, ActiveOrderStatus } from "@/types/orders";
 import { updateOrderStatusAction, updateOrderTrackingAction } from "@/app/admin/orders/actions";
+import OrderStatusBadge from "./OrderStatusBadge";
 import {
   generateOrderWhatsAppMessage,
   openWhatsAppChat,
@@ -42,7 +43,9 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
   const [order, setOrder] = useState<Order>(initialOrder);
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [printAddressError, setPrintAddressError] = useState<string | null>(null);
-  const [targetStatus, setTargetStatus] = useState<OrderStatus>(order.order_status);
+  const [targetStatus, setTargetStatus] = useState<ActiveOrderStatus>(
+    order.order_status === "cancelled" ? "pending" : (order.order_status as ActiveOrderStatus)
+  );
   const [statusNote, setStatusNote] = useState("");
 
   // Tracking state & dynamic labels
@@ -127,13 +130,18 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
     startTransition(async () => {
       const res = await updateOrderTrackingAction(order.id, trimmedValue, trackingUrlInput.trim());
       if (res.success) {
+        const nextStatus = order.order_status === "processing" ? "shipped" : order.order_status;
         setOrder((prev) => ({
           ...prev,
           awb_number: trimmedValue,
           tracking_url: trackingUrlInput.trim() || null,
-          order_status: "shipped",
+          order_status: nextStatus,
         }));
-        setTrackingSuccess("Tracking details saved successfully! Order marked as Shipped.");
+        setTrackingSuccess(
+          order.order_status === "processing"
+            ? "Tracking details saved successfully! Order marked as Shipped."
+            : "Tracking details saved successfully!"
+        );
       } else {
         setTrackingError(res.error || "Failed to update tracking details.");
       }
@@ -152,22 +160,13 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
       return;
     }
 
-    // Auto-save tracking details if modified
     const trimmedValue = trackingValue.trim();
-    if (trimmedValue && trimmedValue !== order.awb_number) {
-      startTransition(async () => {
-        const res = await updateOrderTrackingAction(order.id, trimmedValue, trackingUrlInput.trim());
-        if (res.success) {
-          setOrder((prev) => ({
-            ...prev,
-            awb_number: trimmedValue,
-            tracking_url: trackingUrlInput.trim() || null,
-            order_status: "shipped",
-          }));
-        }
-      });
+    if (order.order_status === "processing" && !trimmedValue) {
+      setTrackingError("Tracking number / identifier is required before dispatching via WhatsApp.");
+      return;
     }
 
+    // Synchronously open WhatsApp window to avoid popup blockers
     const openResult = openWhatsAppChat(order.customer_phone, liveWhatsAppMessage);
     if (!openResult.success) {
       if (openResult.url) {
@@ -175,6 +174,7 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
         setTrackingError(openResult.error || "Popup was blocked. Please click the direct link below.");
       } else {
         setTrackingError(openResult.error || "Could not launch WhatsApp.");
+        return;
       }
     } else {
       setTrackingSuccess("WhatsApp launched with order & tracking details!");
@@ -182,6 +182,21 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
         setWhatsappPopupUrl(openResult.url);
       }
     }
+
+    // Auto-save tracking details & transition if processing
+    startTransition(async () => {
+      const trackingIdentifier = trimmedValue || order.awb_number || "ASSIGNED";
+      const res = await updateOrderTrackingAction(order.id, trackingIdentifier, trackingUrlInput.trim());
+      if (res.success) {
+        const nextStatus = order.order_status === "processing" ? "shipped" : order.order_status;
+        setOrder((prev) => ({
+          ...prev,
+          awb_number: trimmedValue || prev.awb_number,
+          tracking_url: trackingUrlInput.trim() || prev.tracking_url,
+          order_status: nextStatus,
+        }));
+      }
+    });
   }
 
   async function handleCopyMessage() {
@@ -209,6 +224,7 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
             <h1 className="font-sans text-2xl sm:text-3xl font-bold text-cocoa-950 tracking-tight">
               Order {order.order_number}
             </h1>
+            <OrderStatusBadge status={order.order_status} />
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-mono font-bold uppercase ${
                 order.payment_status === "paid"
@@ -488,20 +504,27 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
 
             <form onSubmit={handleStatusUpdate} className="space-y-3 text-xs">
               <div>
-                <label className="block text-[11px] font-mono uppercase text-cocoa-700 mb-1">
-                  Current Status: <span className="font-bold text-cocoa-950 uppercase">{order.order_status}</span>
+                <label className="block text-[11px] font-mono uppercase text-cocoa-700 mb-1 flex items-center gap-2">
+                  <span>Current Status:</span>
+                  <OrderStatusBadge status={order.order_status} />
                 </label>
-                <select
-                  value={targetStatus}
-                  onChange={(e) => setTargetStatus(e.target.value as OrderStatus)}
-                  className="w-full rounded border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs font-sans text-cocoa-900 focus:outline-none min-h-[44px]"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
-                  <option value="shipped">Shipped</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
+                {order.order_status === "cancelled" ? (
+                  <p className="p-2.5 rounded bg-stone-100 border border-stone-200 text-stone-700 text-xs">
+                    Historical cancelled orders cannot be modified.
+                  </p>
+                ) : (
+                  <select
+                    value={targetStatus}
+                    onChange={(e) => setTargetStatus(e.target.value as ActiveOrderStatus)}
+                    disabled={isPending}
+                    className="w-full rounded border border-cocoa-200 bg-parchment-surface px-3 py-2 text-xs font-sans text-cocoa-900 focus:outline-none min-h-[44px]"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                  </select>
+                )}
               </div>
 
               <div>
@@ -738,7 +761,7 @@ export default function OrderDetailClient({ initialOrder }: OrderDetailClientPro
                 {order.status_history.map((hist) => (
                   <div key={hist.id} className="p-2.5 rounded bg-parchment-muted/60 border border-parchment-line">
                     <div className="flex items-center justify-between font-mono font-bold text-cocoa-950 uppercase">
-                      <span>{hist.status}</span>
+                      <OrderStatusBadge status={hist.status} />
                       <span className="text-[10px] text-cocoa-600 font-normal">
                         {new Date(hist.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                       </span>
