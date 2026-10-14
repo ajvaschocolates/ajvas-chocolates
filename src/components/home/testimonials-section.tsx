@@ -73,7 +73,7 @@ export function TestimonialsSection({ section }: TestimonialsSectionProps) {
                   <img
                     src={activeReview.avatar_url}
                     alt={activeReview.author}
-                    className="w-full h-full object-cover transition-opacity duration-300"
+                    className="w-full h-full object-cover transition-opacity duration-100"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center font-serif text-lg font-bold text-amber-200">
@@ -89,7 +89,7 @@ export function TestimonialsSection({ section }: TestimonialsSectionProps) {
                 “
               </span>
               <div className="flex-1">
-                <p className="font-sans text-xs sm:text-[13px] text-[#e8ded6] leading-relaxed transition-opacity duration-300 line-clamp-3">
+                <p className="font-sans text-xs sm:text-[13px] text-[#e8ded6] leading-relaxed transition-opacity duration-100 line-clamp-3">
                   {activeReview.quote}
                 </p>
                 {(activeReview.author || activeReview.location) && (
@@ -113,7 +113,7 @@ export function TestimonialsSection({ section }: TestimonialsSectionProps) {
                   type="button"
                   onClick={() => setCurrentIndex(idx)}
                   aria-label={`Go to review ${idx + 1}`}
-                  className={`h-1 transition-all duration-300 rounded-full ${idx === currentIndex
+                  className={`h-1 transition-all duration-100 rounded-full ${idx === currentIndex
                     ? "w-6 sm:w-7 bg-[#d97746]"
                     : "w-3.5 sm:w-4 bg-white/30 hover:bg-white/60"
                     }`}
