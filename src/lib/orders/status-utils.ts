@@ -1,4 +1,5 @@
-import { ActiveOrderStatus, OrderStatus, ACTIVE_ORDER_STATUSES } from "@/types/orders";
+import type { ActiveOrderStatus, OrderStatus } from "@/types/orders";
+import { ACTIVE_ORDER_STATUSES } from "@/types/orders";
 
 export interface StatusStyleConfig {
   label: string;

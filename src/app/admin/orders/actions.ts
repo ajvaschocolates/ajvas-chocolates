@@ -3,14 +3,42 @@
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSession } from "@/lib/supabase/auth";
 import { revalidatePath } from "next/cache";
-import { ActiveOrderStatus, OrderStatus, ACTIVE_ORDER_STATUSES } from "@/types/orders";
+import { ActiveOrderStatus, OrderStatus, ACTIVE_ORDER_STATUSES, Order } from "@/types/orders";
 import { isValidActiveStatus } from "@/lib/orders/status-utils";
+import { getAdminOrdersForStoreDate } from "@/lib/supabase/admin-orders";
+import { isValidDateKey } from "@/lib/orders/date-utils";
 
 export interface OrderActionResult {
   success: boolean;
   error?: string;
   orderId?: string;
   newStatus?: OrderStatus;
+}
+
+export interface OrdersForDateResult {
+  success: boolean;
+  orders: Order[];
+  error?: string;
+}
+
+/**
+ * Server Action: loads every order placed on an IST calendar day ("YYYY-MM-DD").
+ * Read-only; used by the Admin Orders date filter so historical days outside
+ * the latest-N initial list are still complete.
+ */
+export async function getAdminOrdersForDateAction(dateKey: string): Promise<OrdersForDateResult> {
+  const { user, isAdmin } = await getAdminSession();
+  if (!user || !isAdmin) {
+    return { success: false, orders: [], error: "Unauthorized: Admin privileges required." };
+  }
+
+  if (typeof dateKey !== "string" || !isValidDateKey(dateKey)) {
+    return { success: false, orders: [], error: "Invalid date. Expected YYYY-MM-DD." };
+  }
+
+  const { orders, error } = await getAdminOrdersForStoreDate(dateKey);
+  if (error) return { success: false, orders: [], error };
+  return { success: true, orders };
 }
 
 /**

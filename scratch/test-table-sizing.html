@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: sans-serif; background: #fcfaf6; }
+  .shell { display: flex; width: 1280px; height: 800px; }
+  .sidebar { width: 256px; background: #140c08; color: white; flex-shrink: 0; }
+  .scroller { flex: 1; height: 100vh; overflow-y: auto; }
+  .admin-header { height: 80px; background: white; border-bottom: 1px solid #e8dfd3; position: sticky; top: 0; z-index: 30; }
+  .page { padding: 16px 20px; }
+  .toolbar {
+    height: 74px;
+    background: #fcfaf6;
+    border: 1px solid #e8dfd3;
+    border-radius: 8px;
+    position: sticky;
+    top: 80px;
+    z-index: 20;
+    margin-bottom: 10px;
+  }
+  .table-card { background: white; border: 1px solid #e8dfd3; border-radius: 6px; overflow-x: auto; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+  th.head-cell {
+    position: sticky;
+    top: 164px; /* 80 + 74 + 10 margin */
+    background: #f5efe6;
+    border-bottom: 1px solid #e8dfd3;
+    padding: 8px 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #543323;
+    z-index: 10;
+    white-space: nowrap;
+  }
+  td {
+    padding: 8px 6px;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+  }
+  .truncate-cell {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .actions-cell {
+    white-space: nowrap;
+    text-align: right;
+    width: 180px;
+  }
+  .actions-cell button, .actions-cell a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 4px;
+    text-decoration: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="sidebar">Sidebar 256px</div>
+    <div class="scroller" id="scroller">
+      <div class="admin-header" id="adminHeader">Header (80px)</div>
+      <div class="page">
+        <div style="height: 36px;">Title</div>
+        <div style="height: 40px; margin-bottom: 10px;">Summary Cards</div>
+        <div class="toolbar" id="toolbar">Sticky Toolbar (74px)</div>
+        <div class="table-card" id="tableCard">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th class="head-cell" style="width: 36px; text-align: center;"><input type="checkbox"/></th>
+                <th class="head-cell" style="width: 100px;" id="thOrder">Order #</th>
+                <th class="head-cell" style="width: 150px;">Product</th>
+                <th class="head-cell" style="width: 110px;">Customer</th>
+                <th class="head-cell" style="width: 110px;">Destination</th>
+                <th class="head-cell" style="width: 85px;">Date</th>
+                <th class="head-cell" style="width: 75px; text-align: right;">Total</th>
+                <th class="head-cell" style="width: 75px; text-align: center;">Payment</th>
+                <th class="head-cell" style="width: 95px; text-align: center;">Status</th>
+                <th class="head-cell" style="width: 180px; text-align: right;" id="thActions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div style="height: 600px;">Footer</div>
+      </div>
+    </div>
+  </div>
+  <div id="out"></div>
+  <script>
+    // Create 30 rows
+    const tbody = document.getElementById('tbody');
+    for (let g = 1; g <= 3; g++) {
+      const gRow = document.createElement('tr');
+      gRow.innerHTML = \`<th colspan="10" style="background: #ede6dd; padding: 6px 10px; text-align: left;" id="dg\${g}">Date Group \${g}</th>\`;
+      tbody.appendChild(gRow);
+      for (let i = 1; i <= 10; i++) {
+        const row = document.createElement('tr');
+        row.innerHTML = \`
+          <td style="text-align: center;"><input type="checkbox"/></td>
+          <td style="font-family: monospace; font-weight: bold;">AJV-2026-\${g}\${i}</td>
+          <td><div class="truncate-cell" style="max-width: 140px;">Dark Chocolate Truffles</div></td>
+          <td><div class="truncate-cell">Customer \${g}\${i}</div><div style="font-size: 10px; color: #666;">9876543210</div></td>
+          <td><div class="truncate-cell">City, State</div><div style="font-size: 10px; color: #666;">560001</div></td>
+          <td>22 Oct<div style="font-size: 10px; color: #666;">14:30</div></td>
+          <td style="text-align: right; font-weight: bold;">₹1,250</td>
+          <td style="text-align: center;">PAID</td>
+          <td style="text-align: center;">PROCESSING</td>
+          <td class="actions-cell">
+            <button style="background: #25D366; color: white;">WA</button>
+            <button>Print Slip</button>
+            <a href="#" class="view-btn">View</a>
+          </td>
+        \`;
+        tbody.appendChild(row);
+      }
+    }
+
+    const scroller = document.getElementById('scroller');
+    scroller.scrollTop = 350; // Scroll down 350px
+
+    const tbRect = document.getElementById('toolbar').getBoundingClientRect();
+    const thRect = document.getElementById('thOrder').getBoundingClientRect();
+    const dg1Rect = document.getElementById('dg1').getBoundingClientRect();
+    const lastViewBtn = document.querySelectorAll('.view-btn')[5].getBoundingClientRect();
+    const scrollerRect = scroller.getBoundingClientRect();
+
+    document.getElementById('out').innerText = JSON.stringify({
+      scrollerScrollTop: scroller.scrollTop,
+      toolbarTop: tbRect.top,
+      toolbarBottom: tbRect.bottom,
+      thTop: thRect.top,
+      thBottom: thRect.bottom,
+      gapToolbarTh: thRect.top - tbRect.bottom,
+      dg1Top: dg1Rect.top,
+      isThSticky: thRect.top === 164,
+      isViewButtonVisible: lastViewBtn.right <= scrollerRect.right
+    });
+  </script>
+</body>
+</html>

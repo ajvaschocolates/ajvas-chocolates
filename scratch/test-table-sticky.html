@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { margin: 0; font-family: sans-serif; }
+  .scroller {
+    height: 500px;
+    overflow-y: auto;
+    border: 2px solid black;
+  }
+  .admin-header {
+    height: 80px;
+    background: #140c08;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+  .toolbar {
+    height: 70px;
+    background: #fcfaf6;
+    border-bottom: 2px solid #e8dfd3;
+    position: sticky;
+    top: 80px;
+    z-index: 20;
+    padding: 10px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    background: white;
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  /* TEST APPROACH A: thead is sticky ONLY, th is NOT sticky */
+  thead {
+    position: sticky;
+    top: 150px; /* 80 + 70 */
+    z-index: 10;
+  }
+  th.col-head {
+    background: #f5efe6;
+    border-bottom: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #eee;
+  }
+  .date-group-th {
+    background: #ede6dd;
+    padding: 8px;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+    position: sticky;
+    top: 185px; /* right below thead (150 + 35) */
+    z-index: 5;
+  }
+</style>
+</head>
+<body>
+  <div class="scroller" id="scroller">
+    <div class="admin-header">Admin Header (80px)</div>
+    <div style="height: 60px; background: #eee;">Page Header & Summary</div>
+    <div class="toolbar">Sticky Toolbar (70px)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-head">Select</th>
+            <th class="col-head" id="thOrder">Order #</th>
+            <th class="col-head">Customer</th>
+            <th class="col-head">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th colspan="4" class="date-group-th">Date Group 1: 22 Oct 2026</th></tr>
+          <tr><td>[ ]</td><td id="r1">#1001</td><td>Alice</td><td>$50</td></tr>
+          <tr><td>[ ]</td><td>#1002</td><td>Bob</td><td>$60</td></tr>
+          <tr><td>[ ]</td><td>#1003</td><td>Charlie</td><td>$70</td></tr>
+          <tr><th colspan="4" class="date-group-th">Date Group 2: 21 Oct 2026</th></tr>
+          <tr><td>[ ]</td><td>#1004</td><td>David</td><td>$80</td></tr>
+          <tr><td>[ ]</td><td>#1005</td><td>Eva</td><td>$90</td></tr>
+          <tr><td>[ ]</td><td>#1006</td><td>Frank</td><td>$100</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="height: 500px;">Footer</div>
+  </div>
+  <div id="out"></div>
+  <script>
+    const scroller = document.getElementById('scroller');
+    scroller.scrollTop = 200;
+    const thOrder = document.getElementById('thOrder').getBoundingClientRect();
+    const r1 = document.getElementById('r1').getBoundingClientRect();
+    document.getElementById('out').innerText = JSON.stringify({
+      thOrderTop: thOrder.top,
+      r1Top: r1.top,
+      overlap: r1.top < thOrder.bottom
+    });
+  </script>
+</body>
+</html>
