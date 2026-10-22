@@ -1,4 +1,4 @@
-import type { Order } from "@/types/orders";
+import type { Order } from "../../types/orders";
 
 /**
  * Standard Tracking Labels supported in the admin UI

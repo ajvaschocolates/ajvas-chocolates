@@ -1,5 +1,6 @@
 import { createClient } from "./server";
 import { Order } from "@/types/orders";
+import { getStoreDayUtcRange } from "@/lib/orders/date-utils";
 
 export interface DashboardMetrics {
   totalOrdersCount: number;
@@ -22,15 +23,8 @@ export interface DashboardMetrics {
   totalCustomersCount: number;
 }
 
-/**
- * Fetches orders for Admin Order Management with optimized field projection.
- */
-export async function getAllAdminOrders(limit = 100): Promise<Order[]> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("orders")
-      .select(`
+/** Shared field projection for the Admin Orders list. */
+const ADMIN_ORDER_LIST_SELECT = `
         id,
         order_number,
         customer_name,
@@ -68,7 +62,30 @@ export async function getAllAdminOrders(limit = 100): Promise<Order[]> {
             )
           )
         )
-      `)
+      `;
+
+function sortOrderItemImages(orders: Order[]): Order[] {
+  orders.forEach((o) => {
+    if (o.items && Array.isArray(o.items)) {
+      o.items.forEach((item) => {
+        if (item.product?.images && Array.isArray(item.product.images)) {
+          item.product.images.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+        }
+      });
+    }
+  });
+  return orders;
+}
+
+/**
+ * Fetches orders for Admin Order Management with optimized field projection.
+ */
+export async function getAllAdminOrders(limit = 100): Promise<Order[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("orders")
+      .select(ADMIN_ORDER_LIST_SELECT)
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -77,21 +94,47 @@ export async function getAllAdminOrders(limit = 100): Promise<Order[]> {
       return [];
     }
 
-    const orders = (data as unknown as Order[]) || [];
-    orders.forEach((o) => {
-      if (o.items && Array.isArray(o.items)) {
-        o.items.forEach((item) => {
-          if (item.product?.images && Array.isArray(item.product.images)) {
-            item.product.images.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-          }
-        });
-      }
-    });
-
-    return orders;
+    return sortOrderItemImages((data as unknown as Order[]) || []);
   } catch (err) {
     console.error("Error fetching admin orders:", err);
     return [];
+  }
+}
+
+/**
+ * Fetches every order placed on a given IST calendar day ("YYYY-MM-DD"),
+ * filtering on `created_at` within the day's UTC instant range. This keeps the
+ * Admin date filter correct for historical days outside the latest-N list.
+ */
+export async function getAdminOrdersForStoreDate(
+  dateKey: string,
+  limit = 500
+): Promise<{ orders: Order[]; error?: string }> {
+  const range = getStoreDayUtcRange(dateKey);
+  if (!range) return { orders: [], error: "Invalid date." };
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("orders")
+      .select(ADMIN_ORDER_LIST_SELECT)
+      .gte("created_at", range.start)
+      .lt("created_at", range.end)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.warn("Supabase admin orders by date warning:", error.message);
+      return { orders: [], error: error.message };
+    }
+
+    return { orders: sortOrderItemImages((data as unknown as Order[]) || []) };
+  } catch (err) {
+    console.error("Error fetching admin orders by date:", err);
+    return {
+      orders: [],
+      error: err instanceof Error ? err.message : "Failed to load orders for date.",
+    };
   }
 }
 
