@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { margin: 0; font-family: sans-serif; }
+  .scroll-container {
+    height: 500px;
+    overflow-y: auto;
+    border: 2px solid #333;
+  }
+  .admin-header {
+    height: 80px;
+    background: #140c08;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+  .toolbar {
+    position: sticky;
+    top: 80px;
+    z-index: 20;
+    background: #fcfbf9;
+    border-bottom: 1px solid #e2dcd5;
+    padding: 8px 16px;
+  }
+  .table-card {
+    margin: 16px;
+    border: 1px solid #e2dcd5;
+    border-radius: 8px;
+    overflow-x: auto;
+    overflow-y: clip;
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
+  }
+  thead {
+    position: sticky;
+    top: 136px;
+    z-index: 10;
+  }
+  th {
+    position: sticky;
+    top: 136px;
+    background: #f5efe6;
+    border-bottom: 1px solid #e8dfd3;
+    padding: 8px 10px;
+    text-align: left;
+    z-index: 10;
+  }
+  td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    background: white;
+  }
+</style>
+</head>
+<body>
+  <div class="scroll-container" id="scroller">
+    <div class="admin-header">Admin Header (80px)</div>
+    <div style="padding: 16px; background: #faf8f5;">
+      <h2>Store Orders Title</h2>
+      <div class="toolbar" id="toolbar" style="height: 56px;">Toolbar (56px)</div>
+      <div class="table-card" id="card">
+        <table>
+          <thead>
+            <tr>
+              <th id="th1" style="width: 40px;"><input type="checkbox"/></th>
+              <th id="th2">Order #</th>
+              <th id="th3">Customer</th>
+              <th id="th4">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: #f5efe6;"><th colspan="4" style="position: static; background: #ede6dd; padding: 6px;">Date Group 1</th></tr>
+            <tr><td><input type="checkbox"/></td><td id="td2">#1001</td><td>Alice</td><td>$50</td></tr>
+            <tr><td><input type="checkbox"/></td><td>#1002</td><td>Bob</td><td>$60</td></tr>
+            <tr><td><input type="checkbox"/></td><td>#1003</td><td>Charlie</td><td>$70</td></tr>
+            <tr style="background: #f5efe6;"><th colspan="4" style="position: static; background: #ede6dd; padding: 6px;">Date Group 2</th></tr>
+            <tr><td><input type="checkbox"/></td><td>#1004</td><td>David</td><td>$80</td></tr>
+            <tr><td><input type="checkbox"/></td><td>#1005</td><td>Eva</td><td>$90</td></tr>
+            <tr><td><input type="checkbox"/></td><td>#1006</td><td>Frank</td><td>$100</td></tr>
+            <tr><td><input type="checkbox"/></td><td>#1007</td><td>Grace</td><td>$110</td></tr>
+            <tr><td><input type="checkbox"/></td><td>#1008</td><td>Helen</td><td>$120</td></tr>
+            <tr><td><input type="checkbox"/></td><td>#1009</td><td>Ian</td><td>$130</td></tr>
+            <tr><td><input type="checkbox"/></td><td>#1010</td><td>Jack</td><td>$140</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="output"></div>
+  <script>
+    const scroller = document.getElementById('scroller');
+    scroller.scrollTop = 250;
+    const th2 = document.getElementById('th2').getBoundingClientRect();
+    const td2 = document.getElementById('td2').getBoundingClientRect();
+    const tb = document.getElementById('toolbar').getBoundingClientRect();
+    
+    document.getElementById('output').innerText = JSON.stringify({
+      th2Top: th2.top,
+      toolbarBottom: tb.bottom,
+      gap: th2.top - tb.bottom,
+      th2Left: th2.left,
+      td2Left: td2.left,
+      alignDiff: Math.abs(th2.left - td2.left)
+    });
+  </script>
+</body>
+</html>
