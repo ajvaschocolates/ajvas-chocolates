@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Order, ActiveOrderStatus, ACTIVE_ORDER_STATUSES } from "@/types/orders";
-import { updateOrderStatusAction } from "@/app/admin/orders/actions";
+import { updateOrderStatusAction, getAdminOrdersForDateAction } from "@/app/admin/orders/actions";
 import { getOrderStatusStyle } from "@/lib/orders/status-utils";
 import OrderStatusBadge from "./OrderStatusBadge";
 import WhatsAppShippingModal, { WhatsAppIcon } from "./WhatsAppShippingModal";
@@ -19,19 +20,57 @@ import {
   ChevronDown,
   Loader2,
   X,
+  CalendarDays,
+  ArrowUpDown,
+  RefreshCw,
 } from "lucide-react";
 import AddressSlipPrintModal from "./AddressSlipPrintModal";
 import { validateOrderForSlip } from "@/lib/orders/slip-utils";
+import {
+  DEFAULT_ORDER_SORT,
+  ORDER_SORT_OPTIONS,
+  OrderSortOption,
+  formatDateKeyLong,
+  formatOrderCount,
+  formatOrderDateShort,
+  formatOrderTime,
+  getDateGroupLabel,
+  getOrderDateKey,
+  getStoreTodayKey,
+  groupOrdersByDate,
+  isOrderSortOption,
+  isValidDateKey,
+} from "@/lib/orders/date-utils";
+
+/** Number of columns in the orders table (used by full-width date header rows). */
+const TABLE_COLUMN_COUNT = 10;
+
+type TableRow =
+  | { type: "header"; key: string; count: number }
+  | { type: "order"; order: Order };
 
 interface OrderListClientProps {
   initialOrders: Order[];
+  /** Max number of most-recent orders loaded by the page (for the "latest N" notice). */
+  loadLimit?: number;
 }
 
-export default function OrderListClient({ initialOrders }: OrderListClientProps) {
+export default function OrderListClient({ initialOrders, loadLimit }: OrderListClientProps) {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [paymentFilter, setPaymentFilter] = useState("ALL");
+
+  // Date filter & sort state (date is an Asia/Kolkata calendar day "YYYY-MM-DD")
+  const [selectedDate, setSelectedDate] = useState("");
+  const [sortOption, setSortOption] = useState<OrderSortOption>(DEFAULT_ORDER_SORT);
+  // Orders fetched server-side for the selected date (covers days beyond the initial load limit)
+  const [dateOrders, setDateOrders] = useState<Order[]>([]);
+  const [dateLoading, setDateLoading] = useState(false);
+  const [dateError, setDateError] = useState<string | null>(null);
+  const dateRequestRef = useRef(0);
+  const [isRefreshing, startRefresh] = useTransition();
 
   // Selection & Print State
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
@@ -69,7 +108,15 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
   const shippedCount = orders.filter((o) => o.order_status === "shipped").length;
   const deliveredCount = orders.filter((o) => o.order_status === "delivered").length;
 
-  const filteredOrders = orders.filter((o) => {
+  // Loaded orders plus any historical orders fetched for the selected date (deduped by id;
+  // the primary list wins so it always reflects the freshest server data).
+  const allOrders = useMemo(() => {
+    if (dateOrders.length === 0) return orders;
+    const loadedIds = new Set(orders.map((o) => o.id));
+    return [...orders, ...dateOrders.filter((o) => !loadedIds.has(o.id))];
+  }, [orders, dateOrders]);
+
+  const filteredOrders = allOrders.filter((o) => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchNum = o.order_number.toLowerCase().includes(q);
@@ -84,9 +131,21 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
 
     if (statusFilter !== "ALL" && o.order_status !== statusFilter) return false;
     if (paymentFilter !== "ALL" && o.payment_status !== paymentFilter) return false;
+    // Date filter uses the placement timestamp (created_at) in Asia/Kolkata
+    if (selectedDate && getOrderDateKey(o) !== selectedDate) return false;
 
     return true;
   });
+
+  // Sorted, date-grouped rows. Groups are derived from matching orders, so empty groups never appear.
+  const todayKey = getStoreTodayKey();
+  const tableRows: TableRow[] = [];
+  for (const group of groupOrdersByDate(filteredOrders, sortOption)) {
+    tableRows.push({ type: "header", key: group.key, count: group.orders.length });
+    group.orders.forEach((order) => tableRows.push({ type: "order", order }));
+  }
+
+  const isLimitReached = typeof loadLimit === "number" && orders.length >= loadLimit;
 
   // Selection helpers
   const isAllFilteredSelected = useMemo(() => {
@@ -155,7 +214,7 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
   }
 
   function handlePrintSelected() {
-    const selected = orders.filter((o) => selectedOrderIds.has(o.id));
+    const selected = allOrders.filter((o) => selectedOrderIds.has(o.id));
     if (selected.length === 0) return;
 
     const valid = selected.filter((o) => validateOrderForSlip(o).isValid);
@@ -174,15 +233,91 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
     setPrintModalOpen(true);
   }
 
+  // Date filter: fetch the full IST day from the server so historical days beyond the
+  // initial load limit are complete. Stale responses are ignored via a request counter.
+  async function loadOrdersForDate(dateKey: string) {
+    const requestId = ++dateRequestRef.current;
+    setDateLoading(true);
+    setDateError(null);
+    try {
+      const res = await getAdminOrdersForDateAction(dateKey);
+      if (requestId !== dateRequestRef.current) return;
+      setDateOrders(res.orders);
+      if (!res.success) {
+        setDateError(
+          `${res.error || "Could not load orders for this date."} Showing matching orders from the loaded list only.`
+        );
+      }
+    } catch {
+      if (requestId !== dateRequestRef.current) return;
+      setDateOrders([]);
+      setDateError(
+        "Network error loading orders for this date. Showing matching orders from the loaded list only."
+      );
+    } finally {
+      if (requestId === dateRequestRef.current) setDateLoading(false);
+    }
+  }
+
+  function handleDateChange(value: string) {
+    if (!value || !isValidDateKey(value)) {
+      clearDateFilter();
+      return;
+    }
+    setSelectedDate(value);
+    void loadOrdersForDate(value);
+  }
+
+  function clearDateFilter() {
+    dateRequestRef.current++; // invalidate any in-flight date request
+    setSelectedDate("");
+    setDateOrders([]);
+    setDateLoading(false);
+    setDateError(null);
+    // Drop selections that only existed in the date-specific result set
+    const loadedIds = new Set(orders.map((o) => o.id));
+    setSelectedOrderIds((prev) => {
+      const next = new Set([...prev].filter((id) => loadedIds.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }
+
+  // Refresh: re-fetch server data; filter/sort state lives in this component and is preserved.
+  function handleRefresh() {
+    startRefresh(() => {
+      router.refresh();
+    });
+    if (selectedDate) void loadOrdersForDate(selectedDate);
+  }
+
   function resetFilters() {
     setSearchQuery("");
     setStatusFilter("ALL");
     setPaymentFilter("ALL");
+    setSortOption(DEFAULT_ORDER_SORT);
+    clearDateFilter();
+  }
+
+  const hasActiveFilters =
+    !!searchQuery ||
+    statusFilter !== "ALL" ||
+    paymentFilter !== "ALL" ||
+    !!selectedDate ||
+    sortOption !== DEFAULT_ORDER_SORT;
+
+  // Applies a partial update to an order in both the loaded list and date-fetched list
+  function patchOrder(orderId: string, patch: Partial<Order>) {
+    const apply = (list: Order[]) =>
+      list.some((o) => o.id === orderId)
+        ? list.map((o) => (o.id === orderId ? { ...o, ...patch } : o))
+        : list;
+    setOrders(apply);
+    setDateOrders(apply);
   }
 
   // Inline Status Update Handler
   async function handleInlineStatusChange(orderId: string, newStatus: ActiveOrderStatus) {
-    const targetOrder = orders.find((o) => o.id === orderId);
+    const targetOrder = allOrders.find((o) => o.id === orderId);
     if (!targetOrder || targetOrder.order_status === newStatus) return;
     if (updatingOrderIds.has(orderId)) return;
 
@@ -190,9 +325,7 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
     setStatusNotification(null);
 
     // Optimistic Update
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, order_status: newStatus } : o))
-    );
+    patchOrder(orderId, { order_status: newStatus });
     setUpdatingOrderIds((prev) => new Set(prev).add(orderId));
 
     try {
@@ -204,9 +337,7 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
         });
       } else {
         // Rollback on server rejection
-        setOrders((prev) =>
-          prev.map((o) => (o.id === orderId ? { ...o, order_status: previousStatus } : o))
-        );
+        patchOrder(orderId, { order_status: previousStatus });
         setStatusNotification({
           type: "error",
           message: `Failed to update Order #${targetOrder.order_number}: ${res.error || "Server update failed"}`,
@@ -214,9 +345,7 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
       }
     } catch {
       // Rollback on network failure
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, order_status: previousStatus } : o))
-      );
+      patchOrder(orderId, { order_status: previousStatus });
       setStatusNotification({
         type: "error",
         message: `Network error updating Order #${targetOrder.order_number}. Changes rolled back.`,
@@ -399,7 +528,7 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
             <option value="failed">Payment Failed</option>
           </select>
 
-          {(searchQuery || statusFilter !== "ALL" || paymentFilter !== "ALL") && (
+          {hasActiveFilters && (
             <button
               onClick={resetFilters}
               className="px-3 py-2 text-xs font-medium text-cocoa-600 hover:text-cocoa-950 bg-parchment-muted rounded border border-parchment-line transition-colors flex items-center gap-1.5 min-h-[44px]"
@@ -411,13 +540,124 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
         </div>
       </div>
 
+      {/* Date Filter, Sort & Refresh Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 -mt-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <label
+            htmlFor="order-date-filter"
+            className="relative flex items-center gap-2 pl-3 pr-2 bg-parchment-surface border border-parchment-border rounded text-cocoa-950 focus-within:border-cocoa-700 min-h-[44px]"
+          >
+            <CalendarDays className="w-4 h-4 text-cocoa-600 shrink-0" />
+            <span className="text-xs font-medium text-cocoa-600 whitespace-nowrap">Order Date</span>
+            <input
+              id="order-date-filter"
+              type="date"
+              value={selectedDate}
+              max={todayKey}
+              onChange={(e) => handleDateChange(e.target.value)}
+              className="py-2 text-xs font-medium bg-transparent text-cocoa-950 focus:outline-none"
+              aria-label="Filter orders by placement date (IST)"
+            />
+          </label>
+
+          {selectedDate && (
+            <button
+              id="clear-date-filter"
+              type="button"
+              onClick={clearDateFilter}
+              className="px-3 py-2 text-xs font-semibold text-cocoa-950 bg-amber-50 hover:bg-amber-100 rounded border border-amber-300 transition-colors flex items-center gap-1.5 min-h-[44px]"
+            >
+              <X className="w-3.5 h-3.5" />
+              Clear Date Filter
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5">
+          <label
+            htmlFor="order-sort"
+            className="flex items-center gap-2 pl-3 bg-parchment-surface border border-parchment-border rounded text-cocoa-950 focus-within:border-cocoa-700 min-h-[44px]"
+          >
+            <ArrowUpDown className="w-4 h-4 text-cocoa-600 shrink-0" />
+            <span className="text-xs font-medium text-cocoa-600 whitespace-nowrap">Sort By</span>
+            <select
+              id="order-sort"
+              value={sortOption}
+              onChange={(e) => {
+                if (isOrderSortOption(e.target.value)) setSortOption(e.target.value);
+              }}
+              className="pr-3 py-2 text-xs font-semibold bg-transparent text-cocoa-950 focus:outline-none"
+            >
+              {ORDER_SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            id="refresh-orders"
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="px-3 py-2 text-xs font-medium text-cocoa-950 bg-parchment-surface hover:bg-parchment-muted rounded border border-parchment-border transition-colors flex items-center gap-1.5 min-h-[44px] disabled:opacity-60 disabled:cursor-wait"
+            title="Reload the latest orders (keeps current filters and sort)"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </button>
+        </div>
+      </div>
+
+      {/* Result summary & notices */}
+      <div className="-mt-3 space-y-2">
+        <p className="text-xs text-cocoa-600 flex items-center gap-1.5" aria-live="polite">
+          {selectedDate && dateLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+          {selectedDate ? (
+            <span>
+              <span className="font-semibold text-cocoa-950">
+                Orders for {formatDateKeyLong(selectedDate)}
+              </span>{" "}
+              ({dateLoading ? "loading..." : formatOrderCount(filteredOrders.length)})
+            </span>
+          ) : (
+            <span>
+              Showing <span className="font-semibold text-cocoa-950">{formatOrderCount(filteredOrders.length)}</span>{" "}
+              grouped by order date (IST)
+            </span>
+          )}
+        </p>
+        {!selectedDate && isLimitReached && (
+          <p className="text-[11px] text-cocoa-600">
+            Showing the latest {loadLimit} orders. Pick a date above to view all orders from an older day.
+          </p>
+        )}
+        {dateError && (
+          <div className="p-3 bg-amber-50 border border-amber-300 rounded text-amber-950 text-xs flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>{dateError}</span>
+          </div>
+        )}
+      </div>
+
       {/* Orders Table */}
       {filteredOrders.length === 0 ? (
         <div className="py-16 px-4 text-center bg-parchment-surface rounded border border-dashed border-parchment-border space-y-3">
-          <ShoppingBag className="w-10 h-10 text-cocoa-400 mx-auto" />
-          <h3 className="font-sans text-lg font-bold text-cocoa-950">No orders found</h3>
+          {selectedDate && dateLoading ? (
+            <Loader2 className="w-10 h-10 text-cocoa-400 mx-auto animate-spin" />
+          ) : (
+            <ShoppingBag className="w-10 h-10 text-cocoa-400 mx-auto" />
+          )}
+          <h3 className="font-sans text-lg font-bold text-cocoa-950">
+            {selectedDate && dateLoading ? "Loading orders..." : "No orders found"}
+          </h3>
           <p className="text-sm text-cocoa-600 max-w-sm mx-auto">
-            {orders.length === 0
+            {selectedDate
+              ? dateLoading
+                ? `Fetching orders placed on ${formatDateKeyLong(selectedDate)}.`
+                : `No orders placed on ${formatDateKeyLong(selectedDate)} match your active filters.`
+              : orders.length === 0
               ? "No store orders have been recorded in the database yet."
               : "No orders match your active search and status filter parameters."}
           </p>
@@ -450,7 +690,31 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
                 </tr>
               </thead>
               <tbody className="divide-y divide-parchment-border">
-                {filteredOrders.map((o) => {
+                {tableRows.map((row) => {
+                  if (row.type === "header") {
+                    const label = selectedDate
+                      ? `Orders for ${formatDateKeyLong(row.key)}`
+                      : getDateGroupLabel(row.key, todayKey);
+                    return (
+                      <tr key={`date-${row.key}`} className="bg-parchment-muted/70">
+                        <th
+                          scope="colgroup"
+                          colSpan={TABLE_COLUMN_COUNT}
+                          className="py-2.5 pl-4 pr-4 text-left"
+                        >
+                          <div className="flex items-center gap-2 text-xs">
+                            <CalendarDays className="w-3.5 h-3.5 text-cocoa-600 shrink-0" />
+                            <span className="font-bold text-cocoa-950">{label}</span>
+                            <span className="font-mono text-[11px] font-semibold text-cocoa-600">
+                              ({formatOrderCount(row.count)})
+                            </span>
+                          </div>
+                        </th>
+                      </tr>
+                    );
+                  }
+
+                  const o = row.order;
                   const firstItem = o.items?.[0];
                   const imageUrl = firstItem?.product?.images?.[0]?.image_url;
                   const productName = firstItem?.product_name || firstItem?.product?.name;
@@ -520,11 +784,10 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
                         <div className="text-[11px] text-cocoa-600 font-mono">{o.shipping_pincode}</div>
                       </td>
                       <td className="py-3.5 px-3 text-cocoa-700 whitespace-nowrap font-mono">
-                        {new Date(o.created_at).toLocaleDateString("en-IN", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
+                        <div>{formatOrderDateShort(o.created_at)}</div>
+                        {formatOrderTime(o.created_at) && (
+                          <div className="text-[10px] text-cocoa-600">{formatOrderTime(o.created_at)}</div>
+                        )}
                       </td>
                       <td className="py-3.5 px-3 text-right font-mono font-bold text-cocoa-950">
                         ₹{Number(o.total_amount || 0).toLocaleString("en-IN")}
@@ -646,9 +909,7 @@ export default function OrderListClient({ initialOrders }: OrderListClientProps)
         }}
         order={selectedOrderForWhatsApp}
         onOrderUpdated={(updated) => {
-          setOrders((prev) =>
-            prev.map((ord) => (ord.id === updated.id ? { ...ord, ...updated } : ord))
-          );
+          patchOrder(updated.id, updated);
           setSelectedOrderForWhatsApp((prev) =>
             prev && prev.id === updated.id ? { ...prev, ...updated } : prev
           );
