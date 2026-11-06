@@ -98,11 +98,15 @@ export function ProductDetailView({
               <div className="flex flex-col gap-4 lg:col-span-5 lg:max-w-md">
                 <ProductInfo product={product} />
 
-                {Boolean((product.length_cm && product.width_cm && product.height_cm) || (product.weight_grams && product.weight_grams > 0)) && (
+                {Boolean(
+                  (product.length_cm && product.width_cm && product.height_cm) ||
+                  (product.show_weight !== false && product.weight_grams && product.weight_grams > 0)
+                ) && (
                   <div>
                     <h2 className={sectionLabel}>Product Specifications</h2>
                     <ProductPackageSpecs
                       weightGrams={product.weight_grams}
+                      showWeight={product.show_weight}
                       lengthCm={product.length_cm}
                       widthCm={product.width_cm}
                       heightCm={product.height_cm}

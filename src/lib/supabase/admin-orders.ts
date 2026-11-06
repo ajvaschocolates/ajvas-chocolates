@@ -39,6 +39,9 @@ const ADMIN_ORDER_LIST_SELECT = `
         total_amount,
         subtotal,
         shipping_amount,
+        gift_purpose,
+        gift_purpose_fee,
+        custom_gift_purpose_description,
         order_status,
         payment_status,
         payment_provider,
@@ -49,13 +52,23 @@ const ADMIN_ORDER_LIST_SELECT = `
         created_at,
         items:order_items (
           id,
+          order_id,
           product_id,
           product_name,
           product_slug,
           quantity,
+          unit_price,
+          discount_amount,
+          line_total,
+          weight_grams,
+          customization,
           product:products (
             id,
             name,
+            weight_grams,
+            length_cm,
+            width_cm,
+            height_cm,
             images:product_images (
               image_url,
               sort_order

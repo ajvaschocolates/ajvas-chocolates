@@ -2,6 +2,7 @@ import { Package, Scale } from "lucide-react";
 
 interface ProductPackageSpecsProps {
   weightGrams?: number | null;
+  showWeight?: boolean | null;
   lengthCm?: number | null;
   widthCm?: number | null;
   heightCm?: number | null;
@@ -9,12 +10,14 @@ interface ProductPackageSpecsProps {
 
 export function ProductPackageSpecs({
   weightGrams,
+  showWeight = true,
   lengthCm,
   widthCm,
   heightCm,
 }: ProductPackageSpecsProps) {
   const hasDimensions = Boolean(lengthCm && widthCm && heightCm);
-  const hasWeight = Boolean(weightGrams && weightGrams > 0);
+  const isWeightVisible = showWeight !== false;
+  const hasWeight = Boolean(isWeightVisible && weightGrams && weightGrams > 0);
 
   if (!hasDimensions && !hasWeight) {
     return null;
