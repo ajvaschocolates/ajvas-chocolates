@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect, useMemo, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Order, ActiveOrderStatus, ACTIVE_ORDER_STATUSES } from "@/types/orders";
+import { Order, OrderItem, ActiveOrderStatus, ACTIVE_ORDER_STATUSES } from "@/types/orders";
 import { updateOrderStatusAction, getAdminOrdersForDateAction } from "@/app/admin/orders/actions";
 import { getOrderStatusStyle } from "@/lib/orders/status-utils";
 import OrderStatusBadge from "./OrderStatusBadge";
 import WhatsAppShippingModal, { WhatsAppIcon } from "./WhatsAppShippingModal";
+import ProductQuickViewModal from "./ProductQuickViewModal";
 import {
   Search,
   ShoppingBag,
@@ -93,6 +94,17 @@ export default function OrderListClient({ initialOrders, loadLimit }: OrderListC
   // WhatsApp Shipping Modal State
   const [whatsAppModalOpen, setWhatsAppModalOpen] = useState(false);
   const [selectedOrderForWhatsApp, setSelectedOrderForWhatsApp] = useState<Order | null>(null);
+
+  // Product Quick-View Modal State
+  const [quickViewModalOpen, setQuickViewModalOpen] = useState(false);
+  const [quickViewOrder, setQuickViewOrder] = useState<Order | null>(null);
+  const [quickViewItem, setQuickViewItem] = useState<OrderItem | null>(null);
+
+  function handleOpenProductQuickView(order: Order, item?: OrderItem | null) {
+    setQuickViewOrder(order);
+    setQuickViewItem(item || order.items?.[0] || null);
+    setQuickViewModalOpen(true);
+  }
 
   const selectAllRef = useRef<HTMLInputElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -884,28 +896,54 @@ export default function OrderListClient({ initialOrders, loadLimit }: OrderListC
                     </td>
                     <td className="py-2 px-2.5 border-b border-parchment-border">
                       <div className="flex items-center gap-2">
-                        <div className="relative w-8 h-8 rounded-md overflow-hidden bg-white border border-parchment-border shrink-0 flex items-center justify-center shadow-2xs">
+                        {/* Interactive Product Thumbnail Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenProductQuickView(o, firstItem);
+                          }}
+                          aria-label={`Quick view product ${productName || ""}`}
+                          title={`Click to preview ${productName || "product"}`}
+                          className="relative w-8 h-8 rounded-md overflow-hidden bg-white border border-parchment-border shrink-0 flex items-center justify-center shadow-2xs hover:ring-2 hover:ring-amber-500/80 hover:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-600 transition-all cursor-pointer group"
+                        >
                           {imageUrl ? (
                             <img
                               src={imageUrl}
                               alt={productName || "Product"}
-                              className="w-full h-full object-contain p-0.5"
+                              className="w-full h-full object-contain p-0.5 group-hover:scale-105 transition-transform"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-parchment-muted text-cocoa-400">
+                            <div className="w-full h-full flex items-center justify-center bg-parchment-muted text-cocoa-400 group-hover:text-cocoa-700">
                               <Package className="w-3.5 h-3.5 stroke-[1.5]" />
                             </div>
                           )}
-                        </div>
+                        </button>
                         {productName && (
                           <div className="min-w-0 max-w-[130px]">
-                            <div className="font-semibold text-cocoa-950 truncate text-xs" title={productName}>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenProductQuickView(o, firstItem);
+                              }}
+                              className="font-semibold text-cocoa-950 truncate text-xs hover:text-amber-900 hover:underline text-left block w-full cursor-pointer focus:outline-none"
+                              title={`Click to preview ${productName}`}
+                            >
                               {productName}
-                            </div>
+                            </button>
                             {extraCount > 0 && (
-                              <span className="text-[10px] text-cocoa-600 font-mono block">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenProductQuickView(o, o.items?.[1] || firstItem);
+                                }}
+                                className="text-[10px] text-cocoa-600 hover:text-amber-800 hover:underline font-mono block text-left cursor-pointer transition-colors"
+                                title={`View all ${o.items?.length || 0} items in order #${o.order_number}`}
+                              >
                                 +{extraCount} more item{extraCount > 1 ? "s" : ""}
-                              </span>
+                              </button>
                             )}
                           </div>
                         )}
@@ -1066,6 +1104,18 @@ export default function OrderListClient({ initialOrders, loadLimit }: OrderListC
         orders={ordersToPrint}
         onPrintComplete={clearSelection}
         autoTriggerPrint={autoTriggerPrint}
+      />
+
+      {/* Product Quick-View Modal */}
+      <ProductQuickViewModal
+        isOpen={quickViewModalOpen}
+        onClose={() => {
+          setQuickViewModalOpen(false);
+          setQuickViewOrder(null);
+          setQuickViewItem(null);
+        }}
+        order={quickViewOrder}
+        initialItem={quickViewItem}
       />
     </div>
   );

@@ -176,7 +176,10 @@ export default function ProductFormClient({
   const [availability, setAvailability] = useState<
     "in_stock" | "low_stock" | "out_of_stock"
   >(product?.availability || "in_stock");
-  const [weightGrams] = useState<string>(
+  const [showWeight, setShowWeight] = useState<boolean>(
+    product?.show_weight !== undefined ? Boolean(product.show_weight) : true
+  );
+  const [weightGrams, setWeightGrams] = useState<string>(
     product?.weight_grams !== undefined ? String(product.weight_grams) : "500"
   );
   const [lengthCm] = useState<string>(
@@ -256,6 +259,12 @@ export default function ProductFormClient({
       }
       setStatus(product.status || "active");
       setAvailability(product.availability || "in_stock");
+      setShowWeight(
+        product.show_weight !== undefined ? Boolean(product.show_weight) : true
+      );
+      setWeightGrams(
+        product.weight_grams !== undefined ? String(product.weight_grams) : "500"
+      );
       setShippingKerala(
         product.shipping_kerala !== undefined && product.shipping_kerala !== null
           ? String(product.shipping_kerala)
@@ -310,6 +319,7 @@ export default function ProductFormClient({
     formData.append("status", status);
     formData.append("availability", availability);
     formData.append("weight_grams", weightGrams || "500");
+    formData.append("show_weight", String(showWeight));
     formData.append("length_cm", lengthCm);
     formData.append("width_cm", widthCm);
     formData.append("height_cm", heightCm);
@@ -800,6 +810,83 @@ export default function ProductFormClient({
                 <p className="text-[11px] text-cocoa-600 mt-2 leading-relaxed">
                   Controls operational stock status badge shown on catalog.
                 </p>
+              </div>
+            </div>
+
+            {/* Product Specifications Section */}
+            <div className="pt-4 border-t border-parchment-border space-y-4">
+              <div className="flex items-center justify-between border-b border-parchment-border pb-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-cocoa-950">
+                  Product Specifications
+                </h3>
+                <span className="text-[11px] text-cocoa-500">Storefront &amp; Shipping Metrics</span>
+              </div>
+
+              {/* Product Weight Field */}
+              <div>
+                <label
+                  htmlFor="weightGrams"
+                  className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 mb-1.5"
+                >
+                  Product Weight <span className="text-cocoa-500 font-normal lowercase">(grams)</span>
+                </label>
+                <div className="relative max-w-xs">
+                  <input
+                    id="weightGrams"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={weightGrams}
+                    onChange={(e) => setWeightGrams(e.target.value)}
+                    placeholder="e.g. 500"
+                    className="w-full pl-3.5 pr-10 py-2.5 bg-parchment border border-parchment-border rounded-lg text-sm font-semibold text-cocoa-950 focus:outline-none focus:border-cocoa-700"
+                  />
+                  <span className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-xs font-bold text-cocoa-500 pointer-events-none">
+                    g
+                  </span>
+                </div>
+                <p className="text-xs text-cocoa-600 mt-1.5 leading-relaxed">
+                  Enter the product weight in grams. This weight can be displayed on the storefront.
+                </p>
+              </div>
+
+              {/* Show Weight on Product Page Toggle */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border border-parchment-border bg-parchment">
+                <div className="space-y-0.5">
+                  <label
+                    htmlFor="show-weight-toggle"
+                    className="block text-xs font-bold uppercase tracking-wider text-cocoa-950 cursor-pointer"
+                    onClick={() => setShowWeight((prev) => !prev)}
+                  >
+                    Show Weight on Product Page
+                  </label>
+                  <p className="text-xs text-cocoa-600 leading-relaxed">
+                    Controls whether the product weight appears in the Product Specifications section.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <button
+                    id="show-weight-toggle"
+                    type="button"
+                    role="switch"
+                    aria-checked={showWeight}
+                    onClick={() => setShowWeight((prev) => !prev)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-burgundy/20 ${
+                      showWeight ? "bg-emerald-600" : "bg-cocoa-300"
+                    }`}
+                    aria-label="Toggle Show Weight on Product Page"
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                        showWeight ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <span className="text-xs font-semibold text-cocoa-800 min-w-[65px]">
+                    {showWeight ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
               </div>
             </div>
           </section>

@@ -36,6 +36,7 @@ export interface Product {
   status: RecordStatus;
   availability: ProductAvailability;
   weight_grams: number;
+  show_weight?: boolean;
   length_cm: number | null;
   width_cm: number | null;
   height_cm: number | null;
