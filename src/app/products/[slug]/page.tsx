@@ -119,7 +119,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       availability: availabilityUrl,
       url: productUrl,
     },
-    ...(product.weight_grams && product.weight_grams > 0
+    ...(product.show_weight !== false && product.weight_grams && product.weight_grams > 0
       ? {
           weight: {
             "@type": "QuantitativeValue",

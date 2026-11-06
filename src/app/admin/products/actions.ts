@@ -122,7 +122,20 @@ export async function createProductAction(
   const discountValue = parseFloat(formData.get("discount_value") as string || "0");
   const status = (formData.get("status") as string || "active") as "active" | "inactive";
   const availability = (formData.get("availability") as string || "in_stock") as "in_stock" | "low_stock" | "out_of_stock";
-  const weightGrams = parseInt(formData.get("weight_grams") as string || "500", 10) || 500;
+  const weightGramsRaw = (formData.get("weight_grams") as string || "").trim();
+  let weightGrams = 500;
+  if (weightGramsRaw) {
+    const parsed = parseFloat(weightGramsRaw);
+    if (isNaN(parsed) || parsed < 0) {
+      return { success: false, error: "Product weight cannot be negative." };
+    }
+    if (parsed === 0) {
+      return { success: false, error: "Product weight must be greater than zero." };
+    }
+    weightGrams = Math.round(parsed);
+  }
+  const showWeightRaw = formData.get("show_weight");
+  const showWeight = showWeightRaw === null ? true : showWeightRaw === "true" || showWeightRaw === "on";
   const lengthCm = parseFloat(formData.get("length_cm") as string || "0") || null;
   const widthCm = parseFloat(formData.get("width_cm") as string || "0") || null;
   const heightCm = parseFloat(formData.get("height_cm") as string || "0") || null;
@@ -176,6 +189,7 @@ export async function createProductAction(
         status,
         availability,
         weight_grams: weightGrams,
+        show_weight: showWeight,
         length_cm: lengthCm,
         width_cm: widthCm,
         height_cm: heightCm,
@@ -278,7 +292,20 @@ export async function updateProductAction(
   const discountValue = parseFloat(formData.get("discount_value") as string || "0");
   const status = (formData.get("status") as string || "active") as "active" | "inactive";
   const availability = (formData.get("availability") as string || "in_stock") as "in_stock" | "low_stock" | "out_of_stock";
-  const weightGrams = parseInt(formData.get("weight_grams") as string || "500", 10);
+  const weightGramsRaw = (formData.get("weight_grams") as string || "").trim();
+  let weightGrams = 500;
+  if (weightGramsRaw) {
+    const parsed = parseFloat(weightGramsRaw);
+    if (isNaN(parsed) || parsed < 0) {
+      return { success: false, error: "Product weight cannot be negative." };
+    }
+    if (parsed === 0) {
+      return { success: false, error: "Product weight must be greater than zero." };
+    }
+    weightGrams = Math.round(parsed);
+  }
+  const showWeightRaw = formData.get("show_weight");
+  const showWeight = showWeightRaw === null ? true : showWeightRaw === "true" || showWeightRaw === "on";
   const lengthCm = parseFloat(formData.get("length_cm") as string || "0") || null;
   const widthCm = parseFloat(formData.get("width_cm") as string || "0") || null;
   const heightCm = parseFloat(formData.get("height_cm") as string || "0") || null;
@@ -331,6 +358,7 @@ export async function updateProductAction(
         status,
         availability,
         weight_grams: weightGrams,
+        show_weight: showWeight,
         length_cm: lengthCm,
         width_cm: widthCm,
         height_cm: heightCm,
@@ -407,6 +435,9 @@ export async function updateProductAction(
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${productId}`);
     revalidatePath("/shop");
+    if (slug) {
+      revalidatePath(`/products/${slug}`);
+    }
     revalidatePath("/");
 
     return { success: true, productId };
